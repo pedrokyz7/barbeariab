@@ -1,4 +1,4 @@
-import { Calendar, DollarSign, Scissors, Clock, LogOut, LayoutDashboard, Users, UserPlus } from 'lucide-react';
+import { Calendar, DollarSign, Scissors, Clock, LogOut, LayoutDashboard, Users, UserPlus, User } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useMemo } from 'react';
@@ -30,9 +30,11 @@ const adminOnlyItems = [
 export function BarberSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const { signOut, role } = useAuth();
+  const { signOut, role, user } = useAuth();
   const isAdmin = role === 'admin';
   const items = useMemo(() => isAdmin ? [...baseItems, ...adminOnlyItems] : baseItems, [isAdmin]);
+  const fullName = user?.user_metadata?.full_name || '';
+  const shortName = fullName.trim().split(/\s+/).slice(0, 2).join(' ');
 
   return (
     <Sidebar collapsible="icon">
@@ -47,6 +49,12 @@ export function BarberSidebar() {
             )}
             {collapsed && <Scissors className="w-5 h-5 text-primary" />}
           </SidebarGroupLabel>
+          {!collapsed && shortName && (
+            <div className="px-4 pb-3 flex items-center gap-2">
+              <User className="w-4 h-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground truncate">{shortName}</span>
+            </div>
+          )}
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
