@@ -283,19 +283,19 @@ export default function ClientBooking() {
             </button>
             <h2 className="text-2xl font-bold font-display text-center">Escolha a Data e Hora</h2>
 
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="grid grid-cols-7 gap-1">
               {nextDays.map((day) => {
                 const isSelected = format(day, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
                 return (
                   <button
                     key={day.toISOString()}
                     onClick={() => { setSelectedDate(day); setSelectedTime(null); }}
-                    className={`flex flex-col items-center px-4 py-3 rounded-2xl min-w-[68px] transition-all animate-press ${
+                    className={`flex flex-col items-center py-1.5 rounded-xl transition-all animate-press ${
                       isSelected ? 'bg-primary text-primary-foreground' : 'bg-card border border-border hover:border-primary/50'
                     }`}
                   >
-                    <span className="text-xs uppercase opacity-70">{format(day, 'EEE', { locale: ptBR })}</span>
-                    <span className="text-lg font-bold font-display">{format(day, 'd')}</span>
+                    <span className="text-[10px] uppercase opacity-70">{format(day, 'EEE', { locale: ptBR }).slice(0, 3)}</span>
+                    <span className="text-sm font-bold font-display">{format(day, 'd')}</span>
                   </button>
                 );
               })}
