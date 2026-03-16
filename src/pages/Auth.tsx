@@ -41,23 +41,29 @@ export default function Auth() {
     setIsLoading(true);
     try {
       if (isLogin) {
-        await signIn(email, password);
-        const { data: { user: loggedUser }, error: userError } = await supabase.auth.getUser();
-        console.log('Login - getUser:', loggedUser?.id, userError);
-        
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', loggedUser?.id ?? '')
-          .maybeSingle();
-        console.log('Login - roleData:', roleData, 'roleError:', roleError, 'loginRole:', loginRole);
-        
-        if (!roleData?.role || roleData.role !== loginRole) {
+        const { user: loggedUser } = await signIn(email, password);
+        const resolvedRole = (loggedUser?.user_metadata?.role as 'barber' | 'client' | undefined) ?? null;
+
+        if (!resolvedRole) {
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', loggedUser?.id ?? '')
+            .maybeSingle();
+
+          if (roleData?.role !== loginRole) {
+            await supabase.auth.signOut();
+            toast.error(loginRole === 'barber' ? 'Esta conta não é de barbeiro' : 'Esta conta não é de cliente');
+            setIsLoading(false);
+            return;
+          }
+        } else if (resolvedRole !== loginRole) {
           await supabase.auth.signOut();
           toast.error(loginRole === 'barber' ? 'Esta conta não é de barbeiro' : 'Esta conta não é de cliente');
           setIsLoading(false);
           return;
         }
+
         toast.success('Login realizado com sucesso!');
       } else {
         const phoneDigits = phone.replace(/\D/g, '');
