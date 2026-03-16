@@ -65,7 +65,8 @@ export default function Auth() {
         {/* Logo */}
         <div className="text-center mb-8">
           <img src={logo} alt="Logo" className="w-24 h-24 rounded-2xl mx-auto mb-4 object-cover" />
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl font-bold font-display tracking-wide mb-2">BLACKOUT BARBER SHOP</h1>
+          <p className="text-muted-foreground">
             {isLogin ? 'Faça login na sua conta' : 'Crie sua conta'}
           </p>
         </div>
