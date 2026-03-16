@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
-import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users } from 'lucide-react';
+import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users, CalendarClock } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,11 +21,20 @@ interface ClientDetail {
   revenue: number;
 }
 
+interface UpcomingAppointment {
+  appointment_date: string;
+  start_time: string;
+  client_name: string;
+  service_name: string;
+  price: number;
+}
+
 interface BarberStats {
   totalClients: number;
   totalAppointments: number;
   totalRevenue: number;
   clients: ClientDetail[];
+  upcoming: UpcomingAppointment[];
 }
 
 export default function BarberManageBarbers() {
@@ -258,6 +267,28 @@ export default function BarberManageBarbers() {
                             </div>
                           ) : (
                             <p className="text-sm text-muted-foreground text-center">Nenhum atendimento registrado</p>
+                          )}
+
+                          {stats.upcoming && stats.upcoming.length > 0 && (
+                            <div>
+                              <h3 className="text-sm font-semibold mb-2 text-muted-foreground flex items-center gap-1">
+                                <CalendarClock className="w-4 h-4" /> Próximos agendamentos
+                              </h3>
+                              <div className="space-y-2">
+                                {stats.upcoming.map((u, i) => (
+                                  <div key={i} className="flex items-center justify-between bg-primary/5 rounded-lg px-3 py-2">
+                                    <div>
+                                      <p className="text-sm font-medium">{u.client_name}</p>
+                                      <p className="text-xs text-muted-foreground">{u.service_name}</p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-sm font-semibold">{new Date(u.appointment_date + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                                      <p className="text-xs text-muted-foreground">{u.start_time.slice(0, 5)} • {formatCurrency(u.price)}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           )}
                         </>
                       ) : null}
