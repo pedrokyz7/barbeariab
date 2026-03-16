@@ -25,12 +25,62 @@ export default function BarberClients() {
     if (!user) return;
 
     // Get all users with 'client' role
-    const { data: clientRoles } = await supabase
+    const { data: clientRoles, error: rolesError } = await supabase
       .from('user_roles')
       .select('user_id')
       .eq('role', 'client');
 
-    if (!clientRoles?.length) return;
+    console.log('clientRoles:', clientRoles, 'error:', rolesError);
+
+    if (!clientRoles?.length) {
+      // Fallback: get all profiles and exclude barbers
+      const { data: barberRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'barber');
+      
+      const barberIds = new Set(barberRoles?.map(r => r.user_id) || []);
+      
+      const { data: allProfiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, phone');
+
+      if (!allProfiles?.length) return;
+
+      const clientProfiles = allProfiles.filter(p => !barberIds.has(p.user_id));
+      if (!clientProfiles.length) return;
+
+      const clientIds = clientProfiles.map(p => p.user_id);
+
+      const { data: appointments } = await supabase
+        .from('appointments')
+        .select('client_id, price, status')
+        .eq('barber_id', user.id)
+        .in('status', ['completed', 'scheduled']);
+
+      const clientMap: Record<string, { total: number; count: number }> = {};
+      appointments?.forEach(a => {
+        if (!clientMap[a.client_id]) clientMap[a.client_id] = { total: 0, count: 0 };
+        clientMap[a.client_id].total += Number(a.price);
+        clientMap[a.client_id].count += 1;
+      });
+
+      const result: ClientInfo[] = clientIds.map(id => {
+        const profile = clientProfiles.find(p => p.user_id === id);
+        return {
+          user_id: id,
+          full_name: profile?.full_name || 'Cliente',
+          phone: profile?.phone || null,
+          email: '',
+          totalSpent: clientMap[id]?.total ?? 0,
+          appointmentCount: clientMap[id]?.count ?? 0,
+        };
+      });
+
+      result.sort((a, b) => b.totalSpent - a.totalSpent);
+      setClients(result);
+      return;
+    }
 
     const clientIds = clientRoles.map(r => r.user_id);
 
