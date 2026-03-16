@@ -300,12 +300,12 @@ export function EditAppointmentModal({
             {slots.length === 0 ? (
               <p className="text-center text-muted-foreground text-sm py-4">Nenhum horário disponível</p>
             ) : (
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {slots.map((time) => (
                   <button
                     key={time}
                     onClick={() => setSelectedTime(time)}
-                    className={`py-2 rounded-xl text-sm font-medium transition-all ${
+                    className={`py-3 rounded-xl text-sm font-medium transition-all ${
                       selectedTime === time
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-card border border-border hover:border-primary/50'
