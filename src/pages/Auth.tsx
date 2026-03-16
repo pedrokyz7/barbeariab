@@ -120,16 +120,45 @@ export default function Auth() {
               />
             </div>
           )}
+          {!isLogin && (
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="(00) 00000-0000"
+                value={phone}
+                onChange={(e) => setPhone(formatPhone(e.target.value))}
+                className="pl-10 h-12 bg-card border-border rounded-xl"
+                required
+              />
+            </div>
+          )}
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
+              ref={emailRef}
               type="email"
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); setShowEmailSuggestions(true); }}
+              onBlur={() => setTimeout(() => setShowEmailSuggestions(false), 150)}
+              onFocus={() => setShowEmailSuggestions(true)}
               className="pl-10 h-12 bg-card border-border rounded-xl"
               required
             />
+            {showEmailSuggestions && emailSuggestions.length > 0 && (
+              <div className="absolute z-10 top-full mt-1 w-full bg-card border border-border rounded-xl overflow-hidden shadow-lg">
+                {emailSuggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted/50 transition-colors text-foreground"
+                    onMouseDown={() => { setEmail(suggestion); setShowEmailSuggestions(false); }}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
