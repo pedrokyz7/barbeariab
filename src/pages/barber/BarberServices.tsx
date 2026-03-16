@@ -28,6 +28,7 @@ export default function BarberServices() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', duration_minutes: 30, price: 0, category: 'masculino' });
   const [activeTab, setActiveTab] = useState('masculino');
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user) fetchServices();
