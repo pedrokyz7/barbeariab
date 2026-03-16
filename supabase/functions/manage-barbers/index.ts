@@ -179,6 +179,15 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ totalClients, totalAppointments, totalRevenue, clients: clientDetails, upcoming: upcomingDetails }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    if (action === "rename") {
+      if (!barber_user_id || !full_name) {
+        return new Response(JSON.stringify({ error: "barber_user_id e full_name são obrigatórios" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      await supabaseAdmin.from("profiles").update({ full_name }).eq("user_id", barber_user_id);
+      await supabaseAdmin.auth.admin.updateUserById(barber_user_id, { user_metadata: { full_name } });
+      return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     return new Response(JSON.stringify({ error: "Ação inválida" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
     return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
