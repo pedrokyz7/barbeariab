@@ -306,12 +306,12 @@ export default function ClientBooking() {
               {slots.length === 0 ? (
                 <p className="text-center text-muted-foreground py-6 glass-card">Nenhum horário disponível neste dia</p>
               ) : (
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 gap-1.5">
                   {slots.map((time) => (
                     <button
                       key={time}
                       onClick={() => setSelectedTime(time)}
-                      className={`py-3 rounded-xl text-sm font-medium transition-all animate-press ${
+                      className={`py-2 rounded-xl text-xs font-medium transition-all animate-press ${
                         selectedTime === time
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-card border border-border hover:border-primary/50'
