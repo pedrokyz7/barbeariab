@@ -19,7 +19,6 @@ const baseItems = [
   { title: 'Agenda', url: '/barber/schedule', icon: Calendar },
   { title: 'Serviços', url: '/barber/services', icon: Scissors },
   { title: 'Horários', url: '/barber/work-hours', icon: Clock },
-  { title: 'Financeiro', url: '/barber/finances', icon: DollarSign },
 ];
 
 const adminOnlyItems = [
