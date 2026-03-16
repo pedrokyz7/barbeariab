@@ -41,6 +41,18 @@ export default function Auth() {
     try {
       if (isLogin) {
         await signIn(email, password);
+        // Verify role matches login type
+        const { data: roleData } = await (await import('@/integrations/supabase/client')).supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', (await (await import('@/integrations/supabase/client')).supabase.auth.getUser()).data.user?.id ?? '')
+          .maybeSingle();
+        if (roleData?.role !== loginRole) {
+          await (await import('@/integrations/supabase/client')).supabase.auth.signOut();
+          toast.error(loginRole === 'barber' ? 'Esta conta não é de barbeiro' : 'Esta conta não é de cliente');
+          setIsLoading(false);
+          return;
+        }
         toast.success('Login realizado com sucesso!');
       } else {
         const phoneDigits = phone.replace(/\D/g, '');
