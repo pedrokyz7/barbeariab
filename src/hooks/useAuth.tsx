@@ -78,17 +78,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
+    const safelyHydrateAuthState = async (currentSession: Session | null) => {
+      if (!isMounted) return;
+      await hydrateAuthState(currentSession);
+    };
+
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
-      await hydrateAuthState(currentSession);
+    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      window.setTimeout(() => {
+        void safelyHydrateAuthState(currentSession);
+      }, 0);
     });
 
-    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
-      await hydrateAuthState(currentSession);
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      void safelyHydrateAuthState(currentSession);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, userRole: 'barber' | 'client', phone?: string) => {
