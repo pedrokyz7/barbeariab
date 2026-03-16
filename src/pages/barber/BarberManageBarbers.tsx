@@ -268,6 +268,28 @@ export default function BarberManageBarbers() {
                           ) : (
                             <p className="text-sm text-muted-foreground text-center">Nenhum atendimento registrado</p>
                           )}
+
+                          {stats.upcoming && stats.upcoming.length > 0 && (
+                            <div>
+                              <h3 className="text-sm font-semibold mb-2 text-muted-foreground flex items-center gap-1">
+                                <CalendarClock className="w-4 h-4" /> Próximos agendamentos
+                              </h3>
+                              <div className="space-y-2">
+                                {stats.upcoming.map((u, i) => (
+                                  <div key={i} className="flex items-center justify-between bg-primary/5 rounded-lg px-3 py-2">
+                                    <div>
+                                      <p className="text-sm font-medium">{u.client_name}</p>
+                                      <p className="text-xs text-muted-foreground">{u.service_name}</p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-sm font-semibold">{new Date(u.appointment_date + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                                      <p className="text-xs text-muted-foreground">{u.start_time.slice(0, 5)} • {formatCurrency(u.price)}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </>
                       ) : null}
                     </div>
