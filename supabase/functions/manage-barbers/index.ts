@@ -23,14 +23,15 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Não autorizado" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const { data: callerRole } = await supabaseAdmin
+    const { data: callerRoles } = await supabaseAdmin
       .from("user_roles")
       .select("role")
-      .eq("user_id", caller.id)
-      .eq("role", "barber")
-      .maybeSingle();
+      .eq("user_id", caller.id);
 
-    if (!callerRole) {
+    const roles = callerRoles?.map((r: any) => r.role) || [];
+    const isBarberOrAdmin = roles.includes("barber") || roles.includes("admin");
+
+    if (!isBarberOrAdmin) {
       return new Response(JSON.stringify({ error: "Apenas barbeiros podem gerenciar barbeiros" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
