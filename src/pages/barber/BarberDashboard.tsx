@@ -98,7 +98,7 @@ export default function BarberDashboard() {
     <BarberLayout>
       <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
         <div>
-          <h1 className="text-3xl font-bold font-display animate-[pulse_3s_ease-in-out_infinite] bg-gradient-to-r from-primary via-red-400 to-primary bg-clip-text text-transparent">Painel Financeiro</h1>
+          <h1 className="text-3xl font-bold font-display animate-[pulse_3s_ease-in-out_infinite] bg-gradient-to-r from-primary via-destructive to-primary bg-clip-text text-transparent">Painel Financeiro</h1>
           <p className="text-muted-foreground mt-1">
             {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
           </p>
