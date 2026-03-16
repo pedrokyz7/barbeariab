@@ -23,6 +23,7 @@ export default function Auth() {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [selectedRole, setSelectedRole] = useState<'barber' | 'client'>('client');
+  const [loginRole, setLoginRole] = useState<'barber' | 'client'>('client');
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailSuggestions, setShowEmailSuggestions] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
