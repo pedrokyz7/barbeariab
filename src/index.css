@@ -15,7 +15,7 @@
     --popover: 240 6% 11%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 211 100% 50%;
+    --primary: 0 85% 50%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 4% 16%;
@@ -35,18 +35,18 @@
 
     --border: 240 4% 23%;
     --input: 240 4% 23%;
-    --ring: 211 100% 50%;
+    --ring: 0 85% 50%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 240 6% 7%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 211 100% 50%;
+    --sidebar-primary: 0 85% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4% 16%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 211 100% 50%;
+    --sidebar-ring: 0 85% 50%;
 
     --font-display: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
