@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Scissors, User, Mail, Lock, ArrowRight, Phone } from 'lucide-react';
+import logo from '@/assets/logo.jpg';
 import { toast } from 'sonner';
 
 const EMAIL_DOMAINS = ['@gmail.com', '@hotmail.com', '@outlook.com', '@yahoo.com', '@icloud.com'];
@@ -63,10 +64,7 @@ export default function Auth() {
       <div className="w-full max-w-md animate-slide-up">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-            <Scissors className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="text-3xl font-bold font-display">BarberPro</h1>
+          <img src={logo} alt="Logo" className="w-24 h-24 rounded-2xl mx-auto mb-4 object-cover" />
           <p className="text-muted-foreground mt-2">
             {isLogin ? 'Faça login na sua conta' : 'Crie sua conta'}
           </p>
