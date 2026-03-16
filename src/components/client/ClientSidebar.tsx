@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Calendar, DollarSign, Scissors, LogOut, User, CalendarPlus } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Sidebar,
   SidebarContent,
@@ -23,7 +25,22 @@ const items = [
 export function ClientSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const [firstName, setFirstName] = useState('');
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('user_id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.full_name) {
+          setFirstName(data.full_name.split(' ')[0]);
+        }
+      });
+  }, [user]);
 
   return (
     <Sidebar collapsible="icon">
