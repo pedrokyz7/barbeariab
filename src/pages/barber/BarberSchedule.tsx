@@ -129,7 +129,7 @@ export default function BarberSchedule() {
         {/* Day appointments */}
         <div className="space-y-3">
           <h2 className="font-semibold font-display text-lg">
-            {format(selectedDay, "EEEE, d 'de' MMMM", { locale: ptBR })}
+            Clientes agendados — {format(selectedDay, "EEEE, d 'de' MMMM", { locale: ptBR })}
           </h2>
           {dayAppointments.length === 0 ? (
             <div className="glass-card p-8 text-center">
