@@ -67,6 +67,13 @@ export default function Auth() {
         }
 
         toast.success('Login realizado com sucesso!');
+        // Navigate based on confirmed role — use direct redirect to avoid race with auth context
+        if (isBarberLike) {
+          window.location.href = '/barber';
+        } else {
+          window.location.href = '/client';
+        }
+        return;
       } else {
         const phoneDigits = phone.replace(/\D/g, '');
         if (phoneDigits.length < 10) {
@@ -76,8 +83,8 @@ export default function Auth() {
         }
         await signUp(email, password, fullName, selectedRole, phone);
         toast.success('Conta criada com sucesso!');
+        navigate('/');
       }
-      navigate('/');
     } catch (error: any) {
       toast.error(error.message || 'Erro ao autenticar');
     } finally {
