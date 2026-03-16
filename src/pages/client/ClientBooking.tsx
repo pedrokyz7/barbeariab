@@ -23,7 +23,7 @@ interface Service {
 type Step = 'barber' | 'service' | 'datetime' | 'confirm';
 
 export default function ClientBooking() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>('barber');
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [services, setServices] = useState<Service[]>([]);
