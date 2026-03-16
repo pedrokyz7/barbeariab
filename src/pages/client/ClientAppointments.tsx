@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
-import { Calendar, Clock, XCircle } from 'lucide-react';
+import { Calendar, Clock, XCircle, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { EditAppointmentModal } from '@/components/client/EditAppointmentModal';
 
 interface AppointmentRecord {
   id: string;
@@ -65,6 +66,7 @@ export default function ClientAppointments() {
   const [appointments, setAppointments] = useState<AppointmentGroup[]>([]);
   const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(true);
+  const [editingAppointment, setEditingAppointment] = useState<AppointmentGroup | null>(null);
 
   useEffect(() => {
     if (!loading) {
@@ -240,19 +242,43 @@ export default function ClientAppointments() {
                     {statusLabel[appointment.status] || appointment.status}
                   </p>
                   {appointment.status === 'scheduled' && filter === 'upcoming' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive text-xs h-7"
-                      onClick={() => cancelAppointment(appointment.ids)}
-                    >
-                      <XCircle className="w-3 h-3 mr-1" /> Cancelar
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground hover:text-foreground text-xs h-7"
+                        onClick={() => setEditingAppointment(appointment)}
+                      >
+                        <Pencil className="w-3 h-3 mr-1" /> Editar
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive text-xs h-7"
+                        onClick={() => cancelAppointment(appointment.ids)}
+                      >
+                        <XCircle className="w-3 h-3 mr-1" /> Cancelar
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
             ))}
           </div>
+        )}
+
+        {editingAppointment && user && (
+          <EditAppointmentModal
+            open={!!editingAppointment}
+            onClose={() => setEditingAppointment(null)}
+            appointmentIds={editingAppointment.ids}
+            barberId={editingAppointment.barber_id}
+            barberName={editingAppointment.barber_name}
+            currentDate={editingAppointment.appointment_date}
+            currentStartTime={editingAppointment.start_time}
+            clientId={user.id}
+            onSaved={() => fetchAppointments()}
+          />
         )}
       </div>
     </ClientLayout>
