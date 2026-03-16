@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Scissors, User, Mail, Lock, ArrowRight, Phone } from 'lucide-react';
+import { Scissors, User, Mail, Lock, ArrowRight, Phone, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const EMAIL_DOMAINS = ['@gmail.com', '@hotmail.com', '@outlook.com', '@yahoo.com', '@icloud.com'];
