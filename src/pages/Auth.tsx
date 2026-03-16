@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Scissors, User, Mail, Lock, ArrowRight, Phone } from 'lucide-react';
@@ -23,6 +24,7 @@ export default function Auth() {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [selectedRole, setSelectedRole] = useState<'barber' | 'client'>('client');
+  const [loginRole, setLoginRole] = useState<'barber' | 'client'>('client');
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailSuggestions, setShowEmailSuggestions] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -40,6 +42,18 @@ export default function Auth() {
     try {
       if (isLogin) {
         await signIn(email, password);
+        const { data: { user: loggedUser } } = await supabase.auth.getUser();
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', loggedUser?.id ?? '')
+          .maybeSingle();
+        if (roleData?.role !== loginRole) {
+          await supabase.auth.signOut();
+          toast.error(loginRole === 'barber' ? 'Esta conta não é de barbeiro' : 'Esta conta não é de cliente');
+          setIsLoading(false);
+          return;
+        }
         toast.success('Login realizado com sucesso!');
       } else {
         const phoneDigits = phone.replace(/\D/g, '');
@@ -71,39 +85,37 @@ export default function Auth() {
           </p>
         </div>
 
-        {/* Role Selection (signup only) */}
-        {!isLogin && (
-          <div className="flex gap-3 mb-6">
-            <button
-              type="button"
-              onClick={() => setSelectedRole('client')}
-              className={`flex-1 p-4 rounded-2xl border transition-all animate-press ${
-                selectedRole === 'client'
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border bg-card hover:border-muted-foreground/30'
-              }`}
-            >
-              <User className={`w-6 h-6 mx-auto mb-2 ${selectedRole === 'client' ? 'text-primary' : 'text-muted-foreground'}`} />
-              <p className={`text-sm font-medium ${selectedRole === 'client' ? 'text-primary' : 'text-muted-foreground'}`}>
-                Cliente
-              </p>
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedRole('barber')}
-              className={`flex-1 p-4 rounded-2xl border transition-all animate-press ${
-                selectedRole === 'barber'
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border bg-card hover:border-muted-foreground/30'
-              }`}
-            >
-              <Scissors className={`w-6 h-6 mx-auto mb-2 ${selectedRole === 'barber' ? 'text-primary' : 'text-muted-foreground'}`} />
-              <p className={`text-sm font-medium ${selectedRole === 'barber' ? 'text-primary' : 'text-muted-foreground'}`}>
-                Barbeiro
-              </p>
-            </button>
-          </div>
-        )}
+        {/* Role Selection (login and signup) */}
+        <div className="flex gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() => isLogin ? setLoginRole('client') : setSelectedRole('client')}
+            className={`flex-1 p-4 rounded-2xl border transition-all animate-press ${
+              (isLogin ? loginRole : selectedRole) === 'client'
+                ? 'border-primary bg-primary/10'
+                : 'border-border bg-card hover:border-muted-foreground/30'
+            }`}
+          >
+            <User className={`w-6 h-6 mx-auto mb-2 ${(isLogin ? loginRole : selectedRole) === 'client' ? 'text-primary' : 'text-muted-foreground'}`} />
+            <p className={`text-sm font-medium ${(isLogin ? loginRole : selectedRole) === 'client' ? 'text-primary' : 'text-muted-foreground'}`}>
+              Cliente
+            </p>
+          </button>
+          <button
+            type="button"
+            onClick={() => isLogin ? setLoginRole('barber') : setSelectedRole('barber')}
+            className={`flex-1 p-4 rounded-2xl border transition-all animate-press ${
+              (isLogin ? loginRole : selectedRole) === 'barber'
+                ? 'border-primary bg-primary/10'
+                : 'border-border bg-card hover:border-muted-foreground/30'
+            }`}
+          >
+            <Scissors className={`w-6 h-6 mx-auto mb-2 ${(isLogin ? loginRole : selectedRole) === 'barber' ? 'text-primary' : 'text-muted-foreground'}`} />
+            <p className={`text-sm font-medium ${(isLogin ? loginRole : selectedRole) === 'barber' ? 'text-primary' : 'text-muted-foreground'}`}>
+              Barbeiro
+            </p>
+          </button>
+        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
