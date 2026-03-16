@@ -47,6 +47,8 @@ export default function BarberManageBarbers() {
   const [expandedBarber, setExpandedBarber] = useState<string | null>(null);
   const [statsCache, setStatsCache] = useState<Record<string, BarberStats>>({});
   const [loadingStats, setLoadingStats] = useState<string | null>(null);
+  const [editingBarber, setEditingBarber] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
 
   useEffect(() => {
     if (user) fetchBarbers();
