@@ -53,7 +53,12 @@ export default function Auth() {
         setShowEmailConfirmation(true);
       }
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao autenticar');
+      const msg = error.message || '';
+      if (msg.toLowerCase().includes('rate limit')) {
+        toast.error('Limite de envio de emails atingido. Aguarde alguns minutos e tente novamente.');
+      } else {
+        toast.error(msg || 'Erro ao autenticar');
+      }
     } finally {
       setIsLoading(false);
     }
