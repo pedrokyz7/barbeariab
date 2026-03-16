@@ -5,23 +5,68 @@ import { ClientLayout } from '@/components/client/ClientLayout';
 import { Calendar, Clock, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 
-interface Appointment {
+interface AppointmentRecord {
   id: string;
+  barber_id: string;
+  service_id: string;
+  appointment_date: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  price: number;
+  created_at: string;
+}
+
+interface EnrichedAppointment extends AppointmentRecord {
+  barber_name: string;
+  service_name: string;
+}
+
+interface AppointmentGroup {
+  ids: string[];
+  barber_id: string;
   appointment_date: string;
   start_time: string;
   end_time: string;
   status: string;
   price: number;
   barber_name: string;
-  service_name: string;
+  service_names: string[];
+  created_at: string;
 }
+
+const getAppointmentTimestamp = (appointment: { appointment_date: string; start_time: string }) =>
+  new Date(`${appointment.appointment_date}T${appointment.start_time}`).getTime();
+
+const compareAppointmentsAsc = (
+  a: { appointment_date: string; start_time: string },
+  b: { appointment_date: string; start_time: string }
+) => getAppointmentTimestamp(a) - getAppointmentTimestamp(b);
+
+const compareAppointmentsDesc = (
+  a: { appointment_date: string; start_time: string },
+  b: { appointment_date: string; start_time: string }
+) => getAppointmentTimestamp(b) - getAppointmentTimestamp(a);
+
+const isSameBookingGroup = (group: AppointmentGroup, appointment: EnrichedAppointment) => {
+  const createdAtDifference = Math.abs(
+    new Date(appointment.created_at).getTime() - new Date(group.created_at).getTime()
+  );
+
+  return (
+    group.appointment_date === appointment.appointment_date &&
+    group.barber_id === appointment.barber_id &&
+    group.status === appointment.status &&
+    group.end_time === appointment.start_time &&
+    createdAtDifference <= 60_000
+  );
+};
 
 export default function ClientAppointments() {
   const { user, loading } = useAuth();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentGroup[]>([]);
   const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(true);
 
@@ -44,8 +89,8 @@ export default function ClientAppointments() {
       .from('appointments')
       .select('*')
       .eq('client_id', user.id)
-      .order('appointment_date', { ascending: filter === 'upcoming' })
-      .order('start_time', { ascending: filter === 'upcoming' })
+      .order('appointment_date', { ascending: true })
+      .order('start_time', { ascending: true })
       .limit(100);
 
     if (error) {
@@ -55,57 +100,83 @@ export default function ClientAppointments() {
       return;
     }
 
-    if (!data || data.length === 0) {
+    const appointmentsData = (data || []) as AppointmentRecord[];
+
+    if (appointmentsData.length === 0) {
       setAppointments([]);
       setIsLoadingAppointments(false);
       return;
     }
 
-    const now = new Date();
-    const filteredAppointments = data.filter((appointment) => {
-      const appointmentEnd = new Date(`${appointment.appointment_date}T${appointment.end_time}`);
-      const isUpcoming = appointment.status !== 'cancelled' && appointmentEnd >= now;
-      return filter === 'upcoming' ? isUpcoming : !isUpcoming;
-    });
-
-    if (filteredAppointments.length === 0) {
-      setAppointments([]);
-      setIsLoadingAppointments(false);
-      return;
-    }
-
-    const barberIds = [...new Set(filteredAppointments.map((a) => a.barber_id))];
-    const serviceIds = [...new Set(filteredAppointments.map((a) => a.service_id))];
+    const barberIds = [...new Set(appointmentsData.map((appointment) => appointment.barber_id))];
+    const serviceIds = [...new Set(appointmentsData.map((appointment) => appointment.service_id))];
 
     const [profilesRes, servicesRes] = await Promise.all([
       supabase.from('profiles').select('user_id, full_name').in('user_id', barberIds),
       supabase.from('services').select('id, name').in('id', serviceIds),
     ]);
 
-    const profileMap = new Map((profilesRes.data || []).map((p) => [p.user_id, p.full_name]));
-    const serviceMap = new Map((servicesRes.data || []).map((s) => [s.id, s.name]));
+    const profileMap = new Map((profilesRes.data || []).map((profile) => [profile.user_id, profile.full_name]));
+    const serviceMap = new Map((servicesRes.data || []).map((service) => [service.id, service.name]));
 
-    setAppointments(
-      filteredAppointments.map((a) => ({
-        id: a.id,
-        appointment_date: a.appointment_date,
-        start_time: a.start_time,
-        end_time: a.end_time,
-        status: a.status,
-        price: a.price,
-        barber_name: profileMap.get(a.barber_id) || 'Barbeiro',
-        service_name: serviceMap.get(a.service_id) || 'Serviço',
+    const enrichedAppointments: EnrichedAppointment[] = appointmentsData
+      .map((appointment) => ({
+        ...appointment,
+        barber_name: profileMap.get(appointment.barber_id) || 'Barbeiro',
+        service_name: serviceMap.get(appointment.service_id) || 'Serviço',
       }))
-    );
+      .sort(compareAppointmentsAsc);
 
+    const groupedAppointments = enrichedAppointments.reduce<AppointmentGroup[]>((groups, appointment) => {
+      const lastGroup = groups[groups.length - 1];
+
+      if (lastGroup && isSameBookingGroup(lastGroup, appointment)) {
+        lastGroup.ids.push(appointment.id);
+        lastGroup.service_names.push(appointment.service_name);
+        lastGroup.end_time = appointment.end_time;
+        lastGroup.price += Number(appointment.price);
+        return groups;
+      }
+
+      groups.push({
+        ids: [appointment.id],
+        barber_id: appointment.barber_id,
+        appointment_date: appointment.appointment_date,
+        start_time: appointment.start_time,
+        end_time: appointment.end_time,
+        status: appointment.status,
+        price: Number(appointment.price),
+        barber_name: appointment.barber_name,
+        service_names: [appointment.service_name],
+        created_at: appointment.created_at,
+      });
+
+      return groups;
+    }, []);
+
+    const now = new Date();
+    const filteredAppointments = groupedAppointments
+      .filter((appointment) => {
+        const appointmentEnd = new Date(`${appointment.appointment_date}T${appointment.end_time}`);
+        const isUpcoming = appointment.status !== 'cancelled' && appointmentEnd >= now;
+        return filter === 'upcoming' ? isUpcoming : !isUpcoming;
+      })
+      .sort(filter === 'upcoming' ? compareAppointmentsAsc : compareAppointmentsDesc);
+
+    setAppointments(filteredAppointments);
     setIsLoadingAppointments(false);
   };
 
-  const cancelAppointment = async (id: string) => {
-    const { error } = await supabase.from('appointments').update({ status: 'cancelled' }).eq('id', id);
-    if (error) { toast.error('Erro ao cancelar'); return; }
-    toast.success('Agendamento cancelado');
-    fetchAppointments();
+  const cancelAppointment = async (ids: string[]) => {
+    const { error } = await supabase.from('appointments').update({ status: 'cancelled' }).in('id', ids);
+
+    if (error) {
+      toast.error('Erro ao cancelar');
+      return;
+    }
+
+    toast.success(ids.length > 1 ? 'Agendamentos cancelados' : 'Agendamento cancelado');
+    void fetchAppointments();
   };
 
   const statusLabel: Record<string, string> = {
@@ -152,33 +223,33 @@ export default function ClientAppointments() {
           </p>
         ) : (
           <div className="space-y-3">
-            {appointments.map((apt) => (
-              <div key={apt.id} className="glass-card p-4 flex items-center justify-between animate-slide-up">
-                <div className="space-y-1">
-                  <p className="font-medium">{apt.service_name}</p>
-                  <p className="text-sm text-muted-foreground">com {apt.barber_name}</p>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            {appointments.map((appointment) => (
+              <div key={appointment.ids.join('-')} className="glass-card p-4 flex items-center justify-between animate-slide-up gap-4">
+                <div className="space-y-1 min-w-0">
+                  <p className="font-medium break-words">{appointment.service_names.join(' • ')}</p>
+                  <p className="text-sm text-muted-foreground">com {appointment.barber_name}</p>
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      {format(new Date(apt.appointment_date + 'T00:00:00'), 'dd/MM/yyyy')}
+                      {format(new Date(`${appointment.appointment_date}T00:00:00`), 'dd/MM/yyyy')}
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {apt.start_time.slice(0, 5)}
+                      {appointment.start_time.slice(0, 5)} - {appointment.end_time.slice(0, 5)}
                     </span>
                   </div>
                 </div>
-                <div className="text-right space-y-1">
-                  <p className="font-bold text-success">R$ {Number(apt.price).toFixed(2)}</p>
-                  <p className={`text-xs font-medium ${statusColor[apt.status] || ''}`}>
-                    {statusLabel[apt.status] || apt.status}
+                <div className="text-right space-y-1 shrink-0">
+                  <p className="font-bold text-success">R$ {Number(appointment.price).toFixed(2)}</p>
+                  <p className={`text-xs font-medium ${statusColor[appointment.status] || ''}`}>
+                    {statusLabel[appointment.status] || appointment.status}
                   </p>
-                  {apt.status === 'scheduled' && filter === 'upcoming' && (
+                  {appointment.status === 'scheduled' && filter === 'upcoming' && (
                     <Button
                       variant="ghost"
                       size="sm"
                       className="text-destructive hover:text-destructive text-xs h-7"
-                      onClick={() => cancelAppointment(apt.id)}
+                      onClick={() => cancelAppointment(appointment.ids)}
                     >
                       <XCircle className="w-3 h-3 mr-1" /> Cancelar
                     </Button>
