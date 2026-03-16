@@ -19,6 +19,7 @@ const items = [
   { title: 'Serviços', url: '/barber/services', icon: Scissors },
   { title: 'Horários', url: '/barber/work-hours', icon: Clock },
   { title: 'Financeiro', url: '/barber/finances', icon: DollarSign },
+  { title: 'Clientes', url: '/barber/clients', icon: Users },
 ];
 
 export function BarberSidebar() {
