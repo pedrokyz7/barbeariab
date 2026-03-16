@@ -273,8 +273,8 @@ export function EditAppointmentModal({
             </button>
 
             <p className="text-sm font-medium">Escolha a data</p>
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {nextDays.map((day) => {
+            <div className="grid grid-cols-7 gap-1">
+              {nextDays.slice(0, 14).map((day) => {
                 const isSelected = format(day, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
                 return (
                   <button
@@ -283,14 +283,14 @@ export function EditAppointmentModal({
                       setSelectedDate(day);
                       setSelectedTime(null);
                     }}
-                    className={`flex flex-col items-center px-3 py-2 rounded-xl min-w-[60px] transition-all text-xs ${
+                    className={`flex flex-col items-center py-1.5 rounded-lg transition-all text-[10px] ${
                       isSelected
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-card border border-border hover:border-primary/50'
                     }`}
                   >
-                    <span className="uppercase opacity-70">{format(day, 'EEE', { locale: ptBR })}</span>
-                    <span className="text-base font-bold font-display">{format(day, 'd')}</span>
+                    <span className="uppercase opacity-70">{format(day, 'EEE', { locale: ptBR }).slice(0, 3)}</span>
+                    <span className="text-sm font-bold font-display">{format(day, 'd')}</span>
                   </button>
                 );
               })}
@@ -300,12 +300,12 @@ export function EditAppointmentModal({
             {slots.length === 0 ? (
               <p className="text-center text-muted-foreground text-sm py-4">Nenhum horário disponível</p>
             ) : (
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-1.5">
                 {slots.map((time) => (
                   <button
                     key={time}
                     onClick={() => setSelectedTime(time)}
-                    className={`py-3 rounded-xl text-sm font-medium transition-all ${
+                    className={`py-2 rounded-lg text-xs font-medium transition-all ${
                       selectedTime === time
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-card border border-border hover:border-primary/50'
