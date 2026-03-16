@@ -34,7 +34,6 @@ interface AppointmentGroup {
   price: number;
   barber_name: string;
   service_names: string[];
-  created_at: string;
 }
 
 const getAppointmentTimestamp = (appointment: { appointment_date: string; start_time: string }) =>
@@ -50,19 +49,16 @@ const compareAppointmentsDesc = (
   b: { appointment_date: string; start_time: string }
 ) => getAppointmentTimestamp(b) - getAppointmentTimestamp(a);
 
-const isSameBookingGroup = (group: AppointmentGroup, appointment: EnrichedAppointment) => {
-  const createdAtDifference = Math.abs(
-    new Date(appointment.created_at).getTime() - new Date(group.created_at).getTime()
-  );
-
-  return (
-    group.appointment_date === appointment.appointment_date &&
-    group.barber_id === appointment.barber_id &&
-    group.status === appointment.status &&
-    group.end_time === appointment.start_time &&
-    createdAtDifference <= 60_000
-  );
+const isUpcomingAppointment = (appointment: { appointment_date: string; end_time: string; status: string }, now: Date) => {
+  const appointmentEnd = new Date(`${appointment.appointment_date}T${appointment.end_time}`);
+  return appointment.status !== 'cancelled' && appointmentEnd >= now;
 };
+
+const isSameBookingGroup = (group: AppointmentGroup, appointment: EnrichedAppointment) =>
+  group.appointment_date === appointment.appointment_date &&
+  group.barber_id === appointment.barber_id &&
+  group.status === appointment.status &&
+  group.end_time === appointment.start_time;
 
 export default function ClientAppointments() {
   const { user, loading } = useAuth();
