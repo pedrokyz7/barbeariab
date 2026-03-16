@@ -97,6 +97,7 @@ export default function BarberServices() {
     setForm({ name: s.name, duration_minutes: s.duration_minutes, price: Number(s.price), category: s.category || 'masculino' });
     setShowForm(true);
     setActiveTab(s.category || 'masculino');
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
   };
 
   const resetForm = () => {
