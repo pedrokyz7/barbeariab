@@ -128,7 +128,7 @@ export default function BarberManageBarbers() {
     fetchBarbers();
   };
 
-
+  const handleDelete = async (barberUserId: string, name: string) => {
     if (!confirm(`Tem certeza que deseja remover ${name}?`)) return;
     const { data, error } = await supabase.functions.invoke('manage-barbers', {
       body: { action: 'delete', barber_user_id: barberUserId },
