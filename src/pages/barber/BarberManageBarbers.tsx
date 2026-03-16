@@ -27,14 +27,20 @@ export default function BarberManageBarbers() {
   }, [user]);
 
   const fetchBarbers = async () => {
-    const { data, error } = await supabase.functions.invoke('manage-barbers', {
-      body: { action: 'list' },
-    });
-    if (error) {
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-barbers', {
+        body: { action: 'list' },
+      });
+      console.log('fetchBarbers response:', data, 'error:', error);
+      if (error) {
+        toast.error('Erro ao carregar barbeiros: ' + (error.message || error));
+        return;
+      }
+      setBarbers(data?.barbers || []);
+    } catch (err: any) {
+      console.error('fetchBarbers exception:', err);
       toast.error('Erro ao carregar barbeiros');
-      return;
     }
-    setBarbers(data.barbers || []);
   };
 
   const handleCreate = async (e: React.FormEvent) => {
