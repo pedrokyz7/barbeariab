@@ -67,29 +67,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const { data, error } = await supabase.auth.getUser();
-    const serverUser = data.user;
+    setUser(currentSession.user);
 
-    if (error || !serverUser) {
-      console.error('Sessão inválida, limpando autenticação:', error);
-      await supabase.auth.signOut();
-      clearAuthState();
-      setLoading(false);
-      return;
-    }
-
-    setUser(serverUser);
-
-    const resolvedRole = await fetchRole(
-      serverUser.id,
-      (serverUser.user_metadata?.role as UserRole) ?? null,
+    await fetchRole(
+      currentSession.user.id,
+      (currentSession.user.user_metadata?.role as UserRole) ?? null,
     );
-
-    if (!resolvedRole) {
-      console.error('Usuário sem papel válido, encerrando sessão');
-      await supabase.auth.signOut();
-      clearAuthState();
-    }
 
     setLoading(false);
   };
