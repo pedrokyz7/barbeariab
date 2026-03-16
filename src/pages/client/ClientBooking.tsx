@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { ClientLayout } from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
-import { Scissors, ArrowLeft, ArrowRight, Clock, DollarSign, Calendar, LogOut, CheckCircle } from 'lucide-react';
+import { Scissors, ArrowLeft, ArrowRight, Clock, DollarSign, Calendar, CheckCircle } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
