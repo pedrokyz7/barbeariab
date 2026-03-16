@@ -44,34 +44,39 @@ export default function BarberServices() {
   };
 
   const handleSave = async () => {
-    if (!user || !form.name) {
+    console.log('handleSave called, user:', user?.id, 'form:', form);
+    if (!user) {
+      toast.error('Você precisa estar logado');
+      return;
+    }
+    if (!form.name.trim()) {
       toast.error('Preencha o nome do serviço');
       return;
     }
     if (editingId) {
-      const { error } = await supabase.from('services').update({
-        name: form.name,
+      const { data, error } = await supabase.from('services').update({
+        name: form.name.trim(),
         duration_minutes: form.duration_minutes,
         price: form.price,
         category: form.category,
-      }).eq('id', editingId);
+      }).eq('id', editingId).select();
+      console.log('Update result:', data, error);
       if (error) {
-        console.error('Update error:', error);
-        toast.error('Erro ao atualizar serviço');
+        toast.error('Erro ao atualizar: ' + error.message);
         return;
       }
       toast.success('Serviço atualizado!');
     } else {
-      const { error } = await supabase.from('services').insert({
+      const { data, error } = await supabase.from('services').insert({
         barber_id: user.id,
-        name: form.name,
+        name: form.name.trim(),
         duration_minutes: form.duration_minutes,
         price: form.price,
         category: form.category,
-      });
+      }).select();
+      console.log('Insert result:', data, error);
       if (error) {
-        console.error('Insert error:', error);
-        toast.error('Erro ao criar serviço');
+        toast.error('Erro ao criar: ' + error.message);
         return;
       }
       toast.success('Serviço criado!');
