@@ -51,6 +51,12 @@ export function BarberSidebar() {
             )}
             {collapsed && <Scissors className="w-5 h-5 text-primary" />}
           </SidebarGroupLabel>
+          {!collapsed && shortName && (
+            <div className="px-4 pb-3 flex items-center gap-2">
+              <User className="w-4 h-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground truncate">{shortName}</span>
+            </div>
+          )}
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
