@@ -22,6 +22,7 @@ export type Database = {
           created_at: string
           end_time: string
           id: string
+          payment_status: string
           price: number
           service_id: string
           start_time: string
@@ -35,6 +36,7 @@ export type Database = {
           created_at?: string
           end_time: string
           id?: string
+          payment_status?: string
           price?: number
           service_id: string
           start_time: string
@@ -48,6 +50,7 @@ export type Database = {
           created_at?: string
           end_time?: string
           id?: string
+          payment_status?: string
           price?: number
           service_id?: string
           start_time?: string
