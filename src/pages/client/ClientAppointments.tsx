@@ -144,7 +144,9 @@ export default function ClientAppointments() {
           </Button>
         </div>
 
-        {appointments.length === 0 ? (
+        {isLoadingAppointments ? (
+          <p className="text-center text-muted-foreground py-12 glass-card">Carregando agendamentos...</p>
+        ) : appointments.length === 0 ? (
           <p className="text-center text-muted-foreground py-12 glass-card">
             Nenhum agendamento {filter === 'upcoming' ? 'próximo' : 'no histórico'}
           </p>
