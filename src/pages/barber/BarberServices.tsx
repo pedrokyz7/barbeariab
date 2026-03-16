@@ -60,10 +60,14 @@ export default function BarberServices() {
         duration_minutes: form.duration_minutes,
         price: form.price,
         category: form.category,
-      }).eq('id', editingId).select();
+      }).eq('id', editingId).eq('barber_id', user.id).select();
       console.log('Update result:', data, error);
       if (error) {
         toast.error('Erro ao atualizar: ' + error.message);
+        return;
+      }
+      if (!data || data.length === 0) {
+        toast.error('Não foi possível atualizar. Verifique se você é o dono deste serviço.');
         return;
       }
       toast.success('Serviço atualizado!');
