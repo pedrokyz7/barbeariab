@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { ClientLayout } from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
-import { Scissors, ArrowLeft, ArrowRight, Clock, DollarSign, Calendar, LogOut, CheckCircle } from 'lucide-react';
+import { Scissors, ArrowLeft, ArrowRight, Clock, DollarSign, Calendar, CheckCircle } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -22,7 +23,7 @@ interface Service {
 type Step = 'barber' | 'service' | 'datetime' | 'confirm';
 
 export default function ClientBooking() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>('barber');
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -166,19 +167,8 @@ export default function ClientBooking() {
   const nextDays = Array.from({ length: 14 }, (_, i) => addDays(new Date(), i));
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="border-b border-border px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Scissors className="w-5 h-5 text-primary" />
-          <span className="font-display font-bold text-lg">BarberPro</span>
-        </div>
-        <Button variant="ghost" size="sm" onClick={async () => { await signOut(); window.location.href = '/auth'; }} className="text-muted-foreground rounded-xl">
-          <LogOut className="w-4 h-4 mr-2" /> Sair
-        </Button>
-      </header>
-
-      <div className="max-w-lg mx-auto p-6 space-y-6 animate-fade-in">
+    <ClientLayout>
+      <div className="max-w-lg mx-auto space-y-6 animate-fade-in">
         {/* Progress */}
         <div className="flex items-center gap-2 justify-center">
           {['barber', 'service', 'datetime', 'confirm'].map((s, i) => (
@@ -364,6 +354,6 @@ export default function ClientBooking() {
           </div>
         )}
       </div>
-    </div>
+    </ClientLayout>
   );
 }

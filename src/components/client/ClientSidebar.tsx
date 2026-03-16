@@ -1,4 +1,4 @@
-import { Calendar, DollarSign, Scissors, Clock, LogOut, LayoutDashboard, Users } from 'lucide-react';
+import { Calendar, DollarSign, Scissors, LogOut, User, CalendarPlus } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -14,15 +14,13 @@ import {
 } from '@/components/ui/sidebar';
 
 const items = [
-  { title: 'Dashboard', url: '/barber', icon: LayoutDashboard },
-  { title: 'Agenda', url: '/barber/schedule', icon: Calendar },
-  { title: 'Serviços', url: '/barber/services', icon: Scissors },
-  { title: 'Horários', url: '/barber/work-hours', icon: Clock },
-  { title: 'Financeiro', url: '/barber/finances', icon: DollarSign },
-  { title: 'Clientes', url: '/barber/clients', icon: Users },
+  { title: 'Agendar', url: '/client', icon: CalendarPlus },
+  { title: 'Meus Agendamentos', url: '/client/appointments', icon: Calendar },
+  { title: 'Meus Gastos', url: '/client/spending', icon: DollarSign },
+  { title: 'Meu Perfil', url: '/client/profile', icon: User },
 ];
 
-export function BarberSidebar() {
+export function ClientSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const { signOut } = useAuth();
@@ -47,7 +45,7 @@ export function BarberSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      end={item.url === '/barber'}
+                      end={item.url === '/client'}
                       className="hover:bg-accent/50 rounded-xl px-3 py-2.5"
                       activeClassName="bg-primary/10 text-primary font-medium"
                     >
@@ -60,7 +58,7 @@ export function BarberSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <button
-                    onClick={signOut}
+                    onClick={async () => { await signOut(); window.location.href = '/auth'; }}
                     className="flex items-center w-full hover:bg-destructive/10 text-destructive rounded-xl px-3 py-2.5"
                   >
                     <LogOut className="w-4 h-4 mr-3" />

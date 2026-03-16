@@ -11,7 +11,11 @@ import BarberSchedule from "./pages/barber/BarberSchedule";
 import BarberServices from "./pages/barber/BarberServices";
 import BarberWorkHours from "./pages/barber/BarberWorkHours";
 import BarberFinances from "./pages/barber/BarberFinances";
+import BarberClients from "./pages/barber/BarberClients";
 import ClientBooking from "./pages/client/ClientBooking";
+import ClientAppointments from "./pages/client/ClientAppointments";
+import ClientSpending from "./pages/client/ClientSpending";
+import ClientProfile from "./pages/client/ClientProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,7 +35,11 @@ const App = () => (
             <Route path="/barber/services" element={<BarberServices />} />
             <Route path="/barber/work-hours" element={<BarberWorkHours />} />
             <Route path="/barber/finances" element={<BarberFinances />} />
+            <Route path="/barber/clients" element={<BarberClients />} />
             <Route path="/client" element={<ClientBooking />} />
+            <Route path="/client/appointments" element={<ClientAppointments />} />
+            <Route path="/client/spending" element={<ClientSpending />} />
+            <Route path="/client/profile" element={<ClientProfile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
