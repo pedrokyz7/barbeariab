@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Scissors, ArrowLeft, ArrowRight, Clock, DollarSign, Calendar, CheckCircle } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -29,10 +30,21 @@ export default function ClientBooking() {
   const [services, setServices] = useState<Service[]>([]);
   const [slots, setSlots] = useState<string[]>([]);
   const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedServices, setSelectedServices] = useState<Service[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
+
+  const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration_minutes, 0);
+  const totalPrice = selectedServices.reduce((sum, s) => sum + Number(s.price), 0);
+
+  const toggleService = (service: Service) => {
+    setSelectedServices(prev => {
+      const exists = prev.find(s => s.id === service.id);
+      if (exists) return prev.filter(s => s.id !== service.id);
+      return [...prev, service];
+    });
+  };
 
   useEffect(() => {
     fetchBarbers();
@@ -43,8 +55,9 @@ export default function ClientBooking() {
   }, [selectedBarber]);
 
   useEffect(() => {
-    if (selectedBarber && selectedService && selectedDate) fetchSlots();
-  }, [selectedBarber, selectedService, selectedDate]);
+    if (selectedBarber && selectedServices.length > 0 && selectedDate) fetchSlots();
+    else setSlots([]);
+  }, [selectedBarber, selectedServices, selectedDate]);
 
   const fetchBarbers = async () => {
     const { data: roles } = await supabase.from('user_roles').select('user_id').in('role', ['barber', 'admin']);
@@ -66,11 +79,10 @@ export default function ClientBooking() {
   };
 
   const fetchSlots = async () => {
-    if (!selectedBarber || !selectedService) return;
+    if (!selectedBarber || selectedServices.length === 0) return;
     const dayOfWeek = selectedDate.getDay();
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
 
-    // Get barber schedule for this day
     const { data: schedule } = await supabase
       .from('barber_schedules')
       .select('*')
@@ -84,7 +96,6 @@ export default function ClientBooking() {
       return;
     }
 
-    // Get existing appointments for this day
     const { data: existingApts } = await supabase
       .from('appointments')
       .select('start_time, end_time')
@@ -92,16 +103,12 @@ export default function ClientBooking() {
       .eq('appointment_date', dateStr)
       .neq('status', 'cancelled');
 
-    // Calculate available slots
     const available: string[] = [];
     const startMinutes = timeToMinutes(schedule.start_time);
     const endMinutes = timeToMinutes(schedule.end_time);
-    const duration = selectedService.duration_minutes;
+    const duration = totalDuration;
 
     for (let m = startMinutes; m + duration <= endMinutes; m += 30) {
-      const slotStart = minutesToTime(m);
-      const slotEnd = minutesToTime(m + duration);
-
       const hasConflict = existingApts?.some(apt => {
         const aptStart = timeToMinutes(apt.start_time);
         const aptEnd = timeToMinutes(apt.end_time);
@@ -109,14 +116,12 @@ export default function ClientBooking() {
       });
 
       if (!hasConflict) {
-        // Don't show past times for today
         if (dateStr === format(new Date(), 'yyyy-MM-dd')) {
           const now = new Date();
-          const slotMinutes = m;
           const nowMinutes = now.getHours() * 60 + now.getMinutes();
-          if (slotMinutes <= nowMinutes) continue;
+          if (m <= nowMinutes) continue;
         }
-        available.push(slotStart);
+        available.push(minutesToTime(m));
       }
     }
 
@@ -135,27 +140,33 @@ export default function ClientBooking() {
   };
 
   const handleBook = async () => {
-    if (!user || !selectedBarber || !selectedService || !selectedTime) return;
+    if (!user || !selectedBarber || selectedServices.length === 0 || !selectedTime) return;
     setIsBooking(true);
     try {
-      const endMinutes = timeToMinutes(selectedTime) + selectedService.duration_minutes;
+      const endMinutes = timeToMinutes(selectedTime) + totalDuration;
       const endTime = minutesToTime(endMinutes);
 
-      const { error } = await supabase.from('appointments').insert({
-        client_id: user.id,
-        barber_id: selectedBarber.user_id,
-        service_id: selectedService.id,
-        appointment_date: format(selectedDate, 'yyyy-MM-dd'),
-        start_time: selectedTime,
-        end_time: endTime,
-        price: selectedService.price,
-      });
+      // Insert one appointment per selected service, chained in time
+      let currentStart = selectedTime;
+      for (const svc of selectedServices) {
+        const svcEnd = minutesToTime(timeToMinutes(currentStart) + svc.duration_minutes);
+        const { error } = await supabase.from('appointments').insert({
+          client_id: user.id,
+          barber_id: selectedBarber.user_id,
+          service_id: svc.id,
+          appointment_date: format(selectedDate, 'yyyy-MM-dd'),
+          start_time: currentStart,
+          end_time: svcEnd,
+          price: svc.price,
+        });
+        if (error) throw error;
+        currentStart = svcEnd;
+      }
 
-      if (error) throw error;
       toast.success('Agendamento realizado com sucesso!');
       setStep('barber');
       setSelectedBarber(null);
-      setSelectedService(null);
+      setSelectedServices([]);
       setSelectedTime(null);
     } catch (error: any) {
       toast.error('Erro ao agendar: ' + error.message);
@@ -213,30 +224,54 @@ export default function ClientBooking() {
           </div>
         )}
 
-        {/* Step: Select Service */}
+        {/* Step: Select Services (multi) */}
         {step === 'service' && (
           <div className="space-y-4 animate-slide-up">
             <button onClick={() => setStep('barber')} className="flex items-center text-sm text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
             </button>
-            <h2 className="text-2xl font-bold font-display text-center">Escolha o Serviço</h2>
+            <h2 className="text-2xl font-bold font-display text-center">Escolha os Serviços</h2>
+            <p className="text-center text-sm text-muted-foreground">Selecione um ou mais serviços</p>
             <div className="space-y-3">
-              {services.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => { setSelectedService(s); setStep('datetime'); }}
-                  className="glass-card p-4 w-full text-left flex items-center justify-between hover:border-primary transition-all animate-press"
-                >
-                  <div>
-                    <p className="font-medium">{s.name}</p>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {s.duration_minutes} min</span>
+              {services.map((s) => {
+                const isSelected = selectedServices.some(ss => ss.id === s.id);
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => toggleService(s)}
+                    className={`glass-card p-4 w-full text-left flex items-center justify-between transition-all animate-press ${
+                      isSelected ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Checkbox checked={isSelected} className="pointer-events-none" />
+                      <div>
+                        <p className="font-medium">{s.name}</p>
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {s.duration_minutes} min</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <span className="font-bold font-display text-success">R$ {Number(s.price).toFixed(2)}</span>
-                </button>
-              ))}
+                    <span className="font-bold font-display text-success">R$ {Number(s.price).toFixed(2)}</span>
+                  </button>
+                );
+              })}
             </div>
+
+            {selectedServices.length > 0 && (
+              <div className="space-y-3">
+                <div className="glass-card p-3 flex justify-between text-sm">
+                  <span className="text-muted-foreground">{selectedServices.length} serviço{selectedServices.length > 1 ? 's' : ''} • {totalDuration} min</span>
+                  <span className="font-bold text-success">R$ {totalPrice.toFixed(2)}</span>
+                </div>
+                <Button
+                  onClick={() => setStep('datetime')}
+                  className="w-full h-12 rounded-xl text-base font-semibold animate-press"
+                >
+                  Continuar <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
@@ -248,7 +283,6 @@ export default function ClientBooking() {
             </button>
             <h2 className="text-2xl font-bold font-display text-center">Escolha a Data e Hora</h2>
 
-            {/* Date chips */}
             <div className="flex gap-2 overflow-x-auto pb-2">
               {nextDays.map((day) => {
                 const isSelected = format(day, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
@@ -267,7 +301,6 @@ export default function ClientBooking() {
               })}
             </div>
 
-            {/* Time slots */}
             <div>
               <p className="text-sm text-muted-foreground mb-3">Horários disponíveis</p>
               {slots.length === 0 ? (
@@ -303,7 +336,7 @@ export default function ClientBooking() {
         )}
 
         {/* Step: Confirm */}
-        {step === 'confirm' && selectedBarber && selectedService && selectedTime && (
+        {step === 'confirm' && selectedBarber && selectedServices.length > 0 && selectedTime && (
           <div className="space-y-6 animate-slide-up">
             <button onClick={() => setStep('datetime')} className="flex items-center text-sm text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
@@ -318,11 +351,15 @@ export default function ClientBooking() {
                   <p className="font-medium">{selectedBarber.full_name}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-primary" />
+              <div className="flex items-start gap-3">
+                <Clock className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Serviço</p>
-                  <p className="font-medium">{selectedService.name} ({selectedService.duration_minutes} min)</p>
+                  <p className="text-sm text-muted-foreground">Serviços</p>
+                  {selectedServices.map(s => (
+                    <p key={s.id} className="font-medium">
+                      {s.name} <span className="text-muted-foreground text-sm">({s.duration_minutes} min - R$ {Number(s.price).toFixed(2)})</span>
+                    </p>
+                  ))}
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -332,13 +369,14 @@ export default function ClientBooking() {
                   <p className="font-medium">
                     {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })} às {selectedTime}
                   </p>
+                  <p className="text-sm text-muted-foreground">Duração total: {totalDuration} min</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <DollarSign className="w-5 h-5 text-success" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Valor</p>
-                  <p className="font-bold font-display text-lg text-success">R$ {Number(selectedService.price).toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">Valor Total</p>
+                  <p className="font-bold font-display text-lg text-success">R$ {totalPrice.toFixed(2)}</p>
                 </div>
               </div>
             </div>
