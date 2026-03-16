@@ -14,12 +14,15 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
-const items = [
+const baseItems = [
   { title: 'Painel Financeiro', url: '/barber', icon: LayoutDashboard },
   { title: 'Agenda', url: '/barber/schedule', icon: Calendar },
   { title: 'Serviços', url: '/barber/services', icon: Scissors },
   { title: 'Horários', url: '/barber/work-hours', icon: Clock },
   { title: 'Financeiro', url: '/barber/finances', icon: DollarSign },
+];
+
+const adminOnlyItems = [
   { title: 'Clientes', url: '/barber/clients', icon: Users },
   { title: 'Barbeiros', url: '/barber/barbers', icon: UserPlus },
 ];
