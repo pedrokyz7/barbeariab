@@ -136,7 +136,7 @@ export default function BarberServices() {
         </div>
 
         {showForm && (
-          <div className="glass-card p-6 space-y-4 animate-slide-up">
+          <div ref={formRef} className="glass-card p-6 space-y-4 animate-slide-up">
             <h3 className="font-semibold font-display">{editingId ? 'Editar' : 'Novo'} Serviço</h3>
             {/* Category selector */}
             <div className="flex gap-2">
