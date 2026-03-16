@@ -77,19 +77,23 @@ Deno.serve(async (req) => {
     }
 
     if (action === "list") {
+      // Also include admin users who manage the shop
       const { data: barberRoles } = await supabaseAdmin
         .from("user_roles")
         .select("user_id")
-        .eq("role", "barber");
+        .in("role", ["barber", "admin"]);
 
       const barberIds = barberRoles?.map((r: any) => r.user_id) || [];
+
+      if (barberIds.length === 0) {
+        return new Response(JSON.stringify({ barbers: [] }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
 
       const { data: profiles } = await supabaseAdmin
         .from("profiles")
         .select("user_id, full_name, phone")
         .in("user_id", barberIds);
 
-      // Get emails from auth
       const barbers = [];
       for (const id of barberIds) {
         const { data: { user: u } } = await supabaseAdmin.auth.admin.getUserById(id);
@@ -103,6 +107,50 @@ Deno.serve(async (req) => {
       }
 
       return new Response(JSON.stringify({ barbers }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "stats") {
+      if (!barber_user_id) {
+        return new Response(JSON.stringify({ error: "barber_user_id é obrigatório" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      const { data: appointments } = await supabaseAdmin
+        .from("appointments")
+        .select("client_id, price, status, payment_status")
+        .eq("barber_id", barber_user_id);
+
+      const completed = (appointments || []).filter((a: any) => a.status === "completed" || a.status === "scheduled");
+      const totalClients = new Set(completed.map((a: any) => a.client_id)).size;
+      const totalAppointments = completed.length;
+      const totalRevenue = completed.filter((a: any) => a.payment_status === "paid").reduce((sum: number, a: any) => sum + Number(a.price || 0), 0);
+
+      // Revenue per client
+      const clientMap: Record<string, { count: number; revenue: number }> = {};
+      for (const a of completed) {
+        if (!clientMap[a.client_id]) clientMap[a.client_id] = { count: 0, revenue: 0 };
+        clientMap[a.client_id].count++;
+        if (a.payment_status === "paid") clientMap[a.client_id].revenue += Number(a.price || 0);
+      }
+
+      const clientIds = Object.keys(clientMap);
+      let clientDetails: any[] = [];
+      if (clientIds.length > 0) {
+        const { data: profiles } = await supabaseAdmin
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", clientIds);
+        clientDetails = clientIds.map((cid) => {
+          const profile = profiles?.find((p: any) => p.user_id === cid);
+          return {
+            client_id: cid,
+            name: profile?.full_name || "Cliente",
+            appointments: clientMap[cid].count,
+            revenue: clientMap[cid].revenue,
+          };
+        });
+      }
+
+      return new Response(JSON.stringify({ totalClients, totalAppointments, totalRevenue, clients: clientDetails }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     return new Response(JSON.stringify({ error: "Ação inválida" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });

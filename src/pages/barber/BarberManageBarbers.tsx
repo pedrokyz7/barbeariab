@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
-import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff } from 'lucide-react';
+import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,20 @@ interface BarberInfo {
   email: string;
 }
 
+interface ClientDetail {
+  client_id: string;
+  name: string;
+  appointments: number;
+  revenue: number;
+}
+
+interface BarberStats {
+  totalClients: number;
+  totalAppointments: number;
+  totalRevenue: number;
+  clients: ClientDetail[];
+}
+
 export default function BarberManageBarbers() {
   const { user, role } = useAuth();
   const [barbers, setBarbers] = useState<BarberInfo[]>([]);
@@ -21,6 +35,9 @@ export default function BarberManageBarbers() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ full_name: '', email: '', password: '', phone: '' });
   const [showPassword, setShowPassword] = useState(false);
+  const [expandedBarber, setExpandedBarber] = useState<string | null>(null);
+  const [statsCache, setStatsCache] = useState<Record<string, BarberStats>>({});
+  const [loadingStats, setLoadingStats] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) fetchBarbers();
@@ -31,15 +48,38 @@ export default function BarberManageBarbers() {
       const { data, error } = await supabase.functions.invoke('manage-barbers', {
         body: { action: 'list' },
       });
-      console.log('fetchBarbers response:', data, 'error:', error);
       if (error) {
-        toast.error('Erro ao carregar barbeiros: ' + (error.message || error));
+        toast.error('Erro ao carregar barbeiros');
         return;
       }
       setBarbers(data?.barbers || []);
-    } catch (err: any) {
-      console.error('fetchBarbers exception:', err);
+    } catch {
       toast.error('Erro ao carregar barbeiros');
+    }
+  };
+
+  const fetchStats = async (barberId: string) => {
+    if (statsCache[barberId]) return;
+    setLoadingStats(barberId);
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-barbers', {
+        body: { action: 'stats', barber_user_id: barberId },
+      });
+      if (!error && data) {
+        setStatsCache((prev) => ({ ...prev, [barberId]: data }));
+      }
+    } catch {
+      toast.error('Erro ao carregar estatísticas');
+    }
+    setLoadingStats(null);
+  };
+
+  const toggleExpand = (barberId: string) => {
+    if (expandedBarber === barberId) {
+      setExpandedBarber(null);
+    } else {
+      setExpandedBarber(barberId);
+      fetchStats(barberId);
     }
   };
 
@@ -84,6 +124,9 @@ export default function BarberManageBarbers() {
     return phone;
   };
 
+  const formatCurrency = (value: number) =>
+    value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
   return (
     <BarberLayout>
       <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
@@ -108,43 +151,21 @@ export default function BarberManageBarbers() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">Nome completo *</label>
-                <Input
-                  value={form.full_name}
-                  onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                  placeholder="Nome do barbeiro"
-                />
+                <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="Nome do barbeiro" />
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">Telefone</label>
-                <Input
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  placeholder="(00) 00000-0000"
-                />
+                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(00) 00000-0000" />
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">Email *</label>
-                <Input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  placeholder="barbeiro@email.com"
-                />
+                <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="barbeiro@email.com" />
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">Senha *</label>
                 <div className="relative">
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    placeholder="Senha de acesso"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
+                  <Input type={showPassword ? 'text' : 'password'} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Senha de acesso" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
@@ -160,30 +181,91 @@ export default function BarberManageBarbers() {
           <p className="text-center text-muted-foreground py-12 glass-card">Nenhum barbeiro cadastrado</p>
         ) : (
           <div className="space-y-3">
-            {barbers.map((b) => (
-              <div key={b.user_id} className="glass-card p-4 flex items-center justify-between animate-slide-up">
-                <div className="space-y-1">
-                  <p className="font-medium">{b.full_name || 'Barbeiro'}</p>
-                  <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Mail className="w-3 h-3" /> {b.email}
-                  </p>
-                  {b.phone && (
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Phone className="w-3 h-3" /> {formatPhone(b.phone)}
-                    </p>
+            {barbers.map((b) => {
+              const isExpanded = expandedBarber === b.user_id;
+              const stats = statsCache[b.user_id];
+              const isLoading = loadingStats === b.user_id;
+
+              return (
+                <div key={b.user_id} className="glass-card animate-slide-up overflow-hidden">
+                  <div
+                    className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/10 transition-colors"
+                    onClick={() => toggleExpand(b.user_id)}
+                  >
+                    <div className="space-y-1 flex-1">
+                      <p className="font-medium flex items-center gap-2">
+                        {b.full_name || 'Barbeiro'}
+                        {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                      </p>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Mail className="w-3 h-3" /> {b.email}
+                      </p>
+                      {b.phone && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Phone className="w-3 h-3" /> {formatPhone(b.phone)}
+                        </p>
+                      )}
+                    </div>
+                    {role === 'admin' && b.user_id !== user?.id && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(b.user_id, b.full_name); }}
+                        className="p-2 rounded-lg hover:bg-destructive/20 text-destructive transition-colors"
+                        title="Remover barbeiro"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {isExpanded && (
+                    <div className="border-t border-border/50 p-4 space-y-4 animate-fade-in">
+                      {isLoading ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">Carregando estatísticas...</p>
+                      ) : stats ? (
+                        <>
+                          <div className="grid grid-cols-3 gap-3">
+                            <div className="bg-accent/10 rounded-xl p-3 text-center">
+                              <Users className="w-5 h-5 mx-auto mb-1 text-primary" />
+                              <p className="text-2xl font-bold">{stats.totalClients}</p>
+                              <p className="text-xs text-muted-foreground">Clientes</p>
+                            </div>
+                            <div className="bg-accent/10 rounded-xl p-3 text-center">
+                              <Scissors className="w-5 h-5 mx-auto mb-1 text-primary" />
+                              <p className="text-2xl font-bold">{stats.totalAppointments}</p>
+                              <p className="text-xs text-muted-foreground">Atendimentos</p>
+                            </div>
+                            <div className="bg-accent/10 rounded-xl p-3 text-center">
+                              <DollarSign className="w-5 h-5 mx-auto mb-1 text-primary" />
+                              <p className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</p>
+                              <p className="text-xs text-muted-foreground">Faturamento</p>
+                            </div>
+                          </div>
+
+                          {stats.clients.length > 0 ? (
+                            <div>
+                              <h3 className="text-sm font-semibold mb-2 text-muted-foreground">Detalhes por cliente</h3>
+                              <div className="space-y-2">
+                                {stats.clients.map((c) => (
+                                  <div key={c.client_id} className="flex items-center justify-between bg-accent/5 rounded-lg px-3 py-2">
+                                    <div>
+                                      <p className="text-sm font-medium">{c.name}</p>
+                                      <p className="text-xs text-muted-foreground">{c.appointments} atendimento{c.appointments !== 1 ? 's' : ''}</p>
+                                    </div>
+                                    <p className="text-sm font-semibold text-primary">{formatCurrency(c.revenue)}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground text-center">Nenhum atendimento registrado</p>
+                          )}
+                        </>
+                      ) : null}
+                    </div>
                   )}
                 </div>
-                {role === 'admin' && b.user_id !== user?.id && (
-                  <button
-                    onClick={() => handleDelete(b.user_id, b.full_name)}
-                    className="p-2 rounded-lg hover:bg-destructive/20 text-destructive transition-colors"
-                    title="Remover barbeiro"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
