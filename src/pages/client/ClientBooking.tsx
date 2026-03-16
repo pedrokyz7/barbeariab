@@ -173,7 +173,7 @@ export default function ClientBooking() {
           <Scissors className="w-5 h-5 text-primary" />
           <span className="font-display font-bold text-lg">BarberPro</span>
         </div>
-        <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground rounded-xl">
+        <Button variant="ghost" size="sm" onClick={async () => { await signOut(); window.location.href = '/auth'; }} className="text-muted-foreground rounded-xl">
           <LogOut className="w-4 h-4 mr-2" /> Sair
         </Button>
       </header>
