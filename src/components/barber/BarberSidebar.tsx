@@ -1,6 +1,7 @@
 import { Calendar, DollarSign, Scissors, Clock, LogOut, LayoutDashboard, Users, UserPlus } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
+import { useMemo } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -13,12 +14,15 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
-const items = [
+const baseItems = [
   { title: 'Painel Financeiro', url: '/barber', icon: LayoutDashboard },
   { title: 'Agenda', url: '/barber/schedule', icon: Calendar },
   { title: 'Serviços', url: '/barber/services', icon: Scissors },
   { title: 'Horários', url: '/barber/work-hours', icon: Clock },
   { title: 'Financeiro', url: '/barber/finances', icon: DollarSign },
+];
+
+const adminOnlyItems = [
   { title: 'Clientes', url: '/barber/clients', icon: Users },
   { title: 'Barbeiros', url: '/barber/barbers', icon: UserPlus },
 ];
@@ -26,7 +30,9 @@ const items = [
 export function BarberSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const { signOut } = useAuth();
+  const { signOut, role } = useAuth();
+  const isAdmin = role === 'admin';
+  const items = useMemo(() => isAdmin ? [...baseItems, ...adminOnlyItems] : baseItems, [isAdmin]);
 
   return (
     <Sidebar collapsible="icon">

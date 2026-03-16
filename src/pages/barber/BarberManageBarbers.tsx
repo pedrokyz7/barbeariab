@@ -15,7 +15,7 @@ interface BarberInfo {
 }
 
 export default function BarberManageBarbers() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [barbers, setBarbers] = useState<BarberInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -173,7 +173,7 @@ export default function BarberManageBarbers() {
                     </p>
                   )}
                 </div>
-                {b.user_id !== user?.id && (
+                {role === 'admin' && b.user_id !== user?.id && (
                   <button
                     onClick={() => handleDelete(b.user_id, b.full_name)}
                     className="p-2 rounded-lg hover:bg-destructive/20 text-destructive transition-colors"
