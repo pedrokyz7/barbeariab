@@ -15,7 +15,7 @@ interface BarberInfo {
 }
 
 export default function BarberManageBarbers() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [barbers, setBarbers] = useState<BarberInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);

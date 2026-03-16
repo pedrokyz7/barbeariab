@@ -42,24 +42,26 @@ export default function Auth() {
     try {
       if (isLogin) {
         const { user: loggedUser } = await signIn(email, password);
-        const resolvedRole = (loggedUser?.user_metadata?.role as 'barber' | 'client' | undefined) ?? null;
+        // Check role from user_roles table
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', loggedUser?.id ?? '')
+          .maybeSingle();
 
-        if (!resolvedRole) {
-          const { data: roleData } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', loggedUser?.id ?? '')
-            .maybeSingle();
+        const actualRole = roleData?.role ?? (loggedUser?.user_metadata?.role as string | undefined) ?? null;
 
-          if (roleData?.role !== loginRole) {
-            await supabase.auth.signOut();
-            toast.error(loginRole === 'barber' ? 'Esta conta não é de barbeiro' : 'Esta conta não é de cliente');
-            setIsLoading(false);
-            return;
-          }
-        } else if (resolvedRole !== loginRole) {
+        // Admin can login as barber
+        const isBarberLike = actualRole === 'barber' || actualRole === 'admin';
+        if (loginRole === 'barber' && !isBarberLike) {
           await supabase.auth.signOut();
-          toast.error(loginRole === 'barber' ? 'Esta conta não é de barbeiro' : 'Esta conta não é de cliente');
+          toast.error('Esta conta não é de barbeiro');
+          setIsLoading(false);
+          return;
+        }
+        if (loginRole === 'client' && actualRole !== 'client') {
+          await supabase.auth.signOut();
+          toast.error('Esta conta não é de cliente');
           setIsLoading(false);
           return;
         }

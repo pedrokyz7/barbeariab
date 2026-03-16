@@ -14,6 +14,6 @@ export default function Index() {
   }
 
   if (!user || !role) return <Navigate to="/auth" replace />;
-  if (role === 'barber') return <Navigate to="/barber" replace />;
+  if (role === 'barber' || role === 'admin') return <Navigate to="/barber" replace />;
   return <Navigate to="/client" replace />;
 }

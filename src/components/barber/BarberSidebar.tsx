@@ -30,7 +30,9 @@ const adminOnlyItems = [
 export function BarberSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const { signOut } = useAuth();
+  const { signOut, role } = useAuth();
+  const isAdmin = role === 'admin';
+  const items = useMemo(() => isAdmin ? [...baseItems, ...adminOnlyItems] : baseItems, [isAdmin]);
 
   return (
     <Sidebar collapsible="icon">
