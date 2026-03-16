@@ -56,27 +56,38 @@ export default function BarberFinances() {
 
   const fetchRecords = async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data: appts } = await supabase
       .from('appointments')
-      .select('*, services(name), profiles!appointments_client_id_fkey(full_name)')
+      .select('id, appointment_date, start_time, price, status, payment_status, client_id, service_id')
       .eq('barber_id', user.id)
       .in('status', ['scheduled', 'completed'])
       .order('appointment_date', { ascending: false })
       .order('start_time', { ascending: false })
       .limit(50);
 
-    if (data) {
-      setRecords(data.map((a: any) => ({
-        id: a.id,
-        appointment_date: a.appointment_date,
-        start_time: a.start_time,
-        price: a.price,
-        status: a.status,
-        payment_status: a.payment_status || 'pending',
-        client_name: a.profiles?.full_name || 'Cliente',
-        service_name: a.services?.name || 'Serviço',
-      })));
-    }
+    if (!appts?.length) { setRecords([]); return; }
+
+    const clientIds = [...new Set(appts.map(a => a.client_id))];
+    const serviceIds = [...new Set(appts.map(a => a.service_id))];
+
+    const [{ data: profiles }, { data: services }] = await Promise.all([
+      supabase.from('profiles').select('user_id, full_name').in('user_id', clientIds),
+      supabase.from('services').select('id, name').in('id', serviceIds),
+    ]);
+
+    const profileMap = Object.fromEntries((profiles || []).map(p => [p.user_id, p.full_name]));
+    const serviceMap = Object.fromEntries((services || []).map(s => [s.id, s.name]));
+
+    setRecords(appts.map(a => ({
+      id: a.id,
+      appointment_date: a.appointment_date,
+      start_time: a.start_time,
+      price: a.price,
+      status: a.status,
+      payment_status: a.payment_status || 'pending',
+      client_name: profileMap[a.client_id] || 'Cliente',
+      service_name: serviceMap[a.service_id] || 'Serviço',
+    })));
   };
 
   const togglePayment = async (id: string, current: string) => {
