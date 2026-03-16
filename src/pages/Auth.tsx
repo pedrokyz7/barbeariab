@@ -84,39 +84,37 @@ export default function Auth() {
           </p>
         </div>
 
-        {/* Role Selection (signup only) */}
-        {!isLogin && (
-          <div className="flex gap-3 mb-6">
-            <button
-              type="button"
-              onClick={() => setSelectedRole('client')}
-              className={`flex-1 p-4 rounded-2xl border transition-all animate-press ${
-                selectedRole === 'client'
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border bg-card hover:border-muted-foreground/30'
-              }`}
-            >
-              <User className={`w-6 h-6 mx-auto mb-2 ${selectedRole === 'client' ? 'text-primary' : 'text-muted-foreground'}`} />
-              <p className={`text-sm font-medium ${selectedRole === 'client' ? 'text-primary' : 'text-muted-foreground'}`}>
-                Cliente
-              </p>
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedRole('barber')}
-              className={`flex-1 p-4 rounded-2xl border transition-all animate-press ${
-                selectedRole === 'barber'
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border bg-card hover:border-muted-foreground/30'
-              }`}
-            >
-              <Scissors className={`w-6 h-6 mx-auto mb-2 ${selectedRole === 'barber' ? 'text-primary' : 'text-muted-foreground'}`} />
-              <p className={`text-sm font-medium ${selectedRole === 'barber' ? 'text-primary' : 'text-muted-foreground'}`}>
-                Barbeiro
-              </p>
-            </button>
-          </div>
-        )}
+        {/* Role Selection (login and signup) */}
+        <div className="flex gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() => isLogin ? setLoginRole('client') : setSelectedRole('client')}
+            className={`flex-1 p-4 rounded-2xl border transition-all animate-press ${
+              (isLogin ? loginRole : selectedRole) === 'client'
+                ? 'border-primary bg-primary/10'
+                : 'border-border bg-card hover:border-muted-foreground/30'
+            }`}
+          >
+            <User className={`w-6 h-6 mx-auto mb-2 ${(isLogin ? loginRole : selectedRole) === 'client' ? 'text-primary' : 'text-muted-foreground'}`} />
+            <p className={`text-sm font-medium ${(isLogin ? loginRole : selectedRole) === 'client' ? 'text-primary' : 'text-muted-foreground'}`}>
+              Cliente
+            </p>
+          </button>
+          <button
+            type="button"
+            onClick={() => isLogin ? setLoginRole('barber') : setSelectedRole('barber')}
+            className={`flex-1 p-4 rounded-2xl border transition-all animate-press ${
+              (isLogin ? loginRole : selectedRole) === 'barber'
+                ? 'border-primary bg-primary/10'
+                : 'border-border bg-card hover:border-muted-foreground/30'
+            }`}
+          >
+            <Scissors className={`w-6 h-6 mx-auto mb-2 ${(isLogin ? loginRole : selectedRole) === 'barber' ? 'text-primary' : 'text-muted-foreground'}`} />
+            <p className={`text-sm font-medium ${(isLogin ? loginRole : selectedRole) === 'barber' ? 'text-primary' : 'text-muted-foreground'}`}>
+              Barbeiro
+            </p>
+          </button>
+        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
