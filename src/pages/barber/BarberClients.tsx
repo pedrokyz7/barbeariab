@@ -23,33 +23,44 @@ export default function BarberClients() {
 
   const fetchClients = async () => {
     if (!user) return;
-    // Get all appointments for this barber
+
+    // Get all users with 'client' role
+    const { data: clientRoles } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .eq('role', 'client');
+
+    if (!clientRoles?.length) return;
+
+    const clientIds = clientRoles.map(r => r.user_id);
+
+    // Get profiles
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, phone')
+      .in('user_id', clientIds);
+
+    // Get appointments for this barber to calculate spending
     const { data: appointments } = await supabase
       .from('appointments')
       .select('client_id, price, status')
       .eq('barber_id', user.id)
       .in('status', ['completed', 'scheduled']);
 
-    if (!appointments?.length) return;
-
-    // Aggregate by client
     const clientMap: Record<string, { total: number; count: number }> = {};
-    appointments.forEach(a => {
+    appointments?.forEach(a => {
       if (!clientMap[a.client_id]) clientMap[a.client_id] = { total: 0, count: 0 };
       clientMap[a.client_id].total += Number(a.price);
       clientMap[a.client_id].count += 1;
     });
-
-    const clientIds = Object.keys(clientMap);
-    const { data: profiles } = await supabase.from('profiles').select('user_id, full_name, phone').in('user_id', clientIds);
 
     const result: ClientInfo[] = clientIds.map(id => ({
       user_id: id,
       full_name: profiles?.find(p => p.user_id === id)?.full_name || 'Cliente',
       phone: profiles?.find(p => p.user_id === id)?.phone || null,
       email: '',
-      totalSpent: clientMap[id].total,
-      appointmentCount: clientMap[id].count,
+      totalSpent: clientMap[id]?.total ?? 0,
+      appointmentCount: clientMap[id]?.count ?? 0,
     }));
 
     result.sort((a, b) => b.totalSpent - a.totalSpent);
