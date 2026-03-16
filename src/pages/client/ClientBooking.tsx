@@ -354,6 +354,6 @@ export default function ClientBooking() {
           </div>
         )}
       </div>
-    </div>
+    </ClientLayout>
   );
 }
