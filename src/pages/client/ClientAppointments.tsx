@@ -33,7 +33,7 @@ export default function ClientAppointments() {
     const today = format(new Date(), 'yyyy-MM-dd');
     let query = supabase
       .from('appointments')
-      .select('*, services(name), profiles!appointments_barber_id_fkey(full_name)')
+      .select('*')
       .eq('client_id', user.id);
 
     if (filter === 'upcoming') {
@@ -43,18 +43,30 @@ export default function ClientAppointments() {
     }
 
     const { data } = await query.limit(50);
-    if (data) {
-      setAppointments(data.map((a: any) => ({
-        id: a.id,
-        appointment_date: a.appointment_date,
-        start_time: a.start_time,
-        end_time: a.end_time,
-        status: a.status,
-        price: a.price,
-        barber_name: a.profiles?.full_name || 'Barbeiro',
-        service_name: a.services?.name || 'Serviço',
-      })));
-    }
+    if (!data || data.length === 0) { setAppointments([]); return; }
+
+    // Fetch barber profiles and services in parallel
+    const barberIds = [...new Set(data.map(a => a.barber_id))];
+    const serviceIds = [...new Set(data.map(a => a.service_id))];
+
+    const [profilesRes, servicesRes] = await Promise.all([
+      supabase.from('profiles').select('user_id, full_name').in('user_id', barberIds),
+      supabase.from('services').select('id, name').in('id', serviceIds),
+    ]);
+
+    const profileMap = new Map((profilesRes.data || []).map(p => [p.user_id, p.full_name]));
+    const serviceMap = new Map((servicesRes.data || []).map(s => [s.id, s.name]));
+
+    setAppointments(data.map((a) => ({
+      id: a.id,
+      appointment_date: a.appointment_date,
+      start_time: a.start_time,
+      end_time: a.end_time,
+      status: a.status,
+      price: a.price,
+      barber_name: profileMap.get(a.barber_id) || 'Barbeiro',
+      service_name: serviceMap.get(a.service_id) || 'Serviço',
+    })));
   };
 
   const cancelAppointment = async (id: string) => {
