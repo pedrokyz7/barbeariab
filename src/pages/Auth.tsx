@@ -41,6 +41,7 @@ export default function Auth() {
       if (isLogin) {
         await signIn(email, password);
         toast.success('Login realizado com sucesso!');
+        navigate('/');
       } else {
         const phoneDigits = phone.replace(/\D/g, '');
         if (phoneDigits.length < 10) {
@@ -49,9 +50,8 @@ export default function Auth() {
           return;
         }
         await signUp(email, password, fullName, selectedRole, phone);
-        toast.success('Conta criada com sucesso!');
+        setShowEmailConfirmation(true);
       }
-      navigate('/');
     } catch (error: any) {
       toast.error(error.message || 'Erro ao autenticar');
     } finally {
