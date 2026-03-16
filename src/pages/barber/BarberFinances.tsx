@@ -2,19 +2,31 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
-import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { DollarSign, TrendingUp, Calendar, BarChart3 } from 'lucide-react';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { DollarSign, TrendingUp, Calendar, BarChart3, CheckCircle, Clock } from 'lucide-react';
+import { toast } from 'sonner';
+
+interface AppointmentRecord {
+  id: string;
+  appointment_date: string;
+  start_time: string;
+  price: number;
+  status: string;
+  payment_status: string;
+  client_name: string;
+  service_name: string;
+}
 
 export default function BarberFinances() {
   const { user } = useAuth();
   const [stats, setStats] = useState({ today: 0, week: 0, month: 0, total: 0 });
-  const [history, setHistory] = useState<any[]>([]);
+  const [records, setRecords] = useState<AppointmentRecord[]>([]);
+  const [filter, setFilter] = useState<'all' | 'paid' | 'pending'>('all');
 
   useEffect(() => {
     if (user) {
       fetchStats();
-      fetchHistory();
+      fetchRecords();
     }
   }, [user]);
 
@@ -27,10 +39,10 @@ export default function BarberFinances() {
     const monthEnd = format(endOfMonth(new Date()), 'yyyy-MM-dd');
 
     const [todayRes, weekRes, monthRes, totalRes] = await Promise.all([
-      supabase.from('appointments').select('price').eq('barber_id', user.id).eq('appointment_date', today).eq('status', 'completed'),
-      supabase.from('appointments').select('price').eq('barber_id', user.id).gte('appointment_date', weekStart).lte('appointment_date', weekEnd).eq('status', 'completed'),
-      supabase.from('appointments').select('price').eq('barber_id', user.id).gte('appointment_date', monthStart).lte('appointment_date', monthEnd).eq('status', 'completed'),
-      supabase.from('appointments').select('price').eq('barber_id', user.id).eq('status', 'completed'),
+      supabase.from('appointments').select('price').eq('barber_id', user.id).eq('appointment_date', today).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price').eq('barber_id', user.id).gte('appointment_date', weekStart).lte('appointment_date', weekEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price').eq('barber_id', user.id).gte('appointment_date', monthStart).lte('appointment_date', monthEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price').eq('barber_id', user.id).eq('payment_status', 'paid'),
     ]);
 
     const sum = (data: any[]) => data?.reduce((s, a) => s + Number(a.price), 0) ?? 0;
@@ -42,24 +54,65 @@ export default function BarberFinances() {
     });
   };
 
-  const fetchHistory = async () => {
+  const fetchRecords = async () => {
     if (!user) return;
     const { data } = await supabase
       .from('appointments')
       .select('*, services(name), profiles!appointments_client_id_fkey(full_name)')
       .eq('barber_id', user.id)
-      .eq('status', 'completed')
+      .in('status', ['scheduled', 'completed'])
       .order('appointment_date', { ascending: false })
       .order('start_time', { ascending: false })
-      .limit(20);
-    if (data) setHistory(data);
+      .limit(50);
+
+    if (data) {
+      setRecords(data.map((a: any) => ({
+        id: a.id,
+        appointment_date: a.appointment_date,
+        start_time: a.start_time,
+        price: a.price,
+        status: a.status,
+        payment_status: a.payment_status || 'pending',
+        client_name: a.profiles?.full_name || 'Cliente',
+        service_name: a.services?.name || 'Serviço',
+      })));
+    }
   };
+
+  const togglePayment = async (id: string, current: string) => {
+    const newStatus = current === 'paid' ? 'pending' : 'paid';
+    const { error } = await supabase
+      .from('appointments')
+      .update({ payment_status: newStatus } as any)
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Erro ao atualizar pagamento');
+      return;
+    }
+
+    setRecords(prev => prev.map(r => r.id === id ? { ...r, payment_status: newStatus } : r));
+    toast.success(newStatus === 'paid' ? 'Marcado como pago!' : 'Marcado como pendente');
+    fetchStats();
+  };
+
+  const filtered = records.filter(r => {
+    if (filter === 'paid') return r.payment_status === 'paid';
+    if (filter === 'pending') return r.payment_status === 'pending';
+    return true;
+  });
 
   const cards = [
     { label: 'Hoje', value: stats.today, icon: DollarSign, gradient: 'from-success/20 to-success/5' },
     { label: 'Esta Semana', value: stats.week, icon: TrendingUp, gradient: 'from-primary/20 to-primary/5' },
     { label: 'Este Mês', value: stats.month, icon: Calendar, gradient: 'from-primary/20 to-primary/5' },
     { label: 'Total', value: stats.total, icon: BarChart3, gradient: 'from-primary/20 to-primary/5' },
+  ];
+
+  const filters = [
+    { key: 'all' as const, label: 'Todos' },
+    { key: 'pending' as const, label: '⏳ Pendentes' },
+    { key: 'paid' as const, label: '✅ Pagos' },
   ];
 
   return (
@@ -80,22 +133,56 @@ export default function BarberFinances() {
         </div>
 
         <div className="glass-card p-6">
-          <h2 className="text-xl font-semibold font-display mb-4">Histórico de Atendimentos</h2>
-          {history.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">Nenhum atendimento concluído</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+            <h2 className="text-xl font-semibold font-display">Atendimentos</h2>
+            <div className="flex gap-2">
+              {filters.map((f) => (
+                <button
+                  key={f.key}
+                  onClick={() => setFilter(f.key)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    filter === f.key
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {filtered.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">Nenhum atendimento encontrado</p>
           ) : (
             <div className="space-y-3">
-              {history.map((h: any) => (
-                <div key={h.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50">
-                  <div>
-                    <p className="font-medium">{h.profiles?.full_name || 'Cliente'}</p>
-                    <p className="text-sm text-muted-foreground">{h.services?.name}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(h.appointment_date + 'T00:00:00'), 'dd/MM/yyyy')}
+              {filtered.map((r) => (
+                <div key={r.id} className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 animate-slide-up">
+                  <div className="space-y-0.5">
+                    <p className="font-medium">{r.client_name}</p>
+                    <p className="text-sm text-muted-foreground">{r.service_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(new Date(r.appointment_date + 'T00:00:00'), 'dd/MM/yyyy')} • {r.start_time.slice(0, 5)}
                     </p>
-                    <p className="font-semibold text-success">R$ {Number(h.price).toFixed(2)}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p className="font-semibold text-success">R$ {Number(r.price).toFixed(2)}</p>
+                    </div>
+                    <button
+                      onClick={() => togglePayment(r.id, r.payment_status)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        r.payment_status === 'paid'
+                          ? 'bg-success/20 text-success'
+                          : 'bg-yellow-500/20 text-yellow-400'
+                      }`}
+                    >
+                      {r.payment_status === 'paid' ? (
+                        <><CheckCircle className="w-3.5 h-3.5" /> Pago</>
+                      ) : (
+                        <><Clock className="w-3.5 h-3.5" /> Pendente</>
+                      )}
+                    </button>
                   </div>
                 </div>
               ))}
