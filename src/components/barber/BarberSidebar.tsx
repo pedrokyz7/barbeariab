@@ -35,8 +35,6 @@ export function BarberSidebar() {
   const items = useMemo(() => isAdmin ? [...baseItems, ...adminOnlyItems] : baseItems, [isAdmin]);
   const fullName = user?.user_metadata?.full_name || '';
   const shortName = fullName.trim().split(/\s+/).slice(0, 2).join(' ');
-  const isAdmin = role === 'admin';
-  const items = useMemo(() => isAdmin ? [...baseItems, ...adminOnlyItems] : baseItems, [isAdmin]);
 
   return (
     <Sidebar collapsible="icon">
