@@ -42,14 +42,14 @@ export default function Auth() {
     try {
       if (isLogin) {
         await signIn(email, password);
-        // Verify role matches login type
-        const { data: roleData } = await (await import('@/integrations/supabase/client')).supabase
+        const { data: { user: loggedUser } } = await supabase.auth.getUser();
+        const { data: roleData } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', (await (await import('@/integrations/supabase/client')).supabase.auth.getUser()).data.user?.id ?? '')
+          .eq('user_id', loggedUser?.id ?? '')
           .maybeSingle();
         if (roleData?.role !== loginRole) {
-          await (await import('@/integrations/supabase/client')).supabase.auth.signOut();
+          await supabase.auth.signOut();
           toast.error(loginRole === 'barber' ? 'Esta conta não é de barbeiro' : 'Esta conta não é de cliente');
           setIsLoading(false);
           return;
