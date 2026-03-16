@@ -30,7 +30,11 @@ const adminOnlyItems = [
 export function BarberSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const { signOut, role } = useAuth();
+  const { signOut, role, user } = useAuth();
+  const isAdmin = role === 'admin';
+  const items = useMemo(() => isAdmin ? [...baseItems, ...adminOnlyItems] : baseItems, [isAdmin]);
+  const fullName = user?.user_metadata?.full_name || '';
+  const shortName = fullName.trim().split(/\s+/).slice(0, 2).join(' ');
   const isAdmin = role === 'admin';
   const items = useMemo(() => isAdmin ? [...baseItems, ...adminOnlyItems] : baseItems, [isAdmin]);
 
