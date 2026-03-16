@@ -29,11 +29,11 @@ export function ClientSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="font-display text-lg tracking-tight px-4 py-6">
+          <SidebarGroupLabel className="font-display text-sm tracking-tight px-4 py-6">
             {!collapsed && (
               <span className="flex items-center gap-2">
                 <Scissors className="w-5 h-5 text-primary" />
-                BarberPro
+                BLACKOUT BARBER SHOP
               </span>
             )}
             {collapsed && <Scissors className="w-5 h-5 text-primary" />}
