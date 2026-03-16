@@ -13,14 +13,7 @@ export default function Index() {
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user || !role) return <Navigate to="/auth" replace />;
   if (role === 'barber') return <Navigate to="/barber" replace />;
-  if (role === 'client') return <Navigate to="/client" replace />;
-
-  // Fallback loading while role is being fetched
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Scissors className="w-8 h-8 text-primary animate-spin" />
-    </div>
-  );
+  return <Navigate to="/client" replace />;
 }
