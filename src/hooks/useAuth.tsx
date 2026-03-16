@@ -22,13 +22,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchRole = async (userId: string) => {
+  const fetchRole = async (userId: string, fallbackRole?: UserRole) => {
     const { data } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
-      .single();
-    setRole(data?.role as UserRole ?? null);
+      .maybeSingle();
+
+    const resolvedRole = (data?.role as UserRole) ?? fallbackRole ?? null;
+
+    if (!data?.role && fallbackRole) {
+      await supabase.from('user_roles').insert({ user_id: userId, role: fallbackRole });
+    }
+
+    setRole(resolvedRole);
   };
 
   useEffect(() => {
@@ -37,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          await fetchRole(session.user.id);
+          await fetchRole(session.user.id, (session.user.user_metadata?.role as UserRole) ?? null);
         } else {
           setRole(null);
         }
@@ -49,7 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        await fetchRole(session.user.id);
+        await fetchRole(session.user.id, (session.user.user_metadata?.role as UserRole) ?? null);
+      } else {
+        setRole(null);
       }
       setLoading(false);
     });
@@ -62,7 +71,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: {
+          full_name: fullName,
+          role: userRole,
+          phone: phone?.replace(/\D/g, '') || null,
+        },
         emailRedirectTo: window.location.origin,
       },
     });
