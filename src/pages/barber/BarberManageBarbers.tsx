@@ -245,7 +245,7 @@ export default function BarberManageBarbers() {
                       )}
                     </div>
                     <div className="flex items-center gap-1">
-                      {role === 'admin' && (
+                      {role === 'admin' && ( /* edit btn */
                         <button
                           onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditName(b.full_name); }}
                           className="p-2 rounded-lg hover:bg-accent/20 text-muted-foreground hover:text-foreground transition-colors"
