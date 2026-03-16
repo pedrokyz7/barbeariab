@@ -34,7 +34,6 @@ interface AppointmentGroup {
   price: number;
   barber_name: string;
   service_names: string[];
-  created_at: string;
 }
 
 const getAppointmentTimestamp = (appointment: { appointment_date: string; start_time: string }) =>
@@ -50,19 +49,16 @@ const compareAppointmentsDesc = (
   b: { appointment_date: string; start_time: string }
 ) => getAppointmentTimestamp(b) - getAppointmentTimestamp(a);
 
-const isSameBookingGroup = (group: AppointmentGroup, appointment: EnrichedAppointment) => {
-  const createdAtDifference = Math.abs(
-    new Date(appointment.created_at).getTime() - new Date(group.created_at).getTime()
-  );
-
-  return (
-    group.appointment_date === appointment.appointment_date &&
-    group.barber_id === appointment.barber_id &&
-    group.status === appointment.status &&
-    group.end_time === appointment.start_time &&
-    createdAtDifference <= 60_000
-  );
+const isUpcomingAppointment = (appointment: { appointment_date: string; end_time: string; status: string }, now: Date) => {
+  const appointmentEnd = new Date(`${appointment.appointment_date}T${appointment.end_time}`);
+  return appointment.status !== 'cancelled' && appointmentEnd >= now;
 };
+
+const isSameBookingGroup = (group: AppointmentGroup, appointment: EnrichedAppointment) =>
+  group.appointment_date === appointment.appointment_date &&
+  group.barber_id === appointment.barber_id &&
+  group.status === appointment.status &&
+  group.end_time === appointment.start_time;
 
 export default function ClientAppointments() {
   const { user, loading } = useAuth();
@@ -127,7 +123,16 @@ export default function ClientAppointments() {
       }))
       .sort(compareAppointmentsAsc);
 
-    const groupedAppointments = enrichedAppointments.reduce<AppointmentGroup[]>((groups, appointment) => {
+    const now = new Date();
+    const appointmentsForSelectedTab = enrichedAppointments
+      .filter((appointment) =>
+        filter === 'upcoming'
+          ? isUpcomingAppointment(appointment, now)
+          : !isUpcomingAppointment(appointment, now)
+      )
+      .sort(filter === 'upcoming' ? compareAppointmentsAsc : compareAppointmentsDesc);
+
+    const groupedAppointments = appointmentsForSelectedTab.reduce<AppointmentGroup[]>((groups, appointment) => {
       const lastGroup = groups[groups.length - 1];
 
       if (lastGroup && isSameBookingGroup(lastGroup, appointment)) {
@@ -148,22 +153,12 @@ export default function ClientAppointments() {
         price: Number(appointment.price),
         barber_name: appointment.barber_name,
         service_names: [appointment.service_name],
-        created_at: appointment.created_at,
       });
 
       return groups;
     }, []);
 
-    const now = new Date();
-    const filteredAppointments = groupedAppointments
-      .filter((appointment) => {
-        const appointmentEnd = new Date(`${appointment.appointment_date}T${appointment.end_time}`);
-        const isUpcoming = appointment.status !== 'cancelled' && appointmentEnd >= now;
-        return filter === 'upcoming' ? isUpcoming : !isUpcoming;
-      })
-      .sort(filter === 'upcoming' ? compareAppointmentsAsc : compareAppointmentsDesc);
-
-    setAppointments(filteredAppointments);
+    setAppointments(groupedAppointments);
     setIsLoadingAppointments(false);
   };
 
