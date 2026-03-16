@@ -266,6 +266,20 @@ export default function ClientAppointments() {
             ))}
           </div>
         )}
+
+        {editingAppointment && user && (
+          <EditAppointmentModal
+            open={!!editingAppointment}
+            onClose={() => setEditingAppointment(null)}
+            appointmentIds={editingAppointment.ids}
+            barberId={editingAppointment.barber_id}
+            barberName={editingAppointment.barber_name}
+            currentDate={editingAppointment.appointment_date}
+            currentStartTime={editingAppointment.start_time}
+            clientId={user.id}
+            onSaved={() => fetchAppointments()}
+          />
+        )}
       </div>
     </ClientLayout>
   );
