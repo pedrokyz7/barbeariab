@@ -36,26 +36,37 @@ export default function BarberSchedule() {
     if (!user) return;
     const start = format(days[0], 'yyyy-MM-dd');
     const end = format(days[6], 'yyyy-MM-dd');
-    const { data } = await supabase
+    const { data: appts } = await supabase
       .from('appointments')
-      .select('*, services(name), profiles!appointments_client_id_fkey(full_name)')
+      .select('id, appointment_date, start_time, end_time, status, price, client_id, service_id')
       .eq('barber_id', user.id)
       .gte('appointment_date', start)
       .lte('appointment_date', end)
       .order('start_time');
 
-    if (data) {
-      setAppointments(data.map((a: any) => ({
-        id: a.id,
-        appointment_date: a.appointment_date,
-        start_time: a.start_time,
-        end_time: a.end_time,
-        status: a.status,
-        price: a.price,
-        client_name: a.profiles?.full_name || 'Cliente',
-        service_name: a.services?.name || 'Serviço',
-      })));
-    }
+    if (!appts || appts.length === 0) { setAppointments([]); return; }
+
+    const clientIds = [...new Set(appts.map(a => a.client_id))];
+    const serviceIds = [...new Set(appts.map(a => a.service_id))];
+
+    const [{ data: profiles }, { data: services }] = await Promise.all([
+      supabase.from('profiles').select('user_id, full_name').in('user_id', clientIds),
+      supabase.from('services').select('id, name').in('id', serviceIds),
+    ]);
+
+    const profileMap = Object.fromEntries((profiles || []).map(p => [p.user_id, p.full_name]));
+    const serviceMap = Object.fromEntries((services || []).map(s => [s.id, s.name]));
+
+    setAppointments(appts.map(a => ({
+      id: a.id,
+      appointment_date: a.appointment_date,
+      start_time: a.start_time,
+      end_time: a.end_time,
+      status: a.status,
+      price: a.price,
+      client_name: profileMap[a.client_id] || 'Cliente',
+      service_name: serviceMap[a.service_id] || 'Serviço',
+    })));
   };
 
   const updateStatus = async (id: string, status: string) => {
@@ -118,7 +129,7 @@ export default function BarberSchedule() {
         {/* Day appointments */}
         <div className="space-y-3">
           <h2 className="font-semibold font-display text-lg">
-            {format(selectedDay, "EEEE, d 'de' MMMM", { locale: ptBR })}
+            Clientes agendados — {format(selectedDay, "EEEE, d 'de' MMMM", { locale: ptBR })}
           </h2>
           {dayAppointments.length === 0 ? (
             <div className="glass-card p-8 text-center">
