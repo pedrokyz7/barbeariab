@@ -114,8 +114,21 @@ export default function BarberManageBarbers() {
     setShowForm(false);
     fetchBarbers();
   };
+  const handleRename = async (barberId: string) => {
+    if (!editName.trim()) { toast.error('Nome não pode ser vazio'); return; }
+    const { data, error } = await supabase.functions.invoke('manage-barbers', {
+      body: { action: 'rename', barber_user_id: barberId, full_name: editName.trim() },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || 'Erro ao renomear');
+      return;
+    }
+    toast.success('Nome atualizado!');
+    setEditingBarber(null);
+    fetchBarbers();
+  };
 
-  const handleDelete = async (barberUserId: string, name: string) => {
+
     if (!confirm(`Tem certeza que deseja remover ${name}?`)) return;
     const { data, error } = await supabase.functions.invoke('manage-barbers', {
       body: { action: 'delete', barber_user_id: barberUserId },
