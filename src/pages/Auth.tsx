@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Scissors, User, Mail, Lock, ArrowRight, Phone } from 'lucide-react';
+import { Scissors, User, Mail, Lock, ArrowRight, Phone, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const EMAIL_DOMAINS = ['@gmail.com', '@hotmail.com', '@outlook.com', '@yahoo.com', '@icloud.com'];
@@ -17,6 +17,7 @@ function formatPhone(value: string): string {
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -40,6 +41,7 @@ export default function Auth() {
       if (isLogin) {
         await signIn(email, password);
         toast.success('Login realizado com sucesso!');
+        navigate('/');
       } else {
         const phoneDigits = phone.replace(/\D/g, '');
         if (phoneDigits.length < 10) {
@@ -48,15 +50,50 @@ export default function Auth() {
           return;
         }
         await signUp(email, password, fullName, selectedRole, phone);
-        toast.success('Conta criada com sucesso!');
+        setShowEmailConfirmation(true);
       }
-      navigate('/');
     } catch (error: any) {
       toast.error(error.message || 'Erro ao autenticar');
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (showEmailConfirmation) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-md animate-slide-up text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6">
+            <CheckCircle className="w-10 h-10 text-primary" />
+          </div>
+          <h2 className="text-2xl font-bold font-display mb-3">Verifique seu email</h2>
+          <p className="text-muted-foreground mb-2">
+            Enviamos um email de confirmação para:
+          </p>
+          <p className="text-foreground font-semibold text-lg mb-6">{email}</p>
+          <div className="bg-card border border-border rounded-2xl p-5 mb-6 text-left">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              📩 Abra seu email e clique no link de confirmação. Depois volte aqui e faça login na sua conta.
+            </p>
+          </div>
+          <Button
+            onClick={() => {
+              setShowEmailConfirmation(false);
+              setIsLogin(true);
+              setPassword('');
+            }}
+            className="w-full h-12 rounded-xl text-base font-semibold animate-press"
+          >
+            Já verifiquei, ir para login
+            <ArrowRight className="ml-2 w-4 h-4" />
+          </Button>
+          <p className="text-xs text-muted-foreground mt-4">
+            Não recebeu? Verifique sua caixa de spam.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
