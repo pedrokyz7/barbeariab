@@ -29,10 +29,21 @@ export default function ClientBooking() {
   const [services, setServices] = useState<Service[]>([]);
   const [slots, setSlots] = useState<string[]>([]);
   const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedServices, setSelectedServices] = useState<Service[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
+
+  const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration_minutes, 0);
+  const totalPrice = selectedServices.reduce((sum, s) => sum + Number(s.price), 0);
+
+  const toggleService = (service: Service) => {
+    setSelectedServices(prev => {
+      const exists = prev.find(s => s.id === service.id);
+      if (exists) return prev.filter(s => s.id !== service.id);
+      return [...prev, service];
+    });
+  };
 
   useEffect(() => {
     fetchBarbers();
