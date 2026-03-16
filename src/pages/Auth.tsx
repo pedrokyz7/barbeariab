@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Mail, Lock, ArrowRight, Phone } from 'lucide-react';
+import { Scissors, User, Mail, Lock, ArrowRight, Phone } from 'lucide-react';
 import logo from '@/assets/logo.jpg';
 import { toast } from 'sonner';
 
