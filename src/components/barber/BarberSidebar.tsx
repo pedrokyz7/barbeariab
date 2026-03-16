@@ -60,7 +60,7 @@ export function BarberSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <button
-                    onClick={signOut}
+                    onClick={async () => { await signOut(); window.location.href = '/auth'; }}
                     className="flex items-center w-full hover:bg-destructive/10 text-destructive rounded-xl px-3 py-2.5"
                   >
                     <LogOut className="w-4 h-4 mr-3" />
