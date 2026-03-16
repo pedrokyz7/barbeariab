@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
-import { Calendar, Clock, XCircle } from 'lucide-react';
+import { Calendar, Clock, XCircle, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { EditAppointmentModal } from '@/components/client/EditAppointmentModal';
 
 interface AppointmentRecord {
   id: string;
