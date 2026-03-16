@@ -20,53 +20,85 @@ interface Appointment {
 }
 
 export default function ClientAppointments() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
+  const [isLoadingAppointments, setIsLoadingAppointments] = useState(true);
 
   useEffect(() => {
-    if (user) fetchAppointments();
-  }, [user, filter]);
+    if (!loading) {
+      void fetchAppointments();
+    }
+  }, [user, filter, loading]);
 
   const fetchAppointments = async () => {
-    if (!user) return;
-    const today = format(new Date(), 'yyyy-MM-dd');
-    let query = supabase
-      .from('appointments')
-      .select('*')
-      .eq('client_id', user.id);
-
-    if (filter === 'upcoming') {
-      query = query.gte('appointment_date', today).order('appointment_date').order('start_time');
-    } else {
-      query = query.lt('appointment_date', today).order('appointment_date', { ascending: false });
+    if (!user) {
+      setAppointments([]);
+      setIsLoadingAppointments(false);
+      return;
     }
 
-    const { data } = await query.limit(50);
-    if (!data || data.length === 0) { setAppointments([]); return; }
+    setIsLoadingAppointments(true);
 
-    // Fetch barber profiles and services in parallel
-    const barberIds = [...new Set(data.map(a => a.barber_id))];
-    const serviceIds = [...new Set(data.map(a => a.service_id))];
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('client_id', user.id)
+      .order('appointment_date', { ascending: filter === 'upcoming' })
+      .order('start_time', { ascending: filter === 'upcoming' })
+      .limit(100);
+
+    if (error) {
+      toast.error('Erro ao carregar agendamentos');
+      setAppointments([]);
+      setIsLoadingAppointments(false);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      setAppointments([]);
+      setIsLoadingAppointments(false);
+      return;
+    }
+
+    const now = new Date();
+    const filteredAppointments = data.filter((appointment) => {
+      const appointmentEnd = new Date(`${appointment.appointment_date}T${appointment.end_time}`);
+      const isUpcoming = appointment.status !== 'cancelled' && appointmentEnd >= now;
+      return filter === 'upcoming' ? isUpcoming : !isUpcoming;
+    });
+
+    if (filteredAppointments.length === 0) {
+      setAppointments([]);
+      setIsLoadingAppointments(false);
+      return;
+    }
+
+    const barberIds = [...new Set(filteredAppointments.map((a) => a.barber_id))];
+    const serviceIds = [...new Set(filteredAppointments.map((a) => a.service_id))];
 
     const [profilesRes, servicesRes] = await Promise.all([
       supabase.from('profiles').select('user_id, full_name').in('user_id', barberIds),
       supabase.from('services').select('id, name').in('id', serviceIds),
     ]);
 
-    const profileMap = new Map((profilesRes.data || []).map(p => [p.user_id, p.full_name]));
-    const serviceMap = new Map((servicesRes.data || []).map(s => [s.id, s.name]));
+    const profileMap = new Map((profilesRes.data || []).map((p) => [p.user_id, p.full_name]));
+    const serviceMap = new Map((servicesRes.data || []).map((s) => [s.id, s.name]));
 
-    setAppointments(data.map((a) => ({
-      id: a.id,
-      appointment_date: a.appointment_date,
-      start_time: a.start_time,
-      end_time: a.end_time,
-      status: a.status,
-      price: a.price,
-      barber_name: profileMap.get(a.barber_id) || 'Barbeiro',
-      service_name: serviceMap.get(a.service_id) || 'Serviço',
-    })));
+    setAppointments(
+      filteredAppointments.map((a) => ({
+        id: a.id,
+        appointment_date: a.appointment_date,
+        start_time: a.start_time,
+        end_time: a.end_time,
+        status: a.status,
+        price: a.price,
+        barber_name: profileMap.get(a.barber_id) || 'Barbeiro',
+        service_name: serviceMap.get(a.service_id) || 'Serviço',
+      }))
+    );
+
+    setIsLoadingAppointments(false);
   };
 
   const cancelAppointment = async (id: string) => {
@@ -112,7 +144,9 @@ export default function ClientAppointments() {
           </Button>
         </div>
 
-        {appointments.length === 0 ? (
+        {isLoadingAppointments ? (
+          <p className="text-center text-muted-foreground py-12 glass-card">Carregando agendamentos...</p>
+        ) : appointments.length === 0 ? (
           <p className="text-center text-muted-foreground py-12 glass-card">
             Nenhum agendamento {filter === 'upcoming' ? 'próximo' : 'no histórico'}
           </p>
