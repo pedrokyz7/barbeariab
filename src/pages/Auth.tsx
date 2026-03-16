@@ -42,13 +42,17 @@ export default function Auth() {
     try {
       if (isLogin) {
         await signIn(email, password);
-        const { data: { user: loggedUser } } = await supabase.auth.getUser();
-        const { data: roleData } = await supabase
+        const { data: { user: loggedUser }, error: userError } = await supabase.auth.getUser();
+        console.log('Login - getUser:', loggedUser?.id, userError);
+        
+        const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', loggedUser?.id ?? '')
           .maybeSingle();
-        if (roleData?.role !== loginRole) {
+        console.log('Login - roleData:', roleData, 'roleError:', roleError, 'loginRole:', loginRole);
+        
+        if (!roleData?.role || roleData.role !== loginRole) {
           await supabase.auth.signOut();
           toast.error(loginRole === 'barber' ? 'Esta conta não é de barbeiro' : 'Esta conta não é de cliente');
           setIsLoading(false);
