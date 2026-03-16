@@ -199,8 +199,11 @@ export default function ClientBooking() {
         {step === 'barber' && (
           <div className="space-y-4 animate-slide-up">
             <h2 className="text-2xl font-bold font-display text-center">Escolha o Barbeiro</h2>
+            <p className="text-center text-sm text-muted-foreground">
+              {barbers.length === 0 ? '0 barbeiros disponíveis' : `${barbers.length} barbeiro${barbers.length > 1 ? 's' : ''} disponíve${barbers.length > 1 ? 'is' : 'l'}`}
+            </p>
             {barbers.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">Nenhum barbeiro disponível</p>
+              <p className="text-center text-muted-foreground py-8">Nenhum barbeiro cadastrado no momento</p>
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 {barbers.map((b) => (
