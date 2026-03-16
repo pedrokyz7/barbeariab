@@ -116,10 +116,11 @@ Deno.serve(async (req) => {
 
       const { data: appointments } = await supabaseAdmin
         .from("appointments")
-        .select("client_id, price, status, payment_status")
+        .select("client_id, price, status, payment_status, appointment_date, start_time, service_id")
         .eq("barber_id", barber_user_id);
 
-      const completed = (appointments || []).filter((a: any) => a.status === "completed" || a.status === "scheduled");
+      const all = appointments || [];
+      const completed = all.filter((a: any) => a.status === "completed" || a.status === "scheduled");
       const totalClients = new Set(completed.map((a: any) => a.client_id)).size;
       const totalAppointments = completed.length;
       const totalRevenue = completed.filter((a: any) => a.payment_status === "paid").reduce((sum: number, a: any) => sum + Number(a.price || 0), 0);
@@ -132,25 +133,50 @@ Deno.serve(async (req) => {
         if (a.payment_status === "paid") clientMap[a.client_id].revenue += Number(a.price || 0);
       }
 
-      const clientIds = Object.keys(clientMap);
-      let clientDetails: any[] = [];
-      if (clientIds.length > 0) {
+      // Upcoming scheduled appointments
+      const today = new Date().toISOString().split("T")[0];
+      const upcoming = all
+        .filter((a: any) => a.status === "scheduled" && a.appointment_date >= today)
+        .sort((a: any, b: any) => a.appointment_date.localeCompare(b.appointment_date) || a.start_time.localeCompare(b.start_time));
+
+      // Gather all client IDs (from history + upcoming)
+      const allClientIds = [...new Set([...Object.keys(clientMap), ...upcoming.map((a: any) => a.client_id)])];
+      const allServiceIds = [...new Set(upcoming.map((a: any) => a.service_id).filter(Boolean))];
+
+      let profilesMap: Record<string, string> = {};
+      let servicesMap: Record<string, string> = {};
+
+      if (allClientIds.length > 0) {
         const { data: profiles } = await supabaseAdmin
           .from("profiles")
           .select("user_id, full_name")
-          .in("user_id", clientIds);
-        clientDetails = clientIds.map((cid) => {
-          const profile = profiles?.find((p: any) => p.user_id === cid);
-          return {
-            client_id: cid,
-            name: profile?.full_name || "Cliente",
-            appointments: clientMap[cid].count,
-            revenue: clientMap[cid].revenue,
-          };
-        });
+          .in("user_id", allClientIds);
+        for (const p of (profiles || [])) profilesMap[p.user_id] = p.full_name || "Cliente";
+      }
+      if (allServiceIds.length > 0) {
+        const { data: services } = await supabaseAdmin
+          .from("services")
+          .select("id, name")
+          .in("id", allServiceIds);
+        for (const s of (services || [])) servicesMap[s.id] = s.name;
       }
 
-      return new Response(JSON.stringify({ totalClients, totalAppointments, totalRevenue, clients: clientDetails }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const clientDetails = Object.keys(clientMap).map((cid) => ({
+        client_id: cid,
+        name: profilesMap[cid] || "Cliente",
+        appointments: clientMap[cid].count,
+        revenue: clientMap[cid].revenue,
+      }));
+
+      const upcomingDetails = upcoming.map((a: any) => ({
+        appointment_date: a.appointment_date,
+        start_time: a.start_time,
+        client_name: profilesMap[a.client_id] || "Cliente",
+        service_name: servicesMap[a.service_id] || "Serviço",
+        price: Number(a.price || 0),
+      }));
+
+      return new Response(JSON.stringify({ totalClients, totalAppointments, totalRevenue, clients: clientDetails, upcoming: upcomingDetails }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     return new Response(JSON.stringify({ error: "Ação inválida" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
