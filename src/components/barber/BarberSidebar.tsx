@@ -1,4 +1,4 @@
-import { Calendar, DollarSign, Scissors, Clock, LogOut, LayoutDashboard, Users } from 'lucide-react';
+import { Calendar, DollarSign, Scissors, Clock, LogOut, LayoutDashboard, Users, UserPlus } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -20,6 +20,7 @@ const items = [
   { title: 'Horários', url: '/barber/work-hours', icon: Clock },
   { title: 'Financeiro', url: '/barber/finances', icon: DollarSign },
   { title: 'Clientes', url: '/barber/clients', icon: Users },
+  { title: 'Barbeiros', url: '/barber/barbers', icon: UserPlus },
 ];
 
 export function BarberSidebar() {
