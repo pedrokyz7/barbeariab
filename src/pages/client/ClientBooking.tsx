@@ -47,7 +47,7 @@ export default function ClientBooking() {
   }, [selectedBarber, selectedService, selectedDate]);
 
   const fetchBarbers = async () => {
-    const { data: roles } = await supabase.from('user_roles').select('user_id').eq('role', 'barber');
+    const { data: roles } = await supabase.from('user_roles').select('user_id').in('role', ['barber', 'admin']);
     if (!roles?.length) return;
     const ids = roles.map(r => r.user_id);
     const { data: profiles } = await supabase.from('profiles').select('user_id, full_name').in('user_id', ids);
