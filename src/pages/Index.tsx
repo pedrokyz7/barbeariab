@@ -1,16 +1,26 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useAuth } from '@/hooks/useAuth';
+import { Navigate } from 'react-router-dom';
+import { Scissors } from 'lucide-react';
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+export default function Index() {
+  const { user, role, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Scissors className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/auth" replace />;
+  if (role === 'barber') return <Navigate to="/barber" replace />;
+  if (role === 'client') return <Navigate to="/client" replace />;
+
+  // Fallback loading while role is being fetched
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen flex items-center justify-center">
+      <Scissors className="w-8 h-8 text-primary animate-spin" />
     </div>
   );
-};
-
-const Index = PlaceholderIndex;
-
-export default Index;
+}
