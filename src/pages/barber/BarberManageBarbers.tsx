@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
-import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users, CalendarClock } from 'lucide-react';
+import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users, CalendarClock, Pencil, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -47,6 +47,8 @@ export default function BarberManageBarbers() {
   const [expandedBarber, setExpandedBarber] = useState<string | null>(null);
   const [statsCache, setStatsCache] = useState<Record<string, BarberStats>>({});
   const [loadingStats, setLoadingStats] = useState<string | null>(null);
+  const [editingBarber, setEditingBarber] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
 
   useEffect(() => {
     if (user) fetchBarbers();
@@ -110,6 +112,19 @@ export default function BarberManageBarbers() {
     toast.success('Barbeiro adicionado com sucesso!');
     setForm({ full_name: '', email: '', password: '', phone: '' });
     setShowForm(false);
+    fetchBarbers();
+  };
+  const handleRename = async (barberId: string) => {
+    if (!editName.trim()) { toast.error('Nome não pode ser vazio'); return; }
+    const { data, error } = await supabase.functions.invoke('manage-barbers', {
+      body: { action: 'rename', barber_user_id: barberId, full_name: editName.trim() },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || 'Erro ao renomear');
+      return;
+    }
+    toast.success('Nome atualizado!');
+    setEditingBarber(null);
     fetchBarbers();
   };
 
@@ -202,10 +217,24 @@ export default function BarberManageBarbers() {
                     onClick={() => toggleExpand(b.user_id)}
                   >
                     <div className="space-y-1 flex-1">
-                      <p className="font-medium flex items-center gap-2">
-                        {b.full_name || 'Barbeiro'}
-                        {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-                      </p>
+                      {editingBarber === b.user_id ? (
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          <Input
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="h-8 text-sm w-48"
+                            autoFocus
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleRename(b.user_id); if (e.key === 'Escape') setEditingBarber(null); }}
+                          />
+                          <button onClick={() => handleRename(b.user_id)} className="p-1 rounded hover:bg-primary/20 text-primary"><Check className="w-4 h-4" /></button>
+                          <button onClick={() => setEditingBarber(null)} className="p-1 rounded hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
+                        </div>
+                      ) : (
+                        <p className="font-medium flex items-center gap-2">
+                          {b.full_name || 'Barbeiro'}
+                          {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                        </p>
+                      )}
                       <p className="text-sm text-muted-foreground flex items-center gap-1">
                         <Mail className="w-3 h-3" /> {b.email}
                       </p>
@@ -215,15 +244,26 @@ export default function BarberManageBarbers() {
                         </p>
                       )}
                     </div>
-                    {role === 'admin' && b.user_id !== user?.id && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(b.user_id, b.full_name); }}
-                        className="p-2 rounded-lg hover:bg-destructive/20 text-destructive transition-colors"
-                        title="Remover barbeiro"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {role === 'admin' && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditName(b.full_name); }}
+                          className="p-2 rounded-lg hover:bg-accent/20 text-muted-foreground hover:text-foreground transition-colors"
+                          title="Editar nome"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      )}
+                      {role === 'admin' && b.user_id !== user?.id && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDelete(b.user_id, b.full_name); }}
+                          className="p-2 rounded-lg hover:bg-destructive/20 text-destructive transition-colors"
+                          title="Remover barbeiro"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {isExpanded && (
