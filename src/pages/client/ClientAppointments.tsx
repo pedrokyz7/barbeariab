@@ -66,6 +66,7 @@ export default function ClientAppointments() {
   const [appointments, setAppointments] = useState<AppointmentGroup[]>([]);
   const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(true);
+  const [editingAppointment, setEditingAppointment] = useState<AppointmentGroup | null>(null);
 
   useEffect(() => {
     if (!loading) {
