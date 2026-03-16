@@ -123,7 +123,16 @@ export default function ClientAppointments() {
       }))
       .sort(compareAppointmentsAsc);
 
-    const groupedAppointments = enrichedAppointments.reduce<AppointmentGroup[]>((groups, appointment) => {
+    const now = new Date();
+    const appointmentsForSelectedTab = enrichedAppointments
+      .filter((appointment) =>
+        filter === 'upcoming'
+          ? isUpcomingAppointment(appointment, now)
+          : !isUpcomingAppointment(appointment, now)
+      )
+      .sort(filter === 'upcoming' ? compareAppointmentsAsc : compareAppointmentsDesc);
+
+    const groupedAppointments = appointmentsForSelectedTab.reduce<AppointmentGroup[]>((groups, appointment) => {
       const lastGroup = groups[groups.length - 1];
 
       if (lastGroup && isSameBookingGroup(lastGroup, appointment)) {
@@ -144,22 +153,12 @@ export default function ClientAppointments() {
         price: Number(appointment.price),
         barber_name: appointment.barber_name,
         service_names: [appointment.service_name],
-        created_at: appointment.created_at,
       });
 
       return groups;
     }, []);
 
-    const now = new Date();
-    const filteredAppointments = groupedAppointments
-      .filter((appointment) => {
-        const appointmentEnd = new Date(`${appointment.appointment_date}T${appointment.end_time}`);
-        const isUpcoming = appointment.status !== 'cancelled' && appointmentEnd >= now;
-        return filter === 'upcoming' ? isUpcoming : !isUpcoming;
-      })
-      .sort(filter === 'upcoming' ? compareAppointmentsAsc : compareAppointmentsDesc);
-
-    setAppointments(filteredAppointments);
+    setAppointments(groupedAppointments);
     setIsLoadingAppointments(false);
   };
 
