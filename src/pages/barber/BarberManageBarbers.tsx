@@ -21,11 +21,20 @@ interface ClientDetail {
   revenue: number;
 }
 
+interface UpcomingAppointment {
+  appointment_date: string;
+  start_time: string;
+  client_name: string;
+  service_name: string;
+  price: number;
+}
+
 interface BarberStats {
   totalClients: number;
   totalAppointments: number;
   totalRevenue: number;
   clients: ClientDetail[];
+  upcoming: UpcomingAppointment[];
 }
 
 export default function BarberManageBarbers() {
