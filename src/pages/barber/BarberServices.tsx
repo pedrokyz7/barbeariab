@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
@@ -28,6 +28,7 @@ export default function BarberServices() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', duration_minutes: 30, price: 0, category: 'masculino' });
   const [activeTab, setActiveTab] = useState('masculino');
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user) fetchServices();
@@ -96,6 +97,7 @@ export default function BarberServices() {
     setForm({ name: s.name, duration_minutes: s.duration_minutes, price: Number(s.price), category: s.category || 'masculino' });
     setShowForm(true);
     setActiveTab(s.category || 'masculino');
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
   };
 
   const resetForm = () => {
@@ -134,7 +136,7 @@ export default function BarberServices() {
         </div>
 
         {showForm && (
-          <div className="glass-card p-6 space-y-4 animate-slide-up">
+          <div ref={formRef} className="glass-card p-6 space-y-4 animate-slide-up">
             <h3 className="font-semibold font-display">{editingId ? 'Editar' : 'Novo'} Serviço</h3>
             {/* Category selector */}
             <div className="flex gap-2">
