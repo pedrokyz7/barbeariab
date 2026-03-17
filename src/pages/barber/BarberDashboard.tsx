@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
-import { Calendar, DollarSign, Users, TrendingUp, BarChart3, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Calendar, DollarSign, Users, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -16,16 +16,6 @@ interface Stats {
   prevMonth: number;
 }
 
-interface BarberEarnings {
-  barber_id: string;
-  barber_name: string;
-  today: number;
-  week: number;
-  month: number;
-  prevDay: number;
-  prevWeek: number;
-  prevMonth: number;
-}
 
 interface UpcomingAppointment {
   id: string;
@@ -60,14 +50,11 @@ export default function BarberDashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats>({ today: 0, week: 0, month: 0, todayCount: 0, prevDay: 0, prevWeek: 0, prevMonth: 0 });
   const [upcoming, setUpcoming] = useState<UpcomingAppointment[]>([]);
-  const [barberEarnings, setBarberEarnings] = useState<BarberEarnings[]>([]);
-  const [consolidatedMonth, setConsolidatedMonth] = useState(0);
 
   useEffect(() => {
     if (!user) return;
     fetchStats();
     fetchUpcoming();
-    fetchBarberEarnings();
   }, [user]);
 
   const getDateRanges = () => {
@@ -114,58 +101,6 @@ export default function BarberDashboard() {
     });
   };
 
-  const fetchBarberEarnings = async () => {
-    if (!user) return;
-    // Get barbers under this admin
-    const { data: barbers } = await supabase
-      .from('profiles')
-      .select('user_id, full_name')
-      .eq('admin_id', user.id);
-
-    // Include self
-    const { data: selfProfile } = await supabase
-      .from('profiles')
-      .select('user_id, full_name')
-      .eq('user_id', user.id)
-      .single();
-
-    const allBarbers = [
-      ...(selfProfile ? [{ user_id: selfProfile.user_id, full_name: selfProfile.full_name }] : []),
-      ...(barbers || []).filter(b => b.user_id !== user.id),
-    ];
-
-    if (allBarbers.length === 0) return;
-
-    const d = getDateRanges();
-    const barberIds = allBarbers.map(b => b.user_id);
-
-    // Fetch all appointments for these barbers in relevant periods
-    const [todayRes, weekRes, monthRes, prevDayRes, prevWeekRes, prevMonthRes] = await Promise.all([
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).eq('appointment_date', d.today).eq('payment_status', 'paid'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.weekStart).lte('appointment_date', d.weekEnd).eq('payment_status', 'paid'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.monthStart).lte('appointment_date', d.monthEnd).eq('payment_status', 'paid'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).eq('appointment_date', d.yesterday).eq('payment_status', 'paid'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.prevWeekStart).lte('appointment_date', d.prevWeekEnd).eq('payment_status', 'paid'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.prevMonthStart).lte('appointment_date', d.prevMonthEnd).eq('payment_status', 'paid'),
-    ]);
-
-    const sumByBarber = (data: any[] | null, barberId: string) =>
-      data?.filter(a => a.barber_id === barberId).reduce((s, a) => s + Number(a.price), 0) ?? 0;
-
-    const earnings: BarberEarnings[] = allBarbers.map(b => ({
-      barber_id: b.user_id,
-      barber_name: b.full_name || 'Barbeiro',
-      today: sumByBarber(todayRes.data, b.user_id),
-      week: sumByBarber(weekRes.data, b.user_id),
-      month: sumByBarber(monthRes.data, b.user_id),
-      prevDay: sumByBarber(prevDayRes.data, b.user_id),
-      prevWeek: sumByBarber(prevWeekRes.data, b.user_id),
-      prevMonth: sumByBarber(prevMonthRes.data, b.user_id),
-    }));
-
-    setBarberEarnings(earnings);
-    setConsolidatedMonth(earnings.reduce((s, e) => s + e.month, 0));
-  };
 
   const fetchUpcoming = async () => {
     if (!user) return;
@@ -231,52 +166,6 @@ export default function BarberDashboard() {
           ))}
         </div>
 
-        {/* Consolidated Monthly Total */}
-        {barberEarnings.length > 0 && (
-          <div className="glass-card p-6 bg-gradient-to-br from-success/10 to-success/5 animate-slide-up">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-semibold font-display">Ganho Total do Mês</h2>
-              <BarChart3 className="w-6 h-6 text-success" />
-            </div>
-            <p className="text-3xl font-bold font-display text-success">
-              R$ {consolidatedMonth.toFixed(2)}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Consolidado de {barberEarnings.length} barbeiro{barberEarnings.length > 1 ? 's' : ''}
-            </p>
-          </div>
-        )}
-
-        {/* Per-barber Earnings */}
-        {barberEarnings.length > 0 && (
-          <div className="glass-card p-6">
-            <h2 className="text-xl font-semibold font-display mb-4">Ganhos por Barbeiro</h2>
-            <div className="space-y-4">
-              {barberEarnings.map((b) => (
-                <div key={b.barber_id} className="p-4 rounded-xl bg-secondary/50 animate-slide-up">
-                  <p className="font-semibold mb-3">{b.barber_name}</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Hoje</p>
-                      <p className="text-sm font-bold">R$ {b.today.toFixed(2)}</p>
-                      <PercentBadge current={b.today} previous={b.prevDay} />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Semana</p>
-                      <p className="text-sm font-bold">R$ {b.week.toFixed(2)}</p>
-                      <PercentBadge current={b.week} previous={b.prevWeek} />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Mês</p>
-                      <p className="text-sm font-bold">R$ {b.month.toFixed(2)}</p>
-                      <PercentBadge current={b.month} previous={b.prevMonth} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Upcoming */}
         <div className="glass-card p-6">

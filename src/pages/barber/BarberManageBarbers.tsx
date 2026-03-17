@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
 import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users, CalendarClock, Pencil, Check, X, ArrowUpRight, ArrowDownRight, TrendingUp, Calendar } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from 'date-fns';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -65,9 +66,82 @@ export default function BarberManageBarbers() {
   const [showEditPassword, setShowEditPassword] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
 
+  interface BarberEarningsSummary {
+    barber_id: string;
+    barber_name: string;
+    today: number;
+    week: number;
+    month: number;
+    prevDay: number;
+    prevWeek: number;
+    prevMonth: number;
+  }
+  const [earningsSummary, setEarningsSummary] = useState<BarberEarningsSummary[]>([]);
+
   useEffect(() => {
-    if (user) fetchBarbers();
+    if (user) {
+      fetchBarbers();
+      fetchEarningsSummary();
+    }
   }, [user]);
+
+  const fetchEarningsSummary = async () => {
+    if (!user) return;
+    const { data: myBarbers } = await supabase
+      .from('profiles')
+      .select('user_id, full_name')
+      .eq('admin_id', user.id);
+
+    const { data: selfProfile } = await supabase
+      .from('profiles')
+      .select('user_id, full_name')
+      .eq('user_id', user.id)
+      .single();
+
+    const allBarbers = [
+      ...(selfProfile ? [{ user_id: selfProfile.user_id, full_name: selfProfile.full_name }] : []),
+      ...(myBarbers || []).filter(b => b.user_id !== user.id),
+    ];
+
+    if (allBarbers.length === 0) return;
+
+    const now = new Date();
+    const today = format(now, 'yyyy-MM-dd');
+    const yesterday = format(subDays(now, 1), 'yyyy-MM-dd');
+    const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const prevWeekStart = format(startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const prevWeekEnd = format(endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const monthStart = format(startOfMonth(now), 'yyyy-MM-dd');
+    const monthEnd = format(endOfMonth(now), 'yyyy-MM-dd');
+    const prevMonthStart = format(startOfMonth(subMonths(now, 1)), 'yyyy-MM-dd');
+    const prevMonthEnd = format(endOfMonth(subMonths(now, 1)), 'yyyy-MM-dd');
+
+    const ids = allBarbers.map(b => b.user_id);
+
+    const [todayRes, weekRes, monthRes, prevDayRes, prevWeekRes, prevMonthRes] = await Promise.all([
+      supabase.from('appointments').select('price, barber_id').in('barber_id', ids).eq('appointment_date', today).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', ids).gte('appointment_date', weekStart).lte('appointment_date', weekEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', ids).gte('appointment_date', monthStart).lte('appointment_date', monthEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', ids).eq('appointment_date', yesterday).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', ids).gte('appointment_date', prevWeekStart).lte('appointment_date', prevWeekEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', ids).gte('appointment_date', prevMonthStart).lte('appointment_date', prevMonthEnd).eq('payment_status', 'paid'),
+    ]);
+
+    const sumBy = (data: any[] | null, bid: string) =>
+      data?.filter(a => a.barber_id === bid).reduce((s, a) => s + Number(a.price), 0) ?? 0;
+
+    setEarningsSummary(allBarbers.map(b => ({
+      barber_id: b.user_id,
+      barber_name: b.full_name || 'Barbeiro',
+      today: sumBy(todayRes.data, b.user_id),
+      week: sumBy(weekRes.data, b.user_id),
+      month: sumBy(monthRes.data, b.user_id),
+      prevDay: sumBy(prevDayRes.data, b.user_id),
+      prevWeek: sumBy(prevWeekRes.data, b.user_id),
+      prevMonth: sumBy(prevMonthRes.data, b.user_id),
+    })));
+  };
 
   const fetchBarbers = async () => {
     try {
@@ -224,6 +298,36 @@ export default function BarberManageBarbers() {
           </Button>
         </div>
 
+        {/* Ganhos por Barbeiro */}
+        {earningsSummary.length > 0 && (
+          <div className="glass-card p-6">
+            <h2 className="text-xl font-semibold font-display mb-4">Ganhos por Barbeiro</h2>
+            <div className="space-y-4">
+              {earningsSummary.map((b) => (
+                <div key={b.barber_id} className="p-4 rounded-xl bg-secondary/50 animate-slide-up">
+                  <p className="font-semibold mb-3">{b.barber_name}</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Hoje</p>
+                      <p className="text-sm font-bold">R$ {b.today.toFixed(2)}</p>
+                      <PercentBadge current={b.today} previous={b.prevDay} />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Semana</p>
+                      <p className="text-sm font-bold">R$ {b.week.toFixed(2)}</p>
+                      <PercentBadge current={b.week} previous={b.prevWeek} />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Mês</p>
+                      <p className="text-sm font-bold">R$ {b.month.toFixed(2)}</p>
+                      <PercentBadge current={b.month} previous={b.prevMonth} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {showForm && (
           <form onSubmit={handleCreate} className="glass-card p-6 space-y-4 animate-slide-up">
             <h2 className="text-lg font-semibold font-display">Novo Barbeiro</h2>
