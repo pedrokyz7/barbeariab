@@ -89,7 +89,7 @@ export default function BarberClients() {
     // Get profiles
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('user_id, full_name, phone')
+      .select('user_id, full_name, phone, avatar_url')
       .in('user_id', clientIds);
 
     // Get appointments for this barber to calculate spending
