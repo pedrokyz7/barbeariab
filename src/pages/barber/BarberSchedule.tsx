@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CheckCircle2, XCircle, Clock, CalendarDays, MessageCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, CalendarDays, MessageCircle, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Appointment {
@@ -17,6 +17,7 @@ interface Appointment {
   payment_status: string;
   client_name: string;
   client_phone: string | null;
+  client_avatar: string | null;
   service_name: string;
 }
 
@@ -53,11 +54,11 @@ export default function BarberSchedule() {
     const serviceIds = [...new Set(appts.map(a => a.service_id))];
 
     const [{ data: profiles }, { data: services }] = await Promise.all([
-      supabase.from('profiles').select('user_id, full_name, phone').in('user_id', clientIds),
+      supabase.from('profiles').select('user_id, full_name, phone, avatar_url').in('user_id', clientIds),
       supabase.from('services').select('id, name').in('id', serviceIds),
     ]);
 
-    const profileMap = Object.fromEntries((profiles || []).map(p => [p.user_id, { name: p.full_name, phone: p.phone }]));
+    const profileMap = Object.fromEntries((profiles || []).map(p => [p.user_id, { name: p.full_name, phone: p.phone, avatar: p.avatar_url }]));
     const serviceMap = Object.fromEntries((services || []).map(s => [s.id, s.name]));
 
     setAppointments(appts.map(a => ({
@@ -70,6 +71,7 @@ export default function BarberSchedule() {
       payment_status: a.payment_status,
       client_name: profileMap[a.client_id]?.name || 'Cliente',
       client_phone: profileMap[a.client_id]?.phone || null,
+      client_avatar: profileMap[a.client_id]?.avatar || null,
       service_name: serviceMap[a.service_id] || 'Serviço',
     })));
     setLoading(false);
@@ -127,6 +129,15 @@ export default function BarberSchedule() {
                     <div className="text-center min-w-[50px]">
                       <p className="font-bold font-display">{apt.start_time.slice(0, 5)}</p>
                       <p className="text-xs text-muted-foreground">{apt.end_time.slice(0, 5)}</p>
+                    </div>
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-card border border-border shrink-0">
+                      {apt.client_avatar ? (
+                        <img src={apt.client_avatar} alt={apt.client_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      )}
                     </div>
                     <div>
                       <p className="font-medium">{apt.client_name}</p>
