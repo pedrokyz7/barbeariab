@@ -338,7 +338,7 @@ export default function AdminUsers() {
                       </div>
                       {editErrors.password && <p className="text-xs text-destructive">{editErrors.password}</p>}
                       {editForm.password && !editErrors.password && (
-                        <p className="text-xs text-emerald-500">Senha válida ✓</p>
+                        <p className="text-xs text-primary">Senha válida ✓</p>
                       )}
                     </div>
                     <div className="flex gap-2">
