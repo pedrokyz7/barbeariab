@@ -363,6 +363,36 @@ export default function BarberManageBarbers() {
                         <p className="text-sm text-muted-foreground text-center py-4">Carregando estatísticas...</p>
                       ) : stats ? (
                         <>
+                          {/* Earnings by period */}
+                          {stats.earnings && (
+                            <div>
+                              <h3 className="text-sm font-semibold mb-2 text-muted-foreground flex items-center gap-1">
+                                <TrendingUp className="w-4 h-4" /> Ganhos por Período
+                              </h3>
+                              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                <div className="bg-success/10 rounded-xl p-2 sm:p-3 text-center">
+                                  <DollarSign className="w-4 h-4 mx-auto mb-1 text-success" />
+                                  <p className="text-sm sm:text-lg font-bold text-success">{formatCurrency(stats.earnings.today)}</p>
+                                  <p className="text-[10px] sm:text-xs text-muted-foreground">Hoje</p>
+                                  <PercentBadge current={stats.earnings.today} previous={stats.earnings.prevDay} />
+                                </div>
+                                <div className="bg-primary/10 rounded-xl p-2 sm:p-3 text-center">
+                                  <TrendingUp className="w-4 h-4 mx-auto mb-1 text-primary" />
+                                  <p className="text-sm sm:text-lg font-bold">{formatCurrency(stats.earnings.week)}</p>
+                                  <p className="text-[10px] sm:text-xs text-muted-foreground">Semana</p>
+                                  <PercentBadge current={stats.earnings.week} previous={stats.earnings.prevWeek} />
+                                </div>
+                                <div className="bg-primary/10 rounded-xl p-2 sm:p-3 text-center">
+                                  <Calendar className="w-4 h-4 mx-auto mb-1 text-primary" />
+                                  <p className="text-sm sm:text-lg font-bold">{formatCurrency(stats.earnings.month)}</p>
+                                  <p className="text-[10px] sm:text-xs text-muted-foreground">Mês</p>
+                                  <PercentBadge current={stats.earnings.month} previous={stats.earnings.prevMonth} />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* General stats */}
                           <div className="grid grid-cols-3 gap-2 sm:gap-3">
                             <div className="bg-accent/10 rounded-xl p-2 sm:p-3 text-center">
                               <Users className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 text-primary" />
@@ -377,7 +407,7 @@ export default function BarberManageBarbers() {
                             <div className="bg-accent/10 rounded-xl p-2 sm:p-3 text-center">
                               <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 text-primary" />
                               <p className="text-lg sm:text-2xl font-bold truncate">{formatCurrency(stats.totalRevenue)}</p>
-                              <p className="text-[10px] sm:text-xs text-muted-foreground">Faturamento</p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground">Faturamento Total</p>
                             </div>
                           </div>
 
