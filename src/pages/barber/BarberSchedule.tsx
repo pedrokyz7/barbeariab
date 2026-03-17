@@ -129,7 +129,20 @@ export default function BarberSchedule() {
                       <p className="text-xs text-muted-foreground">{apt.end_time.slice(0, 5)}</p>
                     </div>
                     <div>
-                      <p className="font-medium">{apt.client_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{apt.client_name}</p>
+                        {apt.client_phone && (
+                          <a
+                            href={`https://wa.me/55${apt.client_phone}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-500 hover:text-green-400 transition-colors"
+                            title={`WhatsApp: ${apt.client_phone}`}
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">{apt.service_name}</p>
                     </div>
                   </div>
