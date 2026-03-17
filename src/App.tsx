@@ -19,6 +19,8 @@ import ClientBooking from "./pages/client/ClientBooking";
 import ClientAppointments from "./pages/client/ClientAppointments";
 import ClientSpending from "./pages/client/ClientSpending";
 import ClientProfile from "./pages/client/ClientProfile";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +56,8 @@ const App = () => {
             <Route path="/client/appointments" element={<ClientAppointments />} />
             <Route path="/client/spending" element={<ClientSpending />} />
             <Route path="/client/profile" element={<ClientProfile />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
