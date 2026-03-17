@@ -302,7 +302,7 @@ export default function ClientAppointments() {
                     </div>
                   )}
                   {appointment.status === 'arrived' && filter === 'upcoming' && (
-                    <div className="flex flex-col items-end gap-1 mt-1">
+                    <div className="flex flex-col sm:items-end gap-1 mt-1">
                       <p className="text-xs text-yellow-400 font-medium">✓ Aguardando atendimento</p>
                       <Button
                         variant="outline"
