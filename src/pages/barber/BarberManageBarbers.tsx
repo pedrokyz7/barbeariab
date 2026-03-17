@@ -180,7 +180,7 @@ export default function BarberManageBarbers() {
 
   return (
     <BarberLayout>
-      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in overflow-x-hidden">
+        <div className="max-w-4xl mx-auto space-y-6 animate-fade-in overflow-x-hidden">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold font-display">Barbeiros</h1>
@@ -243,8 +243,8 @@ export default function BarberManageBarbers() {
                     className="p-3 sm:p-4 cursor-pointer hover:bg-accent/10 transition-colors"
                     onClick={() => toggleExpand(b.user_id)}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-1 min-w-0 flex-1">
+                    <div className="space-y-2">
+                      <div className="min-w-0">
                         {editingBarber === b.user_id ? (
                           <div className="space-y-2 w-full" onClick={(e) => e.stopPropagation()}>
                             <Input
@@ -282,46 +282,50 @@ export default function BarberManageBarbers() {
                             </div>
                           </div>
                         ) : (
-                          <p className="font-medium flex items-center gap-2 text-sm sm:text-base">
-                            <span className="truncate">{b.full_name || 'Barbeiro'}</span>
-                            {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
-                          </p>
-                        )}
-                        <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1 truncate">
-                          <Mail className="w-3 h-3 shrink-0" /> <span className="truncate">{b.email}</span>
-                        </p>
-                        {b.phone && (
-                          <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
-                            <Phone className="w-3 h-3 shrink-0" /> {formatPhone(b.phone)}
-                          </p>
+                          <>
+                            <p className="font-medium flex items-center gap-2 text-sm sm:text-base">
+                              <span className="truncate">{b.full_name || 'Barbeiro'}</span>
+                              {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+                            </p>
+                            <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+                              <Mail className="w-3 h-3 shrink-0" /> <span className="truncate">{b.email}</span>
+                            </p>
+                            {b.phone && (
+                              <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+                                <Phone className="w-3 h-3 shrink-0" /> {formatPhone(b.phone)}
+                              </p>
+                            )}
+                          </>
                         )}
                       </div>
-                      <div className="flex items-center gap-0.5 shrink-0">
-                        <div onClick={(e) => e.stopPropagation()}>
-                          <Switch
-                            checked={b.is_available}
-                            onCheckedChange={(checked) => handleToggleAvailability(b.user_id, checked)}
-                          />
+                      {editingBarber !== b.user_id && (
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <Switch
+                              checked={b.is_available}
+                              onCheckedChange={(checked) => handleToggleAvailability(b.user_id, checked)}
+                            />
+                          </div>
+                          {role === 'admin' && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditForm({ full_name: b.full_name, email: b.email, password: '' }); }}
+                              className="p-1.5 rounded-lg hover:bg-accent/20 text-muted-foreground hover:text-foreground transition-colors"
+                              title="Editar"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                          )}
+                          {role === 'admin' && b.user_id !== user?.id && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDelete(b.user_id, b.full_name); }}
+                              className="p-1.5 rounded-lg hover:bg-destructive/20 text-destructive transition-colors"
+                              title="Remover barbeiro"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
-                        {role === 'admin' && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditForm({ full_name: b.full_name, email: b.email, password: '' }); }}
-                            className="p-1.5 sm:p-2 rounded-lg hover:bg-accent/20 text-muted-foreground hover:text-foreground transition-colors"
-                            title="Editar nome"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                        )}
-                        {role === 'admin' && b.user_id !== user?.id && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleDelete(b.user_id, b.full_name); }}
-                            className="p-1.5 sm:p-2 rounded-lg hover:bg-destructive/20 text-destructive transition-colors"
-                            title="Remover barbeiro"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </div>
 
