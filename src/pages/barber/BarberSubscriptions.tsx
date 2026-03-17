@@ -33,19 +33,14 @@ export default function BarberSubscriptions() {
   const [pixPaymentSent, setPixPaymentSent] = useState(false);
   const [sendingPixNotification, setSendingPixNotification] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      fetchData();
-    }
-  }, [user]);
-
   const fetchData = async () => {
+    if (!user) return;
     setLoadingData(true);
     const [paymentsRes, settingsRes] = await Promise.all([
       supabase
         .from('billing_payments')
         .select('*')
-        .eq('admin_user_id', user!.id)
+        .eq('admin_user_id', user.id)
         .order('created_at', { ascending: false }),
       supabase
         .from('billing_settings')
@@ -62,6 +57,87 @@ export default function BarberSubscriptions() {
     }
     setLoadingData(false);
   };
+
+  const lastPayment = payments.length > 0 ? payments[0] : null;
+  const lastActivated = payments.find(p => p.subscription_activated);
+
+  const getNextDueDate = () => {
+    if (!lastActivated) return null;
+    const date = new Date(lastActivated.created_at);
+    if (settings?.billing_period === 'quarterly') {
+      date.setMonth(date.getMonth() + 3);
+    } else {
+      date.setMonth(date.getMonth() + 1);
+    }
+    return date;
+  };
+
+  const nextDue = getNextDueDate();
+  const isOverdue = nextDue ? nextDue < new Date() : true;
+
+  const getDaysRemaining = () => {
+    if (!nextDue) return null;
+    const now = new Date();
+    const diff = nextDue.getTime() - now.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  };
+
+  const daysRemaining = getDaysRemaining();
+
+  useEffect(() => {
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
+
+  // Send notification when ≤3 days remaining
+  useEffect(() => {
+    if (daysRemaining === null || daysRemaining > 3 || daysRemaining < 0 || !user) return;
+
+    const notifyKey = `sub_notified_${user.id}_${nextDue?.toISOString().slice(0, 10)}`;
+    if (localStorage.getItem(notifyKey)) return;
+
+    const sendExpiryNotifications = async () => {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        const name = profile?.full_name || user.email;
+        const msg = `A assinatura de ${name} vence em ${daysRemaining} dia(s). Realize o pagamento para evitar o congelamento da conta.`;
+
+        await supabase.from('notifications').insert({
+          user_id: user.id,
+          title: 'Assinatura próxima do vencimento',
+          message: msg,
+          type: 'billing',
+        });
+
+        const { data: barberProfiles } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .eq('admin_id', user.id);
+
+        if (barberProfiles && barberProfiles.length > 0) {
+          const inserts = barberProfiles.map((b) => ({
+            user_id: b.user_id,
+            title: 'Assinatura próxima do vencimento',
+            message: `A assinatura da barbearia vence em ${daysRemaining} dia(s). Lembre o administrador de realizar o pagamento.`,
+            type: 'billing' as const,
+          }));
+          await supabase.from('notifications').insert(inserts);
+        }
+
+        localStorage.setItem(notifyKey, 'true');
+      } catch (e) {
+        console.error('Error sending expiry notifications', e);
+      }
+    };
+
+    sendExpiryNotifications();
+  }, [daysRemaining, user]);
 
   if (loading) return null;
   if (role !== 'admin' && role !== 'barber') return <Navigate to="/" replace />;
