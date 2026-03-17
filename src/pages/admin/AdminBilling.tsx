@@ -62,6 +62,7 @@ export default function AdminBilling() {
   const [paymentMethod, setPaymentMethod] = useState('pix');
   const [savingPayment, setSavingPayment] = useState(false);
   const [freezingUser, setFreezingUser] = useState<string | null>(null);
+  const [activatingUser, setActivatingUser] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
