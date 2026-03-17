@@ -66,8 +66,8 @@ export default function ClientBooking() {
     const { data: roles } = await supabase.from('user_roles').select('user_id').in('role', ['barber', 'admin']);
     if (!roles?.length) return;
     const ids = roles.map(r => r.user_id);
-    const { data: profiles } = await supabase.from('profiles').select('user_id, full_name, is_available, avatar_url').in('user_id', ids);
-    if (profiles) setBarbers(profiles.map(p => ({ ...p, is_available: (p as any).is_available ?? true })));
+    const { data: profiles } = await supabase.from('profiles').select('user_id, full_name, is_available, avatar_url, is_frozen').in('user_id', ids);
+    if (profiles) setBarbers(profiles.filter(p => !p.is_frozen).map(p => ({ ...p, is_available: (p as any).is_available ?? true })));
   };
 
   const fetchServices = async () => {
