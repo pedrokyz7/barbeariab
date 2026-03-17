@@ -129,21 +129,19 @@ export default function BarberSchedule() {
                       <p className="text-xs text-muted-foreground">{apt.end_time.slice(0, 5)}</p>
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{apt.client_name}</p>
-                        {apt.client_phone && (
-                          <a
-                            href={`https://wa.me/55${apt.client_phone}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-green-500 hover:text-green-400 transition-colors"
-                            title={`WhatsApp: ${apt.client_phone}`}
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                          </a>
-                        )}
-                      </div>
+                      <p className="font-medium">{apt.client_name}</p>
                       <p className="text-sm text-muted-foreground">{apt.service_name}</p>
+                      {apt.client_phone && (
+                        <a
+                          href={`https://wa.me/55${apt.client_phone}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-xs text-green-500 hover:text-green-400 transition-colors mt-1"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>(+55) {apt.client_phone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')}</span>
+                        </a>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 flex-wrap justify-end">
