@@ -3,11 +3,17 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Navigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, CheckCircle, XCircle, ExternalLink, RefreshCw, Shield, Settings, Save } from 'lucide-react';
+import {
+  CreditCard, CheckCircle, XCircle, ExternalLink, RefreshCw,
+  Shield, Settings, Save, DollarSign, Plus
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
 interface BarberAdmin {
@@ -39,12 +45,20 @@ export default function AdminBilling() {
   const [checkingEmail, setCheckingEmail] = useState<string | null>(null);
   const [creatingCheckout, setCreatingCheckout] = useState<string | null>(null);
 
-  // Billing settings state
   const [billingSettings, setBillingSettings] = useState<BillingSettings | null>(null);
   const [editAmount, setEditAmount] = useState('');
   const [editPeriod, setEditPeriod] = useState('monthly');
   const [savingSettings, setSavingSettings] = useState(false);
   const [editingSettings, setEditingSettings] = useState(false);
+
+  // Payment tracking
+  const [paymentTotals, setPaymentTotals] = useState<Record<string, number>>({});
+  const [totalReceived, setTotalReceived] = useState(0);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [paymentAdmin, setPaymentAdmin] = useState<BarberAdmin | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentNotes, setPaymentNotes] = useState('');
+  const [savingPayment, setSavingPayment] = useState(false);
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
@@ -58,6 +72,7 @@ export default function AdminBilling() {
   useEffect(() => {
     fetchBarberAdmins();
     fetchBillingSettings();
+    fetchPayments();
   }, []);
 
   const fetchBillingSettings = async () => {
@@ -70,6 +85,22 @@ export default function AdminBilling() {
       setBillingSettings(data as BillingSettings);
       setEditAmount(String(data.amount));
       setEditPeriod(data.billing_period);
+    }
+  };
+
+  const fetchPayments = async () => {
+    const { data, error } = await supabase
+      .from('billing_payments')
+      .select('admin_user_id, amount');
+    if (!error && data) {
+      const totals: Record<string, number> = {};
+      let total = 0;
+      for (const p of data) {
+        totals[p.admin_user_id] = (totals[p.admin_user_id] || 0) + Number(p.amount);
+        total += Number(p.amount);
+      }
+      setPaymentTotals(totals);
+      setTotalReceived(total);
     }
   };
 
@@ -170,6 +201,37 @@ export default function AdminBilling() {
     }
   };
 
+  const openPaymentDialog = (admin: BarberAdmin) => {
+    setPaymentAdmin(admin);
+    setPaymentAmount(billingSettings ? String(billingSettings.amount) : '99.90');
+    setPaymentNotes('');
+    setPaymentDialogOpen(true);
+  };
+
+  const handleRecordPayment = async () => {
+    if (!paymentAdmin) return;
+    const amount = parseFloat(paymentAmount.replace(',', '.'));
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Insira um valor válido');
+      return;
+    }
+    setSavingPayment(true);
+    const { error } = await supabase.from('billing_payments').insert({
+      admin_user_id: paymentAdmin.user_id,
+      amount,
+      billing_period: billingSettings?.billing_period || 'monthly',
+      notes: paymentNotes,
+    });
+    if (error) {
+      toast.error('Erro ao registrar pagamento');
+    } else {
+      toast.success(`Pagamento de R$ ${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado para ${paymentAdmin.full_name || paymentAdmin.email}`);
+      setPaymentDialogOpen(false);
+      fetchPayments();
+    }
+    setSavingPayment(false);
+  };
+
   if (loading) return null;
   if (role !== 'super_admin') return <Navigate to="/" replace />;
 
@@ -180,6 +242,9 @@ export default function AdminBilling() {
       year: 'numeric',
     });
   };
+
+  const formatCurrency = (value: number) =>
+    value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const activeCount = Object.values(subscriptions).filter(s => s.subscribed).length;
   const periodLabel = billingSettings?.billing_period === 'quarterly' ? 'trimestre' : 'mês';
@@ -257,7 +322,7 @@ export default function AdminBilling() {
         </div>
 
         {/* Summary */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="glass-card p-4 text-center">
             <CreditCard className="w-6 h-6 mx-auto mb-2 text-primary" />
             <p className="text-2xl font-bold">{barberAdmins.length}</p>
@@ -268,16 +333,21 @@ export default function AdminBilling() {
             <p className="text-2xl font-bold">{activeCount}</p>
             <p className="text-xs text-muted-foreground">Assinaturas Ativas</p>
           </div>
-          <div className="glass-card p-4 text-center col-span-2 sm:col-span-1">
+          <div className="glass-card p-4 text-center">
             <XCircle className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
             <p className="text-2xl font-bold">{barberAdmins.length - activeCount}</p>
             <p className="text-xs text-muted-foreground">Sem Assinatura</p>
+          </div>
+          <div className="glass-card p-4 text-center">
+            <DollarSign className="w-6 h-6 mx-auto mb-2 text-primary" />
+            <p className="text-2xl font-bold">{formatCurrency(totalReceived)}</p>
+            <p className="text-xs text-muted-foreground">Total Recebido</p>
           </div>
         </div>
 
         {/* Refresh all */}
         <div className="flex justify-end">
-          <Button size="sm" variant="outline" onClick={fetchBarberAdmins} disabled={loadingData}>
+          <Button size="sm" variant="outline" onClick={() => { fetchBarberAdmins(); fetchPayments(); }} disabled={loadingData}>
             <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
             Atualizar Status
           </Button>
@@ -297,6 +367,7 @@ export default function AdminBilling() {
               const isActive = sub?.subscribed;
               const isChecking = checkingEmail === admin.user_id;
               const isCreating = creatingCheckout === admin.user_id;
+              const adminPaid = paymentTotals[admin.user_id] || 0;
 
               return (
                 <div key={admin.user_id} className="glass-card p-4 animate-slide-up">
@@ -324,6 +395,9 @@ export default function AdminBilling() {
                           </Badge>
                         ) : null}
                       </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Total pago: <span className="font-semibold text-foreground">{formatCurrency(adminPaid)}</span>
+                      </p>
                       {isActive && sub?.subscription_end && (
                         <p className="text-[11px] text-muted-foreground">
                           Próxima cobrança: {formatDate(sub.subscription_end)}
@@ -331,7 +405,15 @@ export default function AdminBilling() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => openPaymentDialog(admin)}
+                      >
+                        <Plus className="w-3.5 h-3.5 mr-1.5" />
+                        Registrar Pgto
+                      </Button>
                       {isActive ? (
                         <Button
                           size="sm"
@@ -373,6 +455,47 @@ export default function AdminBilling() {
           </p>
         </div>
       </div>
+
+      {/* Record Payment Dialog */}
+      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Registrar Pagamento</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-muted-foreground">
+              Registrar pagamento recebido de <span className="font-medium text-foreground">{paymentAdmin?.full_name || paymentAdmin?.email}</span>
+            </p>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Valor (R$)</label>
+              <Input
+                type="text"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                placeholder="99.90"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Observação (opcional)</label>
+              <Input
+                type="text"
+                value={paymentNotes}
+                onChange={(e) => setPaymentNotes(e.target.value)}
+                placeholder="Pagamento via PIX, referente a março..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="ghost">Cancelar</Button>
+            </DialogClose>
+            <Button onClick={handleRecordPayment} disabled={savingPayment}>
+              <DollarSign className="w-3.5 h-3.5 mr-1.5" />
+              {savingPayment ? 'Salvando...' : 'Confirmar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
