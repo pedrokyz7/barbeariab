@@ -254,10 +254,18 @@ export default function BarberSubscriptions() {
               {showPix && (
                 <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3 animate-fade-in">
                   {pixPaymentSent ? (
-                    <div className="text-center space-y-2 py-2">
+                    <div className="text-center space-y-3 py-2">
                       <Clock className="w-8 h-8 text-primary mx-auto" />
                       <p className="text-sm font-medium">Aguarde a aprovação do cobrador</p>
                       <p className="text-xs text-muted-foreground">Você será notificado quando o pagamento for confirmado.</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => setPixPaymentSent(false)}
+                      >
+                        Efetuar Novo Pagamento
+                      </Button>
                     </div>
                   ) : (
                     <>
