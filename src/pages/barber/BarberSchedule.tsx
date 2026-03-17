@@ -135,7 +135,7 @@ export default function BarberSchedule() {
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[apt.status]}`}>
                       {apt.status === 'scheduled' ? 'Agendado' : apt.status === 'arrived' ? 'Chegou' : apt.status === 'completed' ? 'Concluído' : 'Cancelado'}
                     </span>
-                    {apt.status === 'scheduled' && (
+                    {(apt.status === 'scheduled' || apt.status === 'arrived') && (
                       <div className="flex gap-1">
                         <button onClick={() => updateStatus(apt.id, 'completed')} className="p-1.5 hover:bg-success/10 rounded-lg">
                           <CheckCircle2 className="w-5 h-5 text-success" />
