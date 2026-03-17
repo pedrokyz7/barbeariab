@@ -30,6 +30,8 @@ export default function BarberSubscriptions() {
   const [loadingData, setLoadingData] = useState(true);
   const [showPix, setShowPix] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
+  const [pixPaymentSent, setPixPaymentSent] = useState(false);
+  const [sendingPixNotification, setSendingPixNotification] = useState(false);
 
   useEffect(() => {
     if (user) {
