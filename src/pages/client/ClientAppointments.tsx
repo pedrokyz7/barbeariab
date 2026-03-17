@@ -186,6 +186,16 @@ export default function ClientAppointments() {
     void fetchAppointments();
   };
 
+  const undoArrival = async (ids: string[]) => {
+    const { error } = await supabase.from('appointments').update({ status: 'scheduled' }).in('id', ids);
+    if (error) {
+      toast.error('Erro ao desfazer chegada');
+      return;
+    }
+    toast.success('Status atualizado: a caminho');
+    void fetchAppointments();
+  };
+
   const statusLabel: Record<string, string> = {
     scheduled: 'Agendado',
     arrived: 'Chegou',
