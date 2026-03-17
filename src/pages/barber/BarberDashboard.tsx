@@ -50,8 +50,6 @@ export default function BarberDashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats>({ today: 0, week: 0, month: 0, todayCount: 0, prevDay: 0, prevWeek: 0, prevMonth: 0 });
   const [upcoming, setUpcoming] = useState<UpcomingAppointment[]>([]);
-  const [barberEarnings, setBarberEarnings] = useState<BarberEarnings[]>([]);
-  const [consolidatedMonth, setConsolidatedMonth] = useState(0);
 
   useEffect(() => {
     if (!user) return;
