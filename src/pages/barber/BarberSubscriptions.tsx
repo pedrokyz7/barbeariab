@@ -282,6 +282,22 @@ export default function BarberSubscriptions() {
                   </p>
                 </div>
               </div>
+
+              {/* Days remaining indicator */}
+              {daysRemaining !== null && (
+                <div className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${
+                  daysRemaining <= 0
+                    ? 'bg-destructive/10 text-destructive'
+                    : daysRemaining <= 3
+                      ? 'bg-yellow-500/10 text-yellow-500'
+                      : 'bg-primary/10 text-primary'
+                }`}>
+                  <Clock className="w-4 h-4" />
+                  {daysRemaining <= 0
+                    ? 'Assinatura vencida'
+                    : `${daysRemaining} dia(s) restante(s) para o vencimento`}
+                </div>
+              )}
             </div>
 
             {/* Payment actions */}
