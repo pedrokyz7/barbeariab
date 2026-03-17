@@ -214,7 +214,7 @@ export default function AdminUsers() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs text-amber-500">
+                <div className="flex items-center gap-2 text-xs text-destructive/80">
                   <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                   <span>Alterações nas credenciais exigem novo login</span>
                 </div>
