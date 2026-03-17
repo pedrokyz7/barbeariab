@@ -26,7 +26,9 @@ interface Service {
   category: string;
 }
 
-type Step = 'barber' | 'service' | 'datetime' | 'confirm';
+type Step = 'barber' | 'category' | 'service' | 'datetime' | 'confirm';
+
+const STEPS: Step[] = ['barber', 'category', 'service', 'datetime', 'confirm'];
 
 export default function ClientBooking() {
   const { user } = useAuth();
@@ -35,6 +37,7 @@ export default function ClientBooking() {
   const [services, setServices] = useState<Service[]>([]);
   const [slots, setSlots] = useState<string[]>([]);
   const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<'masculino' | 'feminino' | null>(null);
   const [selectedServices, setSelectedServices] = useState<Service[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -173,6 +176,7 @@ export default function ClientBooking() {
       toast.success('Agendamento realizado com sucesso!');
       setStep('barber');
       setSelectedBarber(null);
+      setSelectedCategory(null);
       setSelectedServices([]);
       setSelectedTime(null);
     } catch (error: any) {
@@ -189,16 +193,16 @@ export default function ClientBooking() {
       <div className="max-w-lg mx-auto space-y-6 animate-fade-in">
         {/* Progress */}
         <div className="flex items-center gap-2 justify-center">
-          {['barber', 'service', 'datetime', 'confirm'].map((s, i) => (
+          {STEPS.map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                 step === s ? 'bg-primary text-primary-foreground' :
-                ['barber', 'service', 'datetime', 'confirm'].indexOf(step) > i ? 'bg-success text-success-foreground' :
+                STEPS.indexOf(step) > i ? 'bg-success text-success-foreground' :
                 'bg-secondary text-muted-foreground'
               }`}>
-                {['barber', 'service', 'datetime', 'confirm'].indexOf(step) > i ? '✓' : i + 1}
+                {STEPS.indexOf(step) > i ? '✓' : i + 1}
               </div>
-              {i < 3 && <div className={`w-8 h-0.5 ${['barber', 'service', 'datetime', 'confirm'].indexOf(step) > i ? 'bg-success' : 'bg-border'}`} />}
+              {i < STEPS.length - 1 && <div className={`w-6 h-0.5 ${STEPS.indexOf(step) > i ? 'bg-success' : 'bg-border'}`} />}
             </div>
           ))}
         </div>
@@ -217,7 +221,7 @@ export default function ClientBooking() {
                 {barbers.map((b) => (
                   <button
                     key={b.user_id}
-                    onClick={() => { if (b.is_available) { setSelectedBarber(b); setStep('service'); } }}
+                    onClick={() => { if (b.is_available) { setSelectedBarber(b); setStep('category'); } }}
                     disabled={!b.is_available}
                     className={`glass-card p-6 text-center transition-all animate-press relative ${
                       b.is_available ? 'hover:border-primary' : 'opacity-50 cursor-not-allowed'
@@ -244,18 +248,45 @@ export default function ClientBooking() {
           </div>
         )}
 
+        {/* Step: Select Category */}
+        {step === 'category' && (
+          <div className="space-y-4 animate-slide-up">
+            <button onClick={() => { setStep('barber'); setSelectedCategory(null); }} className="flex items-center text-sm text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
+            </button>
+            <h2 className="text-2xl font-bold font-display text-center">Tipo de Serviço</h2>
+            <p className="text-center text-sm text-muted-foreground">Selecione a categoria</p>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => { setSelectedCategory('masculino'); setSelectedServices([]); setStep('service'); }}
+                className="glass-card p-8 flex flex-col items-center gap-3 transition-all animate-press hover:border-primary"
+              >
+                <span className="text-4xl">🧔</span>
+                <p className="font-bold font-display text-lg">Masculino</p>
+              </button>
+              <button
+                onClick={() => { setSelectedCategory('feminino'); setSelectedServices([]); setStep('service'); }}
+                className="glass-card p-8 flex flex-col items-center gap-3 transition-all animate-press hover:border-primary"
+              >
+                <span className="text-4xl">💇‍♀️</span>
+                <p className="font-bold font-display text-lg">Feminino</p>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Step: Select Services (multi) */}
         {step === 'service' && (
           <div className="space-y-4 animate-slide-up">
-            <button onClick={() => setStep('barber')} className="flex items-center text-sm text-muted-foreground hover:text-foreground">
+            <button onClick={() => { setStep('category'); setSelectedServices([]); }} className="flex items-center text-sm text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
             </button>
-            <h2 className="text-2xl font-bold font-display text-center">Escolha os Serviços</h2>
+            <h2 className="text-2xl font-bold font-display text-center">
+              Serviços {selectedCategory === 'masculino' ? '🧔 Masculinos' : '💇‍♀️ Femininos'}
+            </h2>
             <p className="text-center text-sm text-muted-foreground">Selecione um ou mais serviços</p>
-            {(() => {
-              const masculino = services.filter(s => s.category === 'masculino');
-              const feminino = services.filter(s => s.category === 'feminino');
-              const renderService = (s: Service) => {
+            <div className="space-y-3">
+              {services.filter(s => s.category === selectedCategory).map((s) => {
                 const isSelected = selectedServices.some(ss => ss.id === s.id);
                 return (
                   <div
@@ -301,32 +332,11 @@ export default function ClientBooking() {
                     </button>
                   </div>
                 );
-              };
-              return (
-                <div className="space-y-6">
-                  {masculino.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                        <span>🧔</span> Masculino
-                      </h3>
-                      <div className="space-y-3">
-                        {masculino.map(renderService)}
-                      </div>
-                    </div>
-                  )}
-                  {feminino.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                        <span>💇‍♀️</span> Feminino
-                      </h3>
-                      <div className="space-y-3">
-                        {feminino.map(renderService)}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
+              })}
+              {services.filter(s => s.category === selectedCategory).length === 0 && (
+                <p className="text-center text-muted-foreground py-8">Nenhum serviço disponível nesta categoria</p>
+              )}
+            </div>
 
             {selectedServices.length > 0 && (
               <div className="space-y-3">
