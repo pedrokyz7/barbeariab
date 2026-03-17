@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { BarberSidebar } from './BarberSidebar';
+import { NotificationBell } from './NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
 import logo from '@/assets/logo.jpg';
 
@@ -22,6 +23,9 @@ export function BarberLayout({ children }: { children: ReactNode }) {
                 {shortName}
               </span>
             )}
+            <div className="ml-auto">
+              <NotificationBell />
+            </div>
           </header>
           <main className="flex-1 p-6 overflow-auto">
             {children}
