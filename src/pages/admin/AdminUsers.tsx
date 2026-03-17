@@ -247,7 +247,7 @@ export default function AdminUsers() {
                   </div>
                   {selfErrors.password && <p className="text-xs text-destructive">{selfErrors.password}</p>}
                   {selfForm.password && !selfErrors.password && (
-                    <p className="text-xs text-emerald-500">Senha válida ✓</p>
+                    <p className="text-xs text-primary">Senha válida ✓</p>
                   )}
                 </div>
 
