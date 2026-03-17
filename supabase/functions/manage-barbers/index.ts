@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
 
       const { data: profiles } = await supabaseAdmin
         .from("profiles")
-        .select("user_id, full_name, phone")
+        .select("user_id, full_name, phone, is_available, avatar_url")
         .in("user_id", barberIds);
 
       const barbers = [];
@@ -103,6 +103,8 @@ Deno.serve(async (req) => {
           full_name: profile?.full_name || "",
           phone: profile?.phone || "",
           email: u?.email || "",
+          is_available: profile?.is_available ?? true,
+          avatar_url: profile?.avatar_url || "",
         });
       }
 
