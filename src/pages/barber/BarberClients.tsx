@@ -44,7 +44,7 @@ export default function BarberClients() {
       
       const { data: allProfiles } = await supabase
         .from('profiles')
-        .select('user_id, full_name, phone');
+        .select('user_id, full_name, phone, avatar_url');
 
       if (!allProfiles?.length) return;
 
