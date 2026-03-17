@@ -298,21 +298,21 @@ export default function BarberManageBarbers() {
                         <p className="text-sm text-muted-foreground text-center py-4">Carregando estatísticas...</p>
                       ) : stats ? (
                         <>
-                          <div className="grid grid-cols-3 gap-3">
-                            <div className="bg-accent/10 rounded-xl p-3 text-center">
-                              <Users className="w-5 h-5 mx-auto mb-1 text-primary" />
-                              <p className="text-2xl font-bold">{stats.totalClients}</p>
-                              <p className="text-xs text-muted-foreground">Clientes</p>
+                          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                            <div className="bg-accent/10 rounded-xl p-2 sm:p-3 text-center">
+                              <Users className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 text-primary" />
+                              <p className="text-lg sm:text-2xl font-bold">{stats.totalClients}</p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground">Clientes</p>
                             </div>
-                            <div className="bg-accent/10 rounded-xl p-3 text-center">
-                              <Scissors className="w-5 h-5 mx-auto mb-1 text-primary" />
-                              <p className="text-2xl font-bold">{stats.totalAppointments}</p>
-                              <p className="text-xs text-muted-foreground">Atendimentos</p>
+                            <div className="bg-accent/10 rounded-xl p-2 sm:p-3 text-center">
+                              <Scissors className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 text-primary" />
+                              <p className="text-lg sm:text-2xl font-bold">{stats.totalAppointments}</p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground">Atendimentos</p>
                             </div>
-                            <div className="bg-accent/10 rounded-xl p-3 text-center">
-                              <DollarSign className="w-5 h-5 mx-auto mb-1 text-primary" />
-                              <p className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</p>
-                              <p className="text-xs text-muted-foreground">Faturamento</p>
+                            <div className="bg-accent/10 rounded-xl p-2 sm:p-3 text-center">
+                              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 text-primary" />
+                              <p className="text-lg sm:text-2xl font-bold truncate">{formatCurrency(stats.totalRevenue)}</p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground">Faturamento</p>
                             </div>
                           </div>
 
