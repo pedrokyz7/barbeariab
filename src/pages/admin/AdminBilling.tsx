@@ -428,6 +428,11 @@ export default function AdminBilling() {
                             <XCircle className="w-3 h-3 mr-1" /> Inativo
                           </Badge>
                         ) : null}
+                        {admin.is_frozen && (
+                          <Badge variant="destructive" className="text-[10px]">
+                            <Lock className="w-3 h-3 mr-1" /> Congelada
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-[11px] text-muted-foreground">
                         Total pago: <span className="font-semibold text-foreground">{formatCurrency(adminPaid)}</span>
