@@ -247,7 +247,18 @@ export default function BarberManageBarbers() {
                       )}
                     </div>
                     <div className="flex items-center gap-1">
-                      {role === 'admin' && ( /* edit btn */
+                      {/* Availability toggle */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleAvailability(b.user_id, !b.is_available);
+                        }}
+                        className="p-2 rounded-lg hover:bg-accent/20 transition-colors"
+                        title={b.is_available ? 'Disponível – clique para desativar' : 'Indisponível – clique para ativar'}
+                      >
+                        <Circle className={`w-4 h-4 ${b.is_available ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'}`} />
+                      </button>
+                      {role === 'admin' && (
                         <button
                           onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditName(b.full_name); }}
                           className="p-2 rounded-lg hover:bg-accent/20 text-muted-foreground hover:text-foreground transition-colors"
