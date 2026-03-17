@@ -307,6 +307,8 @@ export default function AdminBilling() {
       if (error) {
         toast.error('Erro ao ativar assinatura');
       } else {
+        const now = new Date().toISOString();
+        setLastActivatedPayments(prev => ({ ...prev, [admin.user_id]: now }));
         setSubscriptions(prev => ({
           ...prev,
           [admin.user_id]: { subscribed: true },
