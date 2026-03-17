@@ -212,13 +212,26 @@ export default function ClientBooking() {
                 {barbers.map((b) => (
                   <button
                     key={b.user_id}
-                    onClick={() => { setSelectedBarber(b); setStep('service'); }}
-                    className="glass-card p-6 text-center hover:border-primary transition-all animate-press"
+                    onClick={() => { if (b.is_available) { setSelectedBarber(b); setStep('service'); } }}
+                    disabled={!b.is_available}
+                    className={`glass-card p-6 text-center transition-all animate-press relative ${
+                      b.is_available ? 'hover:border-primary' : 'opacity-50 cursor-not-allowed'
+                    }`}
                   >
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                      <Scissors className="w-7 h-7 text-primary" />
+                    <div className="absolute top-2 right-2">
+                      <Circle className={`w-3 h-3 ${b.is_available ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'}`} />
+                    </div>
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3 overflow-hidden">
+                      {b.avatar_url ? (
+                        <img src={b.avatar_url} alt={b.full_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Scissors className="w-7 h-7 text-primary" />
+                      )}
                     </div>
                     <p className="font-medium">{b.full_name || 'Barbeiro'}</p>
+                    <p className={`text-xs mt-1 ${b.is_available ? 'text-green-500' : 'text-red-500'}`}>
+                      {b.is_available ? 'Disponível' : 'Indisponível'}
+                    </p>
                   </button>
                 ))}
               </div>
