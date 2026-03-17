@@ -101,58 +101,6 @@ export default function BarberDashboard() {
     });
   };
 
-  const fetchBarberEarnings = async () => {
-    if (!user) return;
-    // Get barbers under this admin
-    const { data: barbers } = await supabase
-      .from('profiles')
-      .select('user_id, full_name')
-      .eq('admin_id', user.id);
-
-    // Include self
-    const { data: selfProfile } = await supabase
-      .from('profiles')
-      .select('user_id, full_name')
-      .eq('user_id', user.id)
-      .single();
-
-    const allBarbers = [
-      ...(selfProfile ? [{ user_id: selfProfile.user_id, full_name: selfProfile.full_name }] : []),
-      ...(barbers || []).filter(b => b.user_id !== user.id),
-    ];
-
-    if (allBarbers.length === 0) return;
-
-    const d = getDateRanges();
-    const barberIds = allBarbers.map(b => b.user_id);
-
-    // Fetch all appointments for these barbers in relevant periods
-    const [todayRes, weekRes, monthRes, prevDayRes, prevWeekRes, prevMonthRes] = await Promise.all([
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).eq('appointment_date', d.today).eq('payment_status', 'paid'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.weekStart).lte('appointment_date', d.weekEnd).eq('payment_status', 'paid'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.monthStart).lte('appointment_date', d.monthEnd).eq('payment_status', 'paid'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).eq('appointment_date', d.yesterday).eq('payment_status', 'paid'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.prevWeekStart).lte('appointment_date', d.prevWeekEnd).eq('payment_status', 'paid'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.prevMonthStart).lte('appointment_date', d.prevMonthEnd).eq('payment_status', 'paid'),
-    ]);
-
-    const sumByBarber = (data: any[] | null, barberId: string) =>
-      data?.filter(a => a.barber_id === barberId).reduce((s, a) => s + Number(a.price), 0) ?? 0;
-
-    const earnings: BarberEarnings[] = allBarbers.map(b => ({
-      barber_id: b.user_id,
-      barber_name: b.full_name || 'Barbeiro',
-      today: sumByBarber(todayRes.data, b.user_id),
-      week: sumByBarber(weekRes.data, b.user_id),
-      month: sumByBarber(monthRes.data, b.user_id),
-      prevDay: sumByBarber(prevDayRes.data, b.user_id),
-      prevWeek: sumByBarber(prevWeekRes.data, b.user_id),
-      prevMonth: sumByBarber(prevMonthRes.data, b.user_id),
-    }));
-
-    setBarberEarnings(earnings);
-    setConsolidatedMonth(earnings.reduce((s, e) => s + e.month, 0));
-  };
 
   const fetchUpcoming = async () => {
     if (!user) return;
