@@ -218,6 +218,8 @@ export default function ClientProfile() {
             />
           </div>
 
+          <ThemeSelector />
+
           <Button type="submit" disabled={isSaving} className="w-full h-12 rounded-xl text-base font-semibold">
             <Save className="w-4 h-4 mr-2" />
             {isSaving ? 'Salvando...' : 'Salvar Perfil'}
