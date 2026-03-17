@@ -55,6 +55,7 @@ export default function AdminBilling() {
   // Payment tracking
   const [paymentTotals, setPaymentTotals] = useState<Record<string, number>>({});
   const [totalReceived, setTotalReceived] = useState(0);
+  const [lastActivatedPayments, setLastActivatedPayments] = useState<Record<string, string>>({});
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentAdmin, setPaymentAdmin] = useState<BarberAdmin | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
