@@ -212,6 +212,28 @@ export default function AdminBilling() {
     setPaymentDialogOpen(true);
   };
 
+  const handleFreezeToggle = async (admin: BarberAdmin) => {
+    const action = admin.is_frozen ? 'unfreeze_account' : 'freeze_account';
+    const label = admin.is_frozen ? 'descongelada' : 'congelada';
+    setFreezingUser(admin.user_id);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-management', {
+        body: { action, target_user_id: admin.user_id },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || 'Erro ao alterar status da conta');
+      } else {
+        toast.success(`Conta ${label} com sucesso! ${data.affected_count} conta(s) afetada(s).`);
+        setBarberAdmins(prev => prev.map(a =>
+          a.user_id === admin.user_id ? { ...a, is_frozen: !admin.is_frozen } : a
+        ));
+      }
+    } catch {
+      toast.error('Erro ao alterar status da conta');
+    }
+    setFreezingUser(null);
+  };
+
   const handleRecordPayment = async () => {
     if (!paymentAdmin) return;
     const amount = parseFloat(paymentAmount.replace(',', '.'));
