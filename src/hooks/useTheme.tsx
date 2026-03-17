@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 type Theme = 'dark' | 'light' | 'system';
 
@@ -12,15 +13,29 @@ function applyTheme(theme: Theme) {
   document.documentElement.classList.add(resolved);
 }
 
+function getStorageKey(userId: string | undefined) {
+  return userId ? `app-theme-${userId}` : 'app-theme';
+}
+
 export function useTheme() {
+  const { user } = useAuth();
   const [theme, setThemeState] = useState<Theme>(() => {
-    return (localStorage.getItem('app-theme') as Theme) || 'dark';
+    const key = getStorageKey(user?.id);
+    return (localStorage.getItem(key) as Theme) || 'dark';
   });
+
+  // Re-read theme when user changes
+  useEffect(() => {
+    const key = getStorageKey(user?.id);
+    const saved = (localStorage.getItem(key) as Theme) || 'dark';
+    setThemeState(saved);
+  }, [user?.id]);
 
   useEffect(() => {
     applyTheme(theme);
-    localStorage.setItem('app-theme', theme);
-  }, [theme]);
+    const key = getStorageKey(user?.id);
+    localStorage.setItem(key, theme);
+  }, [theme, user?.id]);
 
   useEffect(() => {
     if (theme !== 'system') return;
