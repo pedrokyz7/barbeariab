@@ -192,31 +192,37 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin_id: string | null
           avatar_url: string | null
           created_at: string
           full_name: string
           id: string
           is_available: boolean
+          is_frozen: boolean
           phone: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          admin_id?: string | null
           avatar_url?: string | null
           created_at?: string
           full_name?: string
           id?: string
           is_available?: boolean
+          is_frozen?: boolean
           phone?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          admin_id?: string | null
           avatar_url?: string | null
           created_at?: string
           full_name?: string
           id?: string
           is_available?: boolean
+          is_frozen?: boolean
           phone?: string | null
           updated_at?: string
           user_id?: string

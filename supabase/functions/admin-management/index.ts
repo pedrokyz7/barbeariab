@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
 
       const { data: profiles } = await supabaseAdmin
         .from("profiles")
-        .select("user_id, full_name, phone, is_available, avatar_url")
+        .select("user_id, full_name, phone, is_available, avatar_url, is_frozen")
         .in("user_id", userIds);
 
       const users = [];
@@ -91,6 +91,7 @@ Deno.serve(async (req) => {
           email: u?.email || "",
           is_available: profile?.is_available ?? true,
           avatar_url: profile?.avatar_url || "",
+          is_frozen: profile?.is_frozen ?? false,
           roles: userRoles,
           created_at: u?.created_at || "",
         });
@@ -152,6 +153,30 @@ Deno.serve(async (req) => {
         .reduce((sum: number, a: any) => sum + Number(a.price || 0), 0) || 0;
 
       return new Response(JSON.stringify({ totalBarbers, totalAdmins, totalClients, totalAppointments, totalRevenue }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "freeze_account" || action === "unfreeze_account") {
+      if (!target_user_id) {
+        return new Response(JSON.stringify({ error: "target_user_id é obrigatório" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const frozen = action === "freeze_account";
+
+      // Freeze the admin
+      await supabaseAdmin.from("profiles").update({ is_frozen: frozen }).eq("user_id", target_user_id);
+
+      // Find all barbers managed by this admin
+      const { data: managedProfiles } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id")
+        .eq("admin_id", target_user_id);
+
+      if (managedProfiles && managedProfiles.length > 0) {
+        const managedIds = managedProfiles.map((p: any) => p.user_id);
+        await supabaseAdmin.from("profiles").update({ is_frozen: frozen }).in("user_id", managedIds);
+      }
+
+      const count = (managedProfiles?.length || 0) + 1;
+      return new Response(JSON.stringify({ success: true, frozen, affected_count: count }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     return new Response(JSON.stringify({ error: "Ação inválida" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });

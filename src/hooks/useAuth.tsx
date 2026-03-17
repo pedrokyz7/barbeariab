@@ -9,6 +9,7 @@ interface AuthContextType {
   session: Session | null;
   role: UserRole;
   loading: boolean;
+  isFrozen: boolean;
   signUp: (email: string, password: string, fullName: string, role: 'barber' | 'client', phone?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ user: User | null }>;
   signOut: () => Promise<void>;
@@ -21,11 +22,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
+  const [isFrozen, setIsFrozen] = useState(false);
 
   const clearAuthState = () => {
     setUser(null);
     setSession(null);
     setRole(null);
+    setIsFrozen(false);
   };
 
   const fetchRole = async (userId: string, fallbackRole?: UserRole): Promise<UserRole> => {
@@ -73,6 +76,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       currentSession.user.id,
       (currentSession.user.user_metadata?.role as UserRole) ?? null,
     );
+
+    // Check frozen status
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_frozen')
+      .eq('user_id', currentSession.user.id)
+      .maybeSingle();
+    setIsFrozen(profile?.is_frozen ?? false);
 
     setLoading(false);
   };
@@ -142,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, role, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, role, loading, isFrozen, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

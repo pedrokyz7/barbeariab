@@ -3,10 +3,11 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { BarberSidebar } from './BarberSidebar';
 import { NotificationBell } from './NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
+import { Lock } from 'lucide-react';
 import logo from '@/assets/logo.jpg';
 
 export function BarberLayout({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, isFrozen } = useAuth();
   const fullName = user?.user_metadata?.full_name || '';
   const shortName = fullName.trim().split(/\s+/).slice(0, 2).join(' ');
 
@@ -28,7 +29,17 @@ export function BarberLayout({ children }: { children: ReactNode }) {
             </div>
           </header>
           <main className="flex-1 p-6 overflow-auto">
-            {children}
+            {isFrozen ? (
+              <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                <Lock className="w-16 h-16 text-destructive" />
+                <h2 className="text-2xl font-bold text-destructive">Conta Congelada</h2>
+                <p className="text-muted-foreground text-center max-w-md">
+                  Sua conta foi congelada pelo administrador. Entre em contato com o suporte para regularizar sua situação.
+                </p>
+              </div>
+            ) : (
+              children
+            )}
           </main>
         </div>
       </div>

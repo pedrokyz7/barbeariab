@@ -5,7 +5,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import {
   CreditCard, CheckCircle, XCircle, ExternalLink, RefreshCw,
-  Shield, Settings, Save, DollarSign, Plus
+  Shield, Settings, Save, DollarSign, Plus, Lock, Unlock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,7 @@ interface BarberAdmin {
   full_name: string;
   email: string;
   roles: string[];
+  is_frozen: boolean;
 }
 
 interface SubscriptionInfo {
@@ -60,6 +61,7 @@ export default function AdminBilling() {
   const [paymentNotes, setPaymentNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('pix');
   const [savingPayment, setSavingPayment] = useState(false);
+  const [freezingUser, setFreezingUser] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
@@ -208,6 +210,28 @@ export default function AdminBilling() {
     setPaymentNotes('');
     setPaymentMethod('pix');
     setPaymentDialogOpen(true);
+  };
+
+  const handleFreezeToggle = async (admin: BarberAdmin) => {
+    const action = admin.is_frozen ? 'unfreeze_account' : 'freeze_account';
+    const label = admin.is_frozen ? 'descongelada' : 'congelada';
+    setFreezingUser(admin.user_id);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-management', {
+        body: { action, target_user_id: admin.user_id },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || 'Erro ao alterar status da conta');
+      } else {
+        toast.success(`Conta ${label} com sucesso! ${data.affected_count} conta(s) afetada(s).`);
+        setBarberAdmins(prev => prev.map(a =>
+          a.user_id === admin.user_id ? { ...a, is_frozen: !admin.is_frozen } : a
+        ));
+      }
+    } catch {
+      toast.error('Erro ao alterar status da conta');
+    }
+    setFreezingUser(null);
   };
 
   const handleRecordPayment = async () => {
@@ -377,6 +401,7 @@ export default function AdminBilling() {
               const isChecking = checkingEmail === admin.user_id;
               const isCreating = creatingCheckout === admin.user_id;
               const adminPaid = paymentTotals[admin.user_id] || 0;
+              const isFreezing = freezingUser === admin.user_id;
 
               return (
                 <div key={admin.user_id} className="glass-card p-4 animate-slide-up">
@@ -403,6 +428,11 @@ export default function AdminBilling() {
                             <XCircle className="w-3 h-3 mr-1" /> Inativo
                           </Badge>
                         ) : null}
+                        {admin.is_frozen && (
+                          <Badge variant="destructive" className="text-[10px]">
+                            <Lock className="w-3 h-3 mr-1" /> Congelada
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-[11px] text-muted-foreground">
                         Total pago: <span className="font-semibold text-foreground">{formatCurrency(adminPaid)}</span>
@@ -440,6 +470,28 @@ export default function AdminBilling() {
                         >
                           <CreditCard className="w-3.5 h-3.5 mr-1.5" />
                           {isCreating ? 'Enviando...' : 'Cobrar'}
+                        </Button>
+                      )}
+                      {admin.is_frozen ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleFreezeToggle(admin)}
+                          disabled={isFreezing}
+                          className="border-primary/30 text-primary hover:bg-primary/10"
+                        >
+                          <Unlock className="w-3.5 h-3.5 mr-1.5" />
+                          {isFreezing ? 'Processando...' : 'Descongelar'}
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleFreezeToggle(admin)}
+                          disabled={isFreezing}
+                        >
+                          <Lock className="w-3.5 h-3.5 mr-1.5" />
+                          {isFreezing ? 'Processando...' : 'Congelar'}
                         </Button>
                       )}
                       <Button
