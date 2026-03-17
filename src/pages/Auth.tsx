@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Scissors, User, Mail, Lock, ArrowRight, Phone } from 'lucide-react';
+import { Scissors, User, Mail, Lock, ArrowRight, Phone, Eye, EyeOff } from 'lucide-react';
 import logo from '@/assets/logo.jpg';
 import { toast } from 'sonner';
 
@@ -26,6 +26,7 @@ export default function Auth() {
   const [selectedRole, setSelectedRole] = useState<'barber' | 'client'>('client');
   const [loginRole, setLoginRole] = useState<'barber' | 'client'>('client');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [showEmailSuggestions, setShowEmailSuggestions] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const { signIn, signUp } = useAuth();
@@ -204,14 +205,21 @@ export default function Auth() {
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-12 bg-card border-border rounded-xl"
+              className="pl-10 pr-10 h-12 bg-card border-border rounded-xl"
               required
               minLength={6}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
           </div>
 
           <Button
