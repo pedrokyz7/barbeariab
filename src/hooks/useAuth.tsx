@@ -9,6 +9,7 @@ interface AuthContextType {
   session: Session | null;
   role: UserRole;
   loading: boolean;
+  isFrozen: boolean;
   signUp: (email: string, password: string, fullName: string, role: 'barber' | 'client', phone?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ user: User | null }>;
   signOut: () => Promise<void>;
