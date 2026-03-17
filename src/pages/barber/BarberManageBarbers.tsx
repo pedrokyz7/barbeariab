@@ -175,6 +175,7 @@ export default function BarberManageBarbers() {
     setForm({ full_name: '', email: '', password: '', phone: '' });
     setShowForm(false);
     fetchBarbers();
+    fetchEarningsSummary();
   };
   const handleEditSave = async (barberId: string) => {
     const { full_name, email, password } = editForm;
