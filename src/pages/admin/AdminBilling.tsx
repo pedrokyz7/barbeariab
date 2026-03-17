@@ -553,7 +553,7 @@ export default function AdminBilling() {
                           {isFreezing ? 'Processando...' : 'Congelar'}
                         </Button>
                       )}
-                      {!isActive && (
+                      {!isActive && !admin.is_frozen && (
                         <Button
                           size="sm"
                           variant="outline"
