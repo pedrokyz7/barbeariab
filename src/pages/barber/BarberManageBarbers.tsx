@@ -130,6 +130,18 @@ export default function BarberManageBarbers() {
     fetchBarbers();
   };
 
+  const handleToggleAvailability = async (barberId: string, newValue: boolean) => {
+    const { data, error } = await supabase.functions.invoke('manage-barbers', {
+      body: { action: 'toggle_availability', barber_user_id: barberId, is_available: newValue },
+    });
+    if (error || data?.error) {
+      toast.error('Erro ao alterar disponibilidade');
+      return;
+    }
+    toast.success(newValue ? 'Barbeiro disponível' : 'Barbeiro indisponível');
+    setBarbers(prev => prev.map(b => b.user_id === barberId ? { ...b, is_available: newValue } : b));
+  };
+
   const handleDelete = async (barberUserId: string, name: string) => {
     if (!confirm(`Tem certeza que deseja remover ${name}?`)) return;
     const { data, error } = await supabase.functions.invoke('manage-barbers', {
