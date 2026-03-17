@@ -152,6 +152,8 @@ export default function BarberSubscriptions() {
       year: 'numeric',
     });
 
+  const periodLabel = settings?.billing_period === 'quarterly' ? 'trimestre' : 'mês';
+  const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
   const isActive = !!lastActivated;
 
   const methodLabels: Record<string, string> = {
