@@ -16,16 +16,6 @@ interface Stats {
   prevMonth: number;
 }
 
-interface BarberEarnings {
-  barber_id: string;
-  barber_name: string;
-  today: number;
-  week: number;
-  month: number;
-  prevDay: number;
-  prevWeek: number;
-  prevMonth: number;
-}
 
 interface UpcomingAppointment {
   id: string;
