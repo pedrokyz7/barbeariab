@@ -168,6 +168,9 @@ export default function BarberDashboard() {
         </div>
 
 
+        {/* Charts */}
+        {user && <EarningsCharts barberId={user.id} />}
+
         {/* Upcoming */}
         <div className="glass-card p-6">
           <h2 className="text-xl font-semibold font-display mb-4">Próximos Agendamentos</h2>

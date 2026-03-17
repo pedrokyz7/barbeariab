@@ -144,6 +144,9 @@ export default function BarberFinances() {
           ))}
         </div>
 
+        {/* Charts */}
+        {user && <EarningsCharts barberId={user.id} />}
+
         <div className="glass-card p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
             <h2 className="text-xl font-semibold font-display">Atendimentos</h2>
