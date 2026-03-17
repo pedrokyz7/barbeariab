@@ -206,6 +206,7 @@ export default function AdminBilling() {
     setPaymentAdmin(admin);
     setPaymentAmount(billingSettings ? String(billingSettings.amount) : '99.90');
     setPaymentNotes('');
+    setPaymentMethod('pix');
     setPaymentDialogOpen(true);
   };
 
