@@ -246,7 +246,7 @@ export default function ClientAppointments() {
           <p className="text-center text-muted-foreground py-12 glass-card">Carregando agendamentos...</p>
         ) : appointments.length === 0 ? (
           <p className="text-center text-muted-foreground py-12 glass-card">
-            Nenhum agendamento {filter === 'upcoming' ? 'próximo' : filter === 'cancelled' ? 'cancelado' : 'concluído'}
+            Nenhum agendamento {filter === 'upcoming' ? 'encontrado' : filter === 'cancelled' ? 'cancelado' : 'concluído'}
           </p>
         ) : (
           <div className="space-y-3">
