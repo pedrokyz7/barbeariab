@@ -68,7 +68,8 @@ export default function BarberSchedule() {
       status: a.status,
       price: a.price,
       payment_status: a.payment_status,
-      client_name: profileMap[a.client_id] || 'Cliente',
+      client_name: profileMap[a.client_id]?.name || 'Cliente',
+      client_phone: profileMap[a.client_id]?.phone || null,
       service_name: serviceMap[a.service_id] || 'Serviço',
     })));
     setLoading(false);
