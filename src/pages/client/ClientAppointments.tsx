@@ -52,7 +52,7 @@ const compareAppointmentsDesc = (
 
 const isUpcomingAppointment = (appointment: { appointment_date: string; end_time: string; status: string }, now: Date) => {
   const appointmentEnd = new Date(`${appointment.appointment_date}T${appointment.end_time}`);
-  return appointment.status !== 'cancelled' && appointmentEnd >= now;
+  return appointment.status !== 'cancelled' && appointment.status !== 'completed' && appointmentEnd >= now;
 };
 
 const isSameBookingGroup = (group: AppointmentGroup, appointment: EnrichedAppointment) =>
