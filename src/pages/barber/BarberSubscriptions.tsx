@@ -294,8 +294,14 @@ export default function BarberSubscriptions() {
                 }`}>
                   <Clock className="w-4 h-4" />
                   {daysRemaining <= 0
-                    ? 'Assinatura vencida'
+                    ? `Assinatura vencida há ${Math.abs(daysRemaining)} dia(s)`
                     : `${daysRemaining} dia(s) restante(s) para o vencimento`}
+                </div>
+              )}
+              {daysRemaining === null && !isActive && (
+                <div className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium bg-destructive/10 text-destructive">
+                  <XCircle className="w-4 h-4" />
+                  Nenhuma assinatura ativa
                 </div>
               )}
             </div>
