@@ -1,4 +1,4 @@
-import { Calendar, DollarSign, Scissors, Clock, LogOut, LayoutDashboard, Users, UserPlus, User } from 'lucide-react';
+import { Calendar, DollarSign, Scissors, Clock, LogOut, LayoutDashboard, Users, UserPlus, User, CreditCard } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useMemo } from 'react';
@@ -26,6 +26,7 @@ const adminOnlyItems = [
   { title: 'Barbeiros', url: '/barber/barbers', icon: UserPlus },
 ];
 
+const subscriptionItem = { title: 'Assinaturas', url: '/barber/subscriptions', icon: CreditCard };
 const profileItem = { title: 'Perfil', url: '/barber/profile', icon: User };
 
 export function BarberSidebar() {
@@ -33,7 +34,7 @@ export function BarberSidebar() {
   const collapsed = state === 'collapsed';
   const { signOut, role, user } = useAuth();
   const isAdmin = role === 'admin';
-  const items = useMemo(() => isAdmin ? [...baseItems, ...adminOnlyItems, profileItem] : [...baseItems, profileItem], [isAdmin]);
+  const items = useMemo(() => isAdmin ? [...baseItems, ...adminOnlyItems, subscriptionItem, profileItem] : [...baseItems, subscriptionItem, profileItem], [isAdmin]);
   const fullName = user?.user_metadata?.full_name || '';
   const shortName = fullName.trim().split(/\s+/).slice(0, 2).join(' ');
 

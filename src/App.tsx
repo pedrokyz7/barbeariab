@@ -15,6 +15,7 @@ import BarberFinances from "./pages/barber/BarberFinances";
 import BarberClients from "./pages/barber/BarberClients";
 import BarberManageBarbers from "./pages/barber/BarberManageBarbers";
 import BarberProfile from "./pages/barber/BarberProfile";
+import BarberSubscriptions from "./pages/barber/BarberSubscriptions";
 import ClientBooking from "./pages/client/ClientBooking";
 import ClientAppointments from "./pages/client/ClientAppointments";
 import ClientSpending from "./pages/client/ClientSpending";
@@ -53,6 +54,7 @@ const App = () => {
             <Route path="/barber/clients" element={<BarberClients />} />
             <Route path="/barber/barbers" element={<BarberManageBarbers />} />
             <Route path="/barber/profile" element={<BarberProfile />} />
+            <Route path="/barber/subscriptions" element={<BarberSubscriptions />} />
             <Route path="/client" element={<ClientBooking />} />
             <Route path="/client/appointments" element={<ClientAppointments />} />
             <Route path="/client/spending" element={<ClientSpending />} />
