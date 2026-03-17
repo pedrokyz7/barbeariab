@@ -51,7 +51,9 @@ export default function BarberManageBarbers() {
   const [statsCache, setStatsCache] = useState<Record<string, BarberStats>>({});
   const [loadingStats, setLoadingStats] = useState<string | null>(null);
   const [editingBarber, setEditingBarber] = useState<string | null>(null);
-  const [editName, setEditName] = useState('');
+  const [editForm, setEditForm] = useState({ full_name: '', email: '', password: '' });
+  const [showEditPassword, setShowEditPassword] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
     if (user) fetchBarbers();
