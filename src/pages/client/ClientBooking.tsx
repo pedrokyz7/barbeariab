@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Scissors, ArrowLeft, ArrowRight, Clock, DollarSign, Calendar, CheckCircle, User, Circle, Banknote, CreditCard } from 'lucide-react';
+import { Scissors, ArrowLeft, ArrowRight, Clock, DollarSign, Calendar, CheckCircle, User, Circle, Banknote, CreditCard, Sparkles } from 'lucide-react';
 import { ServiceMediaCarousel } from '@/components/client/ServiceMediaCarousel';
 import { format, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
