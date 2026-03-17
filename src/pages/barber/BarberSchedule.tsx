@@ -182,6 +182,12 @@ export default function BarberSchedule() {
                       </div>
                     )}
                     <span className="font-semibold font-display whitespace-nowrap">R$ {Number(apt.price).toFixed(2)}</span>
+                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${
+                      apt.payment_method === 'local' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-primary/20 text-primary'
+                    }`}>
+                      {apt.payment_method === 'local' ? <Banknote className="w-3 h-3" /> : <CreditCard className="w-3 h-3" />}
+                      {apt.payment_method === 'local' ? 'No local' : 'Online'}
+                    </span>
                   </div>
                 </div>
               ))}
