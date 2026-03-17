@@ -35,6 +35,7 @@ interface AppointmentGroup {
   price: number;
   barber_name: string;
   service_names: string[];
+  payment_method: string;
 }
 
 const getAppointmentTimestamp = (appointment: { appointment_date: string; start_time: string }) =>
