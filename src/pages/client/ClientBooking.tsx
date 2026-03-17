@@ -26,7 +26,9 @@ interface Service {
   category: string;
 }
 
-type Step = 'barber' | 'service' | 'datetime' | 'confirm';
+type Step = 'barber' | 'category' | 'service' | 'datetime' | 'confirm';
+
+const STEPS: Step[] = ['barber', 'category', 'service', 'datetime', 'confirm'];
 
 export default function ClientBooking() {
   const { user } = useAuth();
@@ -35,6 +37,7 @@ export default function ClientBooking() {
   const [services, setServices] = useState<Service[]>([]);
   const [slots, setSlots] = useState<string[]>([]);
   const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<'masculino' | 'feminino' | null>(null);
   const [selectedServices, setSelectedServices] = useState<Service[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
