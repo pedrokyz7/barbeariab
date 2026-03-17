@@ -176,6 +176,7 @@ export default function ClientBooking() {
       toast.success('Agendamento realizado com sucesso!');
       setStep('barber');
       setSelectedBarber(null);
+      setSelectedCategory(null);
       setSelectedServices([]);
       setSelectedTime(null);
     } catch (error: any) {
