@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
 import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users, CalendarClock, Pencil, Check, X, ArrowUpRight, ArrowDownRight, TrendingUp, Calendar } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from 'date-fns';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
