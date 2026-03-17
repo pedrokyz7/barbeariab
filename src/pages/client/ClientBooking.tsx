@@ -175,12 +175,7 @@ export default function ClientBooking() {
         currentStart = svcEnd;
       }
 
-      toast.success('Agendamento realizado com sucesso!');
-      setStep('barber');
-      setSelectedBarber(null);
-      setSelectedCategory(null);
-      setSelectedServices([]);
-      setSelectedTime(null);
+      setStep('success');
     } catch (error: any) {
       toast.error('Erro ao agendar: ' + error.message);
     } finally {
