@@ -280,7 +280,8 @@ export default function AdminBilling() {
     if (error) {
       toast.error('Erro ao registrar pagamento');
     } else {
-      // Update subscription status locally to show as active
+      const now = new Date().toISOString();
+      setLastActivatedPayments(prev => ({ ...prev, [paymentAdmin.user_id]: now }));
       setSubscriptions(prev => ({
         ...prev,
         [paymentAdmin.user_id]: { subscribed: true },
