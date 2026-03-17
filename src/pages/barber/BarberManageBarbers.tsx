@@ -32,10 +32,20 @@ interface UpcomingAppointment {
   price: number;
 }
 
+interface BarberEarnings {
+  today: number;
+  prevDay: number;
+  week: number;
+  prevWeek: number;
+  month: number;
+  prevMonth: number;
+}
+
 interface BarberStats {
   totalClients: number;
   totalAppointments: number;
   totalRevenue: number;
+  earnings?: BarberEarnings;
   clients: ClientDetail[];
   upcoming: UpcomingAppointment[];
 }
