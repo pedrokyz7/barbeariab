@@ -124,9 +124,9 @@ export default function BarberSchedule() {
                 <span className="text-xs text-muted-foreground">({grouped[date].length})</span>
               </div>
               {grouped[date].map((apt) => (
-                <div key={apt.id} className="glass-card p-4 flex items-center justify-between animate-slide-up">
-                  <div className="flex items-center gap-4">
-                    <div className="text-center min-w-[50px]">
+                <div key={apt.id} className="glass-card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between animate-slide-up gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="text-center min-w-[50px] shrink-0">
                       <p className="font-bold font-display">{apt.start_time.slice(0, 5)}</p>
                       <p className="text-xs text-muted-foreground">{apt.end_time.slice(0, 5)}</p>
                     </div>
@@ -139,9 +139,9 @@ export default function BarberSchedule() {
                         </div>
                       )}
                     </div>
-                    <div>
-                      <p className="font-medium">{apt.client_name}</p>
-                      <p className="text-sm text-muted-foreground">{apt.service_name}</p>
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{apt.client_name}</p>
+                      <p className="text-sm text-muted-foreground truncate">{apt.service_name}</p>
                       {apt.client_phone && (
                         <a
                           href={`https://wa.me/55${apt.client_phone}`}
@@ -149,14 +149,14 @@ export default function BarberSchedule() {
                           rel="noopener noreferrer"
                           className="flex items-center gap-1.5 text-xs text-green-500 hover:text-green-400 transition-colors mt-1"
                         >
-                          <MessageCircle className="w-3.5 h-3.5" />
+                          <MessageCircle className="w-3.5 h-3.5 shrink-0" />
                           <span>(+55) {apt.client_phone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')}</span>
                         </a>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 flex-wrap justify-end">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[apt.status]}`}>
+                  <div className="flex items-center gap-3 justify-between sm:justify-end pl-[62px] sm:pl-0">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${statusColors[apt.status]}`}>
                       {apt.status === 'scheduled' ? 'Agendado' : apt.status === 'arrived' ? 'Chegou' : apt.status === 'completed' ? 'Concluído' : 'Cancelado'}
                     </span>
                     {(apt.status === 'scheduled' || apt.status === 'arrived') && (
@@ -169,7 +169,7 @@ export default function BarberSchedule() {
                         </button>
                       </div>
                     )}
-                    <span className="font-semibold font-display">R$ {Number(apt.price).toFixed(2)}</span>
+                    <span className="font-semibold font-display whitespace-nowrap">R$ {Number(apt.price).toFixed(2)}</span>
                   </div>
                 </div>
               ))}
