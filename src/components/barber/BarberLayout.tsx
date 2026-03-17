@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import logo from '@/assets/logo.jpg';
 
 export function BarberLayout({ children }: { children: ReactNode }) {
-  const { user, isFrozen } = useAuth();
+  const { user, isFrozen, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const fullName = user?.user_metadata?.full_name || '';
