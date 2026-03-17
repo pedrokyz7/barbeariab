@@ -252,8 +252,10 @@ export default function ClientBooking() {
             </button>
             <h2 className="text-2xl font-bold font-display text-center">Escolha os Serviços</h2>
             <p className="text-center text-sm text-muted-foreground">Selecione um ou mais serviços</p>
-            <div className="space-y-3">
-              {services.map((s) => {
+            {(() => {
+              const masculino = services.filter(s => s.category === 'masculino');
+              const feminino = services.filter(s => s.category === 'feminino');
+              const renderService = (s: Service) => {
                 const isSelected = selectedServices.some(ss => ss.id === s.id);
                 return (
                   <div
@@ -262,7 +264,6 @@ export default function ClientBooking() {
                       isSelected ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/50'
                     }`}
                   >
-                    {/* Service media (photo or video) */}
                     {(s.video_url || s.image_url) && (
                       <div className="w-full aspect-video bg-muted/30 relative overflow-hidden">
                         {s.video_url ? (
@@ -300,8 +301,32 @@ export default function ClientBooking() {
                     </button>
                   </div>
                 );
-              })}
-            </div>
+              };
+              return (
+                <div className="space-y-6">
+                  {masculino.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <span>🧔</span> Masculino
+                      </h3>
+                      <div className="space-y-3">
+                        {masculino.map(renderService)}
+                      </div>
+                    </div>
+                  )}
+                  {feminino.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <span>💇‍♀️</span> Feminino
+                      </h3>
+                      <div className="space-y-3">
+                        {feminino.map(renderService)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {selectedServices.length > 0 && (
               <div className="space-y-3">
