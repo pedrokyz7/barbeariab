@@ -28,7 +28,7 @@ interface Service {
   category: string;
 }
 
-type Step = 'barber' | 'category' | 'service' | 'datetime' | 'confirm';
+type Step = 'barber' | 'category' | 'service' | 'datetime' | 'confirm' | 'success';
 
 const STEPS: Step[] = ['barber', 'category', 'service', 'datetime', 'confirm'];
 
