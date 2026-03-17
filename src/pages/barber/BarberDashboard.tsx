@@ -166,52 +166,6 @@ export default function BarberDashboard() {
           ))}
         </div>
 
-        {/* Consolidated Monthly Total */}
-        {barberEarnings.length > 0 && (
-          <div className="glass-card p-6 bg-gradient-to-br from-success/10 to-success/5 animate-slide-up">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-semibold font-display">Ganho Total do Mês</h2>
-              <BarChart3 className="w-6 h-6 text-success" />
-            </div>
-            <p className="text-3xl font-bold font-display text-success">
-              R$ {consolidatedMonth.toFixed(2)}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Consolidado de {barberEarnings.length} barbeiro{barberEarnings.length > 1 ? 's' : ''}
-            </p>
-          </div>
-        )}
-
-        {/* Per-barber Earnings */}
-        {barberEarnings.length > 0 && (
-          <div className="glass-card p-6">
-            <h2 className="text-xl font-semibold font-display mb-4">Ganhos por Barbeiro</h2>
-            <div className="space-y-4">
-              {barberEarnings.map((b) => (
-                <div key={b.barber_id} className="p-4 rounded-xl bg-secondary/50 animate-slide-up">
-                  <p className="font-semibold mb-3">{b.barber_name}</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Hoje</p>
-                      <p className="text-sm font-bold">R$ {b.today.toFixed(2)}</p>
-                      <PercentBadge current={b.today} previous={b.prevDay} />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Semana</p>
-                      <p className="text-sm font-bold">R$ {b.week.toFixed(2)}</p>
-                      <PercentBadge current={b.week} previous={b.prevWeek} />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Mês</p>
-                      <p className="text-sm font-bold">R$ {b.month.toFixed(2)}</p>
-                      <PercentBadge current={b.month} previous={b.prevMonth} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Upcoming */}
         <div className="glass-card p-6">
