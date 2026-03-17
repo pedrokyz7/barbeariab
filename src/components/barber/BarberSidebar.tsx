@@ -26,6 +26,7 @@ const adminOnlyItems = [
   { title: 'Barbeiros', url: '/barber/barbers', icon: UserPlus },
 ];
 
+const subscriptionItem = { title: 'Assinaturas', url: '/barber/subscriptions', icon: CreditCard };
 const profileItem = { title: 'Perfil', url: '/barber/profile', icon: User };
 
 export function BarberSidebar() {
