@@ -417,7 +417,7 @@ export default function ClientBooking() {
                 >
                   <CreditCard className="w-6 h-6 text-muted-foreground" />
                   <span className="text-sm font-medium">Pagar online</span>
-                  <span className="text-[10px] text-accent font-semibold">Em breve</span>
+                  <span className="text-[10px] text-primary font-semibold animate-pulse">Em breve</span>
                 </button>
               </div>
             </div>
