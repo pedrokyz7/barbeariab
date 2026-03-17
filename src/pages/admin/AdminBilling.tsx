@@ -5,7 +5,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import {
   CreditCard, CheckCircle, XCircle, ExternalLink, RefreshCw,
-  Shield, Settings, Save, DollarSign, Plus
+  Shield, Settings, Save, DollarSign, Plus, Lock, Unlock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
