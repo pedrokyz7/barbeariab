@@ -452,7 +452,8 @@ export default function AdminBilling() {
           <div className="space-y-3">
             {barberAdmins.map((admin) => {
               const sub = subscriptions[admin.user_id];
-              const isActive = sub?.subscribed;
+              const isActiveByDate = isSubscriptionActiveByDate(admin.user_id);
+              const isActive = isActiveByDate || sub?.subscribed;
               const isChecking = checkingEmail === admin.user_id;
               const isCreating = creatingCheckout === admin.user_id;
               const adminPaid = paymentTotals[admin.user_id] || 0;
