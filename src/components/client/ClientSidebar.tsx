@@ -18,7 +18,6 @@ import {
 const items = [
   { title: 'Agendar', url: '/client', icon: CalendarPlus },
   { title: 'Meus Agendamentos', url: '/client/appointments', icon: Calendar },
-  { title: 'Meus Gastos', url: '/client/spending', icon: DollarSign },
   { title: 'Meu Perfil', url: '/client/profile', icon: User },
 ];
 
