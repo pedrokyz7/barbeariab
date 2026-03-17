@@ -133,7 +133,7 @@ export default function BarberSchedule() {
                   </div>
                   <div className="flex items-center gap-3 flex-wrap justify-end">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[apt.status]}`}>
-                      {apt.status === 'scheduled' ? 'Agendado' : apt.status === 'completed' ? 'Concluído' : 'Cancelado'}
+                      {apt.status === 'scheduled' ? 'Agendado' : apt.status === 'arrived' ? 'Chegou' : apt.status === 'completed' ? 'Concluído' : 'Cancelado'}
                     </span>
                     {apt.status === 'scheduled' && (
                       <div className="flex gap-1">
