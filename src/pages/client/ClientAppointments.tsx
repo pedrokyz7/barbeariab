@@ -64,7 +64,7 @@ const isSameBookingGroup = (group: AppointmentGroup, appointment: EnrichedAppoin
 export default function ClientAppointments() {
   const { user, loading } = useAuth();
   const [appointments, setAppointments] = useState<AppointmentGroup[]>([]);
-  const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
+  const [filter, setFilter] = useState<'upcoming' | 'cancelled' | 'completed'>('upcoming');
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(true);
   const [editingAppointment, setEditingAppointment] = useState<AppointmentGroup | null>(null);
 
@@ -127,11 +127,11 @@ export default function ClientAppointments() {
 
     const now = new Date();
     const appointmentsForSelectedTab = enrichedAppointments
-      .filter((appointment) =>
-        filter === 'upcoming'
-          ? isUpcomingAppointment(appointment, now)
-          : !isUpcomingAppointment(appointment, now)
-      )
+      .filter((appointment) => {
+        if (filter === 'upcoming') return isUpcomingAppointment(appointment, now);
+        if (filter === 'cancelled') return appointment.status === 'cancelled';
+        return appointment.status === 'completed';
+      })
       .sort(filter === 'upcoming' ? compareAppointmentsAsc : compareAppointmentsDesc);
 
     const groupedAppointments = appointmentsForSelectedTab.reduce<AppointmentGroup[]>((groups, appointment) => {
@@ -225,12 +225,20 @@ export default function ClientAppointments() {
             Próximos
           </Button>
           <Button
-            variant={filter === 'past' ? 'default' : 'outline'}
+            variant={filter === 'cancelled' ? 'default' : 'outline'}
             size="sm"
             className="rounded-xl"
-            onClick={() => setFilter('past')}
+            onClick={() => setFilter('cancelled')}
           >
-            Histórico
+            Cancelados
+          </Button>
+          <Button
+            variant={filter === 'completed' ? 'default' : 'outline'}
+            size="sm"
+            className="rounded-xl"
+            onClick={() => setFilter('completed')}
+          >
+            Concluídos
           </Button>
         </div>
 
@@ -238,7 +246,7 @@ export default function ClientAppointments() {
           <p className="text-center text-muted-foreground py-12 glass-card">Carregando agendamentos...</p>
         ) : appointments.length === 0 ? (
           <p className="text-center text-muted-foreground py-12 glass-card">
-            Nenhum agendamento {filter === 'upcoming' ? 'próximo' : 'no histórico'}
+            Nenhum agendamento {filter === 'upcoming' ? 'próximo' : filter === 'cancelled' ? 'cancelado' : 'concluído'}
           </p>
         ) : (
           <div className="space-y-3">
