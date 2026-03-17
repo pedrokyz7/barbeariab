@@ -5,6 +5,7 @@ import { ClientLayout } from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Scissors, ArrowLeft, ArrowRight, Clock, DollarSign, Calendar, CheckCircle, User, Circle, Banknote, CreditCard } from 'lucide-react';
+import { ServiceMediaCarousel } from '@/components/client/ServiceMediaCarousel';
 import { format, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -295,26 +296,11 @@ export default function ClientBooking() {
                       isSelected ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/50'
                     }`}
                   >
-                    {(s.video_url || s.image_url) && (
-                      <div className="w-full aspect-video bg-muted/30 relative overflow-hidden">
-                        {s.video_url ? (
-                          <video
-                            src={s.video_url}
-                            className="w-full h-full object-cover"
-                            controls
-                            preload="metadata"
-                            playsInline
-                            muted
-                          />
-                        ) : s.image_url ? (
-                          <img
-                            src={s.image_url}
-                            alt={s.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : null}
-                      </div>
-                    )}
+                    <ServiceMediaCarousel
+                      imageUrl={s.image_url}
+                      videoUrl={s.video_url}
+                      serviceName={s.name}
+                    />
                     <button
                       onClick={() => toggleService(s)}
                       className="p-4 w-full text-left flex items-center justify-between"
