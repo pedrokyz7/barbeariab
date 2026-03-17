@@ -18,6 +18,27 @@ export function BarberLayout({ children }: { children: ReactNode }) {
   const isSubscriptionsPage = location.pathname === '/barber/subscriptions';
   const showFrozenBlock = isFrozen && !isSubscriptionsPage;
 
+  if (showFrozenBlock) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
+        <img src={logo} alt="Logo" className="w-24 h-24 rounded-2xl object-cover mb-6" />
+        <Lock className="w-20 h-20 text-destructive mb-4" />
+        <h2 className="text-3xl font-bold text-destructive mb-2">Conta Congelada</h2>
+        <p className="text-muted-foreground text-center max-w-md mb-6">
+          Sua conta foi congelada pelo administrador. Entre em contato com o suporte ou regularize sua situação.
+        </p>
+        <div className="flex gap-3">
+          <Button variant="default" onClick={() => navigate('/barber/subscriptions')}>
+            Ir para Assinaturas
+          </Button>
+          <Button variant="outline" onClick={() => signOut()}>
+            Sair
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -36,20 +57,7 @@ export function BarberLayout({ children }: { children: ReactNode }) {
             </div>
           </header>
           <main className="flex-1 p-6 overflow-auto">
-            {showFrozenBlock ? (
-              <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                <Lock className="w-16 h-16 text-destructive" />
-                <h2 className="text-2xl font-bold text-destructive">Conta Congelada</h2>
-                <p className="text-muted-foreground text-center max-w-md">
-                  Sua conta foi congelada pelo administrador. Acesse a aba Assinaturas para regularizar sua situação.
-                </p>
-                <Button variant="default" onClick={() => navigate('/barber/subscriptions')}>
-                  Ir para Assinaturas
-                </Button>
-              </div>
-            ) : (
-              children
-            )}
+            {children}
           </main>
         </div>
       </div>
