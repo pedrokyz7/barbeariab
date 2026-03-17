@@ -119,17 +119,27 @@ export default function BarberManageBarbers() {
     setShowForm(false);
     fetchBarbers();
   };
-  const handleRename = async (barberId: string) => {
-    if (!editName.trim()) { toast.error('Nome não pode ser vazio'); return; }
-    const { data, error } = await supabase.functions.invoke('manage-barbers', {
-      body: { action: 'rename', barber_user_id: barberId, full_name: editName.trim() },
-    });
-    if (error || data?.error) {
-      toast.error(data?.error || 'Erro ao renomear');
+  const handleEditSave = async (barberId: string) => {
+    const { full_name, email, password } = editForm;
+    if (!full_name.trim() && !email.trim() && !password.trim()) {
+      toast.error('Preencha ao menos um campo');
       return;
     }
-    toast.success('Nome atualizado!');
+    setSavingEdit(true);
+    const body: any = { action: 'update_credentials', barber_user_id: barberId };
+    if (full_name.trim()) body.full_name = full_name.trim();
+    if (email.trim()) body.email = email.trim();
+    if (password.trim()) body.password = password.trim();
+
+    const { data, error } = await supabase.functions.invoke('manage-barbers', { body });
+    setSavingEdit(false);
+    if (error || data?.error) {
+      toast.error(data?.error || 'Erro ao atualizar');
+      return;
+    }
+    toast.success('Dados atualizados!');
     setEditingBarber(null);
+    setEditForm({ full_name: '', email: '', password: '' });
     fetchBarbers();
   };
 
