@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
@@ -6,12 +6,44 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Phone, Mail, Save, Camera } from 'lucide-react';
 import { toast } from 'sonner';
+import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 11);
   if (digits.length <= 2) return digits.length ? `(${digits}` : '';
   if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+function getCroppedImg(image: HTMLImageElement, crop: Crop): Promise<Blob> {
+  const canvas = document.createElement('canvas');
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
+  canvas.width = crop.width * scaleX;
+  canvas.height = crop.height * scaleY;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(
+    image,
+    crop.x * scaleX,
+    crop.y * scaleY,
+    crop.width * scaleX,
+    crop.height * scaleY,
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  );
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob!), 'image/jpeg', 0.9);
+  });
 }
 
 export default function ClientProfile() {
@@ -22,6 +54,12 @@ export default function ClientProfile() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Crop state
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [imgSrc, setImgSrc] = useState('');
+  const [crop, setCrop] = useState<Crop>();
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     if (user) fetchProfile();
@@ -37,39 +75,63 @@ export default function ClientProfile() {
     }
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
-
+    if (!file) return;
     if (!file.type.startsWith('image/')) {
       toast.error('Selecione uma imagem válida');
       return;
     }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImgSrc(reader.result as string);
+      setCropDialogOpen(true);
+    };
+    reader.readAsDataURL(file);
+    // Reset input so same file can be selected again
+    e.target.value = '';
+  };
 
+  const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget;
+    const newCrop = centerCrop(
+      makeAspectCrop({ unit: '%', width: 80 }, 1, width, height),
+      width,
+      height,
+    );
+    setCrop(newCrop);
+  }, []);
+
+  const handleCropConfirm = async () => {
+    if (!imgRef.current || !crop || !user) return;
     setIsUploading(true);
-    const filePath = `${user.id}/avatar.${file.name.split('.').pop()}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, file, { upsert: true });
+    try {
+      const croppedBlob = await getCroppedImg(imgRef.current, crop);
+      const filePath = `${user.id}/avatar.jpg`;
 
-    if (uploadError) {
-      toast.error('Erro ao enviar foto');
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, croppedBlob, { upsert: true, contentType: 'image/jpeg' });
+
+      if (uploadError) {
+        toast.error('Erro ao enviar foto');
+        return;
+      }
+
+      const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const newUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`;
+
+      await supabase.from('profiles').update({ avatar_url: newUrl }).eq('user_id', user.id);
+      setAvatarUrl(newUrl);
+      toast.success('Foto atualizada!');
+    } catch {
+      toast.error('Erro ao processar imagem');
+    } finally {
       setIsUploading(false);
-      return;
+      setCropDialogOpen(false);
+      setImgSrc('');
     }
-
-    const { data: publicUrlData } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(filePath);
-
-    const newUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`;
-
-    await supabase.from('profiles').update({ avatar_url: newUrl }).eq('user_id', user.id);
-
-    setAvatarUrl(newUrl);
-    toast.success('Foto atualizada!');
-    setIsUploading(false);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -115,14 +177,14 @@ export default function ClientProfile() {
               disabled={isUploading}
               className="text-xs text-primary hover:underline"
             >
-              {isUploading ? 'Enviando...' : 'Alterar foto'}
+              Alterar foto
             </button>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={handleAvatarUpload}
+              onChange={onSelectFile}
             />
           </div>
 
@@ -161,6 +223,41 @@ export default function ClientProfile() {
           </Button>
         </form>
       </div>
+
+      {/* Crop Dialog */}
+      <Dialog open={cropDialogOpen} onOpenChange={(open) => { if (!open) { setCropDialogOpen(false); setImgSrc(''); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Recortar foto</DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center">
+            {imgSrc && (
+              <ReactCrop
+                crop={crop}
+                onChange={(c) => setCrop(c)}
+                aspect={1}
+                circularCrop
+              >
+                <img
+                  ref={imgRef}
+                  src={imgSrc}
+                  alt="Recortar"
+                  onLoad={onImageLoad}
+                  className="max-h-[60vh]"
+                />
+              </ReactCrop>
+            )}
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => { setCropDialogOpen(false); setImgSrc(''); }}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCropConfirm} disabled={isUploading}>
+              {isUploading ? 'Salvando...' : 'Confirmar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ClientLayout>
   );
 }
