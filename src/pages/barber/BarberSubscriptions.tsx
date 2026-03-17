@@ -187,6 +187,51 @@ export default function BarberSubscriptions() {
               </div>
             </div>
 
+            {/* Payment actions */}
+            <div className="glass-card p-5 space-y-4">
+              <h2 className="font-semibold flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-primary" />
+                Pagar Assinatura
+              </h2>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1 gap-2"
+                  onClick={() => setShowPix(!showPix)}
+                >
+                  <QrCode className="w-4 h-4" />
+                  Pagar com PIX
+                </Button>
+                <Button
+                  className="flex-1 gap-2"
+                  onClick={handlePayOnline}
+                  disabled={loadingCheckout}
+                >
+                  {loadingCheckout ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
+                  Pagar Online
+                </Button>
+              </div>
+
+              {showPix && (
+                <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3 animate-fade-in">
+                  <p className="text-sm font-medium">Chave PIX para pagamento:</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-sm bg-background rounded px-3 py-2 border border-border truncate">
+                      {PIX_KEY}
+                    </code>
+                    <Button size="sm" variant="outline" onClick={handleCopyPix}>
+                      <Copy className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {settings
+                      ? `Valor: ${formatCurrency(settings.amount)} — Após o pagamento, envie o comprovante ao administrador para ativação.`
+                      : 'Envie o comprovante ao administrador para ativação da assinatura.'}
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* Payment history */}
             <div className="space-y-3">
               <h2 className="font-semibold flex items-center gap-2">
