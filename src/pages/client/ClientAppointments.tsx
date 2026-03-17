@@ -266,7 +266,7 @@ export default function ClientAppointments() {
                     </span>
                   </div>
                 </div>
-                <div className="text-right space-y-1 shrink-0">
+                <div className="sm:text-right space-y-1 shrink-0">
                   <p className="font-bold text-success">R$ {Number(appointment.price).toFixed(2)}</p>
                   <p className={`text-xs font-medium ${statusColor[appointment.status] || ''}`}>
                     {statusLabel[appointment.status] || appointment.status}
