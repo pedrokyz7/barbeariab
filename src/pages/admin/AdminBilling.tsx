@@ -5,7 +5,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import {
   CreditCard, CheckCircle, XCircle, ExternalLink, RefreshCw,
-  Shield, Settings, Save, DollarSign, Plus, Lock, Unlock
+  Shield, Settings, Save, DollarSign, Plus, Lock, Unlock, Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -62,6 +62,7 @@ export default function AdminBilling() {
   const [paymentMethod, setPaymentMethod] = useState('pix');
   const [savingPayment, setSavingPayment] = useState(false);
   const [freezingUser, setFreezingUser] = useState<string | null>(null);
+  const [activatingUser, setActivatingUser] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
@@ -263,6 +264,34 @@ export default function AdminBilling() {
       fetchPayments();
     }
     setSavingPayment(false);
+  };
+
+  const handleActivateSubscription = async (admin: BarberAdmin) => {
+    setActivatingUser(admin.user_id);
+    try {
+      const amount = billingSettings?.amount ?? 99.90;
+      const { error } = await supabase.from('billing_payments').insert({
+        admin_user_id: admin.user_id,
+        amount,
+        billing_period: billingSettings?.billing_period || 'monthly',
+        notes: 'Assinatura ativada manualmente pelo Super Admin',
+        payment_method: 'manual',
+        subscription_activated: true,
+      } as any);
+      if (error) {
+        toast.error('Erro ao ativar assinatura');
+      } else {
+        setSubscriptions(prev => ({
+          ...prev,
+          [admin.user_id]: { subscribed: true },
+        }));
+        toast.success(`Assinatura de ${admin.full_name || admin.email} ativada com sucesso!`);
+        fetchPayments();
+      }
+    } catch {
+      toast.error('Erro ao ativar assinatura');
+    }
+    setActivatingUser(null);
   };
 
   if (loading) return null;
@@ -492,6 +521,18 @@ export default function AdminBilling() {
                         >
                           <Lock className="w-3.5 h-3.5 mr-1.5" />
                           {isFreezing ? 'Processando...' : 'Congelar'}
+                        </Button>
+                      )}
+                      {!isActive && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleActivateSubscription(admin)}
+                          disabled={activatingUser === admin.user_id}
+                          className="border-green-500/30 text-green-500 hover:bg-green-500/10"
+                        >
+                          <Zap className="w-3.5 h-3.5 mr-1.5" />
+                          {activatingUser === admin.user_id ? 'Ativando...' : 'Ativar Assinatura'}
                         </Button>
                       )}
                       <Button
