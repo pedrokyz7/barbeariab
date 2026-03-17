@@ -22,7 +22,7 @@ const baseItems = [
 ];
 
 const adminOnlyItems = [
-  { title: 'Clientes', url: '/barber/clients', icon: Users },
+  { title: 'Clientes Cadastrados', url: '/barber/clients', icon: Users },
   { title: 'Barbeiros', url: '/barber/barbers', icon: UserPlus },
 ];
 
