@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Apenas barbeiros podem gerenciar barbeiros" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const { action, email, password, full_name, phone, barber_user_id } = await req.json();
+    const { action, email, password, full_name, phone, barber_user_id, is_available } = await req.json();
 
     if (action === "create") {
       // Create barber user
