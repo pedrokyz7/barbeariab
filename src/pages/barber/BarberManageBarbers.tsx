@@ -457,6 +457,7 @@ export default function BarberManageBarbers() {
                     })()}
                   </div>
 
+                  {isExpanded && (
                     <div className="border-t border-border/50 p-4 space-y-4 animate-fade-in">
                       {isLoading ? (
                         <p className="text-sm text-muted-foreground text-center py-4">Carregando estatísticas...</p>
