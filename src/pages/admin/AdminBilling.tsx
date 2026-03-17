@@ -337,7 +337,7 @@ export default function AdminBilling() {
   const formatCurrency = (value: number) =>
     value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  const activeCount = Object.values(subscriptions).filter(s => s.subscribed).length;
+  const activeCount = barberAdmins.filter(a => isSubscriptionActiveByDate(a.user_id) || subscriptions[a.user_id]?.subscribed).length;
   const periodLabel = billingSettings?.billing_period === 'quarterly' ? 'trimestre' : 'mês';
   const formattedPlanAmount = billingSettings
     ? billingSettings.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
