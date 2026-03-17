@@ -239,7 +239,7 @@ export default function BarberServices() {
             <Clock className="w-3.5 h-3.5" />
             <span className="text-xs">{s.duration_minutes} min</span>
           </div>
-          <span className="text-sm font-bold text-emerald-500">R$ {Number(s.price).toFixed(2)}</span>
+          <span className="text-sm font-bold text-success">R$ {Number(s.price).toFixed(2)}</span>
         </div>
       </div>
     </div>
