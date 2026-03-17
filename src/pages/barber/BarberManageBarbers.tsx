@@ -305,7 +305,7 @@ export default function BarberManageBarbers() {
                         </div>
                         {role === 'admin' && (
                           <button
-                            onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditName(b.full_name); }}
+                            onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditForm({ full_name: b.full_name, email: b.email, password: '' }); }}
                             className="p-1.5 sm:p-2 rounded-lg hover:bg-accent/20 text-muted-foreground hover:text-foreground transition-colors"
                             title="Editar nome"
                           >
