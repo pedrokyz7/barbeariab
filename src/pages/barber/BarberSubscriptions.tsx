@@ -381,6 +381,7 @@ export default function BarberSubscriptions() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Payment history */}
             <div className="space-y-3">
