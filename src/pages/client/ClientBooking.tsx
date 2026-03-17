@@ -36,6 +36,7 @@ export default function ClientBooking() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'local' | 'online' | null>(null);
 
   const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration_minutes, 0);
   const totalPrice = selectedServices.reduce((sum, s) => sum + Number(s.price), 0);
