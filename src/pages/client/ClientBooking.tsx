@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Scissors, ArrowLeft, ArrowRight, Clock, DollarSign, Calendar, CheckCircle, User, Circle } from 'lucide-react';
+import { Scissors, ArrowLeft, ArrowRight, Clock, DollarSign, Calendar, CheckCircle, User, Circle, Banknote, CreditCard } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -36,6 +36,7 @@ export default function ClientBooking() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'local' | 'online' | null>(null);
 
   const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration_minutes, 0);
   const totalPrice = selectedServices.reduce((sum, s) => sum + Number(s.price), 0);
@@ -396,9 +397,34 @@ export default function ClientBooking() {
               </div>
             </div>
 
+            {/* Payment Method Selection */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-center">Forma de Pagamento</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setPaymentMethod('local')}
+                  className={`glass-card p-4 flex flex-col items-center gap-2 transition-all animate-press ${
+                    paymentMethod === 'local' ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/50'
+                  }`}
+                >
+                  <Banknote className={`w-6 h-6 ${paymentMethod === 'local' ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <span className="text-sm font-medium">Pagar no local</span>
+                  <span className="text-[10px] text-muted-foreground">Na hora do corte</span>
+                </button>
+                <button
+                  disabled
+                  className="glass-card p-4 flex flex-col items-center gap-2 opacity-50 cursor-not-allowed relative"
+                >
+                  <CreditCard className="w-6 h-6 text-muted-foreground" />
+                  <span className="text-sm font-medium">Pagar online</span>
+                  <span className="text-[10px] text-accent font-semibold">Em breve</span>
+                </button>
+              </div>
+            </div>
+
             <Button
               onClick={handleBook}
-              disabled={isBooking}
+              disabled={isBooking || !paymentMethod}
               className="w-full h-12 rounded-xl text-base font-semibold animate-press"
             >
               {isBooking ? 'Agendando...' : 'Confirmar Agendamento'}
