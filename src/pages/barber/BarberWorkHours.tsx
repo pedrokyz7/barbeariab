@@ -77,41 +77,45 @@ export default function BarberWorkHours() {
 
   return (
     <BarberLayout>
-      <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
+      <div className="max-w-3xl mx-auto space-y-6 animate-fade-in overflow-x-hidden">
         <h1 className="text-3xl font-bold font-display">Horários de Trabalho</h1>
         <p className="text-muted-foreground">Configure seus dias e horários de atendimento</p>
 
         <div className="space-y-3">
           {schedules.map((s) => (
-            <div key={s.day_of_week} className="glass-card p-4 flex items-center gap-4 animate-slide-up">
-              <Switch
-                checked={s.is_active}
-                onCheckedChange={(checked) => {
-                  updateSchedule(s.day_of_week, 'is_active', checked);
-                  handleSave({ ...s, is_active: checked });
-                }}
-              />
-              <span className={`w-24 font-medium ${!s.is_active ? 'text-muted-foreground' : ''}`}>
-                {DAYS[s.day_of_week]}
-              </span>
-              <div className="flex items-center gap-2 flex-1">
-                <Input
-                  type="time"
-                  value={s.start_time}
-                  onChange={(e) => updateSchedule(s.day_of_week, 'start_time', e.target.value)}
-                  onBlur={() => handleSave(s)}
-                  disabled={!s.is_active}
-                  className="bg-secondary border-border rounded-xl h-10 w-32"
-                />
-                <span className="text-muted-foreground">até</span>
-                <Input
-                  type="time"
-                  value={s.end_time}
-                  onChange={(e) => updateSchedule(s.day_of_week, 'end_time', e.target.value)}
-                  onBlur={() => handleSave(s)}
-                  disabled={!s.is_active}
-                  className="bg-secondary border-border rounded-xl h-10 w-32"
-                />
+            <div key={s.day_of_week} className="glass-card p-3 sm:p-4 animate-slide-up">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <div className="flex items-center gap-2 shrink-0">
+                  <Switch
+                    checked={s.is_active}
+                    onCheckedChange={(checked) => {
+                      updateSchedule(s.day_of_week, 'is_active', checked);
+                      handleSave({ ...s, is_active: checked });
+                    }}
+                  />
+                  <span className={`font-medium text-sm sm:text-base w-20 sm:w-24 ${!s.is_active ? 'text-muted-foreground' : ''}`}>
+                    {DAYS[s.day_of_week]}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Input
+                    type="time"
+                    value={s.start_time}
+                    onChange={(e) => updateSchedule(s.day_of_week, 'start_time', e.target.value)}
+                    onBlur={() => handleSave(s)}
+                    disabled={!s.is_active}
+                    className="bg-secondary border-border rounded-xl h-9 sm:h-10 flex-1 min-w-0 px-2"
+                  />
+                  <span className="text-muted-foreground text-xs sm:text-sm shrink-0">até</span>
+                  <Input
+                    type="time"
+                    value={s.end_time}
+                    onChange={(e) => updateSchedule(s.day_of_week, 'end_time', e.target.value)}
+                    onBlur={() => handleSave(s)}
+                    disabled={!s.is_active}
+                    className="bg-secondary border-border rounded-xl h-9 sm:h-10 flex-1 min-w-0 px-2"
+                  />
+                </div>
               </div>
             </div>
           ))}
