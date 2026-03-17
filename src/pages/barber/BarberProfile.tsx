@@ -5,6 +5,7 @@ import { BarberLayout } from '@/components/barber/BarberLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Phone, Mail, Save, Camera } from 'lucide-react';
+import { ThemeSelector } from '@/components/ThemeSelector';
 import { toast } from 'sonner';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
