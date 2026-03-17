@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
-import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users, CalendarClock, Pencil, Check, X, Circle } from 'lucide-react';
+import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users, CalendarClock, Pencil, Check, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -260,16 +261,12 @@ export default function BarberManageBarbers() {
                         )}
                       </div>
                       <div className="flex items-center gap-0.5 shrink-0">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleAvailability(b.user_id, !b.is_available);
-                          }}
-                          className="p-1.5 sm:p-2 rounded-lg hover:bg-accent/20 transition-colors"
-                          title={b.is_available ? 'Disponível – clique para desativar' : 'Indisponível – clique para ativar'}
-                        >
-                          <Circle className={`w-4 h-4 ${b.is_available ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'}`} />
-                        </button>
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <Switch
+                            checked={b.is_available}
+                            onCheckedChange={(checked) => handleToggleAvailability(b.user_id, checked)}
+                          />
+                        </div>
                         {role === 'admin' && (
                           <button
                             onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditName(b.full_name); }}
