@@ -167,7 +167,7 @@ export default function BarberManageBarbers() {
 
   return (
     <BarberLayout>
-      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in overflow-x-hidden">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold font-display">Barbeiros</h1>
@@ -227,67 +227,68 @@ export default function BarberManageBarbers() {
               return (
                 <div key={b.user_id} className="glass-card animate-slide-up overflow-hidden">
                   <div
-                    className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/10 transition-colors"
+                    className="p-3 sm:p-4 cursor-pointer hover:bg-accent/10 transition-colors"
                     onClick={() => toggleExpand(b.user_id)}
                   >
-                    <div className="space-y-1 flex-1">
-                      {editingBarber === b.user_id ? (
-                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                          <Input
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="h-8 text-sm w-48"
-                            autoFocus
-                            onKeyDown={(e) => { if (e.key === 'Enter') handleRename(b.user_id); if (e.key === 'Escape') setEditingBarber(null); }}
-                          />
-                          <button onClick={() => handleRename(b.user_id)} className="p-1 rounded hover:bg-primary/20 text-primary"><Check className="w-4 h-4" /></button>
-                          <button onClick={() => setEditingBarber(null)} className="p-1 rounded hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
-                        </div>
-                      ) : (
-                        <p className="font-medium flex items-center gap-2">
-                          {b.full_name || 'Barbeiro'}
-                          {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-1 min-w-0 flex-1">
+                        {editingBarber === b.user_id ? (
+                          <div className="flex items-center gap-1 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                            <Input
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                              className="h-8 text-sm flex-1 min-w-[120px] max-w-[200px]"
+                              autoFocus
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleRename(b.user_id); if (e.key === 'Escape') setEditingBarber(null); }}
+                            />
+                            <button onClick={() => handleRename(b.user_id)} className="p-1 rounded hover:bg-primary/20 text-primary"><Check className="w-4 h-4" /></button>
+                            <button onClick={() => setEditingBarber(null)} className="p-1 rounded hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
+                          </div>
+                        ) : (
+                          <p className="font-medium flex items-center gap-2 text-sm sm:text-base">
+                            <span className="truncate">{b.full_name || 'Barbeiro'}</span>
+                            {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+                          </p>
+                        )}
+                        <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1 truncate">
+                          <Mail className="w-3 h-3 shrink-0" /> <span className="truncate">{b.email}</span>
                         </p>
-                      )}
-                      <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Mail className="w-3 h-3" /> {b.email}
-                      </p>
-                      {b.phone && (
-                        <p className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Phone className="w-3 h-3" /> {formatPhone(b.phone)}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {/* Availability toggle */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleAvailability(b.user_id, !b.is_available);
-                        }}
-                        className="p-2 rounded-lg hover:bg-accent/20 transition-colors"
-                        title={b.is_available ? 'Disponível – clique para desativar' : 'Indisponível – clique para ativar'}
-                      >
-                        <Circle className={`w-4 h-4 ${b.is_available ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'}`} />
-                      </button>
-                      {role === 'admin' && (
+                        {b.phone && (
+                          <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+                            <Phone className="w-3 h-3 shrink-0" /> {formatPhone(b.phone)}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-0.5 shrink-0">
                         <button
-                          onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditName(b.full_name); }}
-                          className="p-2 rounded-lg hover:bg-accent/20 text-muted-foreground hover:text-foreground transition-colors"
-                          title="Editar nome"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleAvailability(b.user_id, !b.is_available);
+                          }}
+                          className="p-1.5 sm:p-2 rounded-lg hover:bg-accent/20 transition-colors"
+                          title={b.is_available ? 'Disponível – clique para desativar' : 'Indisponível – clique para ativar'}
                         >
-                          <Pencil className="w-4 h-4" />
+                          <Circle className={`w-4 h-4 ${b.is_available ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'}`} />
                         </button>
-                      )}
-                      {role === 'admin' && b.user_id !== user?.id && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleDelete(b.user_id, b.full_name); }}
-                          className="p-2 rounded-lg hover:bg-destructive/20 text-destructive transition-colors"
-                          title="Remover barbeiro"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                        {role === 'admin' && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditName(b.full_name); }}
+                            className="p-1.5 sm:p-2 rounded-lg hover:bg-accent/20 text-muted-foreground hover:text-foreground transition-colors"
+                            title="Editar nome"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        )}
+                        {role === 'admin' && b.user_id !== user?.id && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDelete(b.user_id, b.full_name); }}
+                            className="p-1.5 sm:p-2 rounded-lg hover:bg-destructive/20 text-destructive transition-colors"
+                            title="Remover barbeiro"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -297,21 +298,21 @@ export default function BarberManageBarbers() {
                         <p className="text-sm text-muted-foreground text-center py-4">Carregando estatísticas...</p>
                       ) : stats ? (
                         <>
-                          <div className="grid grid-cols-3 gap-3">
-                            <div className="bg-accent/10 rounded-xl p-3 text-center">
-                              <Users className="w-5 h-5 mx-auto mb-1 text-primary" />
-                              <p className="text-2xl font-bold">{stats.totalClients}</p>
-                              <p className="text-xs text-muted-foreground">Clientes</p>
+                          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                            <div className="bg-accent/10 rounded-xl p-2 sm:p-3 text-center">
+                              <Users className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 text-primary" />
+                              <p className="text-lg sm:text-2xl font-bold">{stats.totalClients}</p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground">Clientes</p>
                             </div>
-                            <div className="bg-accent/10 rounded-xl p-3 text-center">
-                              <Scissors className="w-5 h-5 mx-auto mb-1 text-primary" />
-                              <p className="text-2xl font-bold">{stats.totalAppointments}</p>
-                              <p className="text-xs text-muted-foreground">Atendimentos</p>
+                            <div className="bg-accent/10 rounded-xl p-2 sm:p-3 text-center">
+                              <Scissors className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 text-primary" />
+                              <p className="text-lg sm:text-2xl font-bold">{stats.totalAppointments}</p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground">Atendimentos</p>
                             </div>
-                            <div className="bg-accent/10 rounded-xl p-3 text-center">
-                              <DollarSign className="w-5 h-5 mx-auto mb-1 text-primary" />
-                              <p className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</p>
-                              <p className="text-xs text-muted-foreground">Faturamento</p>
+                            <div className="bg-accent/10 rounded-xl p-2 sm:p-3 text-center">
+                              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 text-primary" />
+                              <p className="text-lg sm:text-2xl font-bold truncate">{formatCurrency(stats.totalRevenue)}</p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground">Faturamento</p>
                             </div>
                           </div>
 
