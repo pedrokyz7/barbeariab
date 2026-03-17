@@ -21,6 +21,7 @@ import ClientSpending from "./pages/client/ClientSpending";
 import ClientProfile from "./pages/client/ClientProfile";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminBilling from "./pages/admin/AdminBilling";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => {
             <Route path="/client/profile" element={<ClientProfile />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/billing" element={<AdminBilling />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

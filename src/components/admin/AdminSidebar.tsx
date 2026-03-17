@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, LogOut, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Shield, CreditCard } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -16,6 +16,7 @@ import {
 const items = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
   { title: 'Usuários', url: '/admin/users', icon: Users },
+  { title: 'Cobranças', url: '/admin/billing', icon: CreditCard },
 ];
 
 export function AdminSidebar() {
