@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Scissors, User, Mail, Lock, ArrowRight, Phone } from 'lucide-react';
+import { Scissors, User, Mail, Lock, ArrowRight, Phone, Eye, EyeOff } from 'lucide-react';
 import logo from '@/assets/logo.jpg';
 import { toast } from 'sonner';
 
