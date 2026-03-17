@@ -232,6 +232,91 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ totalClients, totalAppointments, totalRevenue, earnings, clients: clientDetails, upcoming: upcomingDetails }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    if (action === "earnings_summary") {
+      // Get all barbers under this admin + self
+      const { data: selfProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, full_name")
+        .eq("user_id", caller.id)
+        .maybeSingle();
+
+      const { data: myBarbers } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, full_name")
+        .eq("admin_id", caller.id);
+
+      const allBarbers = [
+        ...(selfProfile ? [{ user_id: selfProfile.user_id, full_name: selfProfile.full_name }] : []),
+        ...(myBarbers || []).filter((b: any) => b.user_id !== caller.id),
+      ];
+
+      if (allBarbers.length === 0) {
+        return new Response(JSON.stringify({ earnings: [] }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      const now = new Date();
+      const todayStr = now.toISOString().split("T")[0];
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+      const dayOfWeek = now.getDay();
+      const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - mondayOffset);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      const weekStartStr = weekStart.toISOString().split("T")[0];
+      const weekEndStr = weekEnd.toISOString().split("T")[0];
+
+      const prevWeekStart = new Date(weekStart);
+      prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+      const prevWeekEnd = new Date(prevWeekStart);
+      prevWeekEnd.setDate(prevWeekStart.getDate() + 6);
+      const prevWeekStartStr = prevWeekStart.toISOString().split("T")[0];
+      const prevWeekEndStr = prevWeekEnd.toISOString().split("T")[0];
+
+      const monthStartStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const monthEndStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+      const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const prevMonthStartStr = prevMonth.toISOString().split("T")[0];
+      const lastDayPrev = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+      const prevMonthEndStr = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}-${String(lastDayPrev).padStart(2, '0')}`;
+
+      const ids = allBarbers.map(b => b.user_id);
+
+      // Fetch all paid appointments for all periods
+      const { data: allAppts } = await supabaseAdmin
+        .from("appointments")
+        .select("price, barber_id, appointment_date")
+        .in("barber_id", ids)
+        .eq("payment_status", "paid");
+
+      const appts = allAppts || [];
+
+      const sumByBarberRange = (bid: string, start: string, end: string) =>
+        appts.filter(a => a.barber_id === bid && a.appointment_date >= start && a.appointment_date <= end)
+          .reduce((s, a) => s + Number(a.price || 0), 0);
+
+      const sumByBarberDate = (bid: string, date: string) =>
+        appts.filter(a => a.barber_id === bid && a.appointment_date === date)
+          .reduce((s, a) => s + Number(a.price || 0), 0);
+
+      const earnings = allBarbers.map(b => ({
+        barber_id: b.user_id,
+        barber_name: b.full_name || "Barbeiro",
+        today: sumByBarberDate(b.user_id, todayStr),
+        prevDay: sumByBarberDate(b.user_id, yesterdayStr),
+        week: sumByBarberRange(b.user_id, weekStartStr, weekEndStr),
+        prevWeek: sumByBarberRange(b.user_id, prevWeekStartStr, prevWeekEndStr),
+        month: sumByBarberRange(b.user_id, monthStartStr, monthEndStr),
+        prevMonth: sumByBarberRange(b.user_id, prevMonthStartStr, prevMonthEndStr),
+      }));
+
+      return new Response(JSON.stringify({ earnings }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     if (action === "toggle_availability") {
       if (!barber_user_id || typeof is_available !== "boolean") {
         return new Response(JSON.stringify({ error: "barber_user_id e is_available são obrigatórios" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
