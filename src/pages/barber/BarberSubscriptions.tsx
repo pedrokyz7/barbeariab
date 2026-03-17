@@ -248,7 +248,7 @@ export default function BarberSubscriptions() {
                   Assinatura Atual
                 </h2>
                 {isActive && !isOverdue ? (
-                  <Badge variant="default" className="bg-primary/20 text-primary border-primary/30">
+                  <Badge variant="default" className="bg-green-500/20 text-green-500 border-green-500/30">
                     <CheckCircle className="w-3 h-3 mr-1" /> Ativa
                   </Badge>
                 ) : (

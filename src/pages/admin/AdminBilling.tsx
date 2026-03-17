@@ -449,7 +449,7 @@ export default function AdminBilling() {
                         {isChecking ? (
                           <Badge variant="outline" className="text-[10px]">Verificando...</Badge>
                         ) : isActive ? (
-                          <Badge variant="default" className="text-[10px] bg-primary/20 text-primary border-primary/30">
+                          <Badge variant="default" className="text-[10px] bg-green-500/20 text-green-500 border-green-500/30">
                             <CheckCircle className="w-3 h-3 mr-1" /> Ativo
                           </Badge>
                         ) : sub ? (
