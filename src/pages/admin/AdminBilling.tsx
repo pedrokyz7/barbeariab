@@ -401,6 +401,7 @@ export default function AdminBilling() {
               const isChecking = checkingEmail === admin.user_id;
               const isCreating = creatingCheckout === admin.user_id;
               const adminPaid = paymentTotals[admin.user_id] || 0;
+              const isFreezing = freezingUser === admin.user_id;
 
               return (
                 <div key={admin.user_id} className="glass-card p-4 animate-slide-up">
