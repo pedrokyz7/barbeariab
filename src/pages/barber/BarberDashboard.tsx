@@ -58,6 +58,18 @@ export default function BarberDashboard() {
     fetchStats();
     fetchUpcoming();
     fetchTodayAppointments();
+
+    // Realtime: refresh when appointments change
+    const channel = supabase
+      .channel('dashboard-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => {
+        fetchStats();
+        fetchUpcoming();
+        fetchTodayAppointments();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   const getDateRanges = () => {
