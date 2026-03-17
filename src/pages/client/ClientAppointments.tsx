@@ -272,7 +272,7 @@ export default function ClientAppointments() {
                     {statusLabel[appointment.status] || appointment.status}
                   </p>
                   {appointment.status === 'scheduled' && filter === 'upcoming' && (
-                    <div className="flex flex-col items-end gap-1 mt-1">
+                    <div className="flex flex-col sm:items-end gap-1 mt-1">
                       <Button
                         variant="default"
                         size="sm"
