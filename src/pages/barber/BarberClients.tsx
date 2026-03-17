@@ -111,6 +111,7 @@ export default function BarberClients() {
       full_name: profiles?.find(p => p.user_id === id)?.full_name || 'Cliente',
       phone: profiles?.find(p => p.user_id === id)?.phone || null,
       email: '',
+      avatar_url: profiles?.find(p => p.user_id === id)?.avatar_url || null,
       totalSpent: clientMap[id]?.total ?? 0,
       appointmentCount: clientMap[id]?.count ?? 0,
     }));
