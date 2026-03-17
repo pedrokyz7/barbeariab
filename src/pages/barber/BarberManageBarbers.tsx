@@ -82,10 +82,18 @@ export default function BarberManageBarbers() {
       fetchBarbers();
       fetchEarningsSummary();
 
-      // Realtime subscription for appointments changes
+      // Realtime subscription for appointments and profiles changes
       const channel = supabase
-        .channel('barber-earnings')
+        .channel('barber-manage-realtime')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => {
+          fetchEarningsSummary();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+          fetchBarbers();
+          fetchEarningsSummary();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'user_roles' }, () => {
+          fetchBarbers();
           fetchEarningsSummary();
         })
         .subscribe();
@@ -167,6 +175,7 @@ export default function BarberManageBarbers() {
     setForm({ full_name: '', email: '', password: '', phone: '' });
     setShowForm(false);
     fetchBarbers();
+    fetchEarningsSummary();
   };
   const handleEditSave = async (barberId: string) => {
     const { full_name, email, password } = editForm;

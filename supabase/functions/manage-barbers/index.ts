@@ -81,33 +81,33 @@ Deno.serve(async (req) => {
     }
 
     if (action === "list") {
-      const { data: barberRoles } = await supabaseAdmin
-        .from("user_roles")
-        .select("user_id")
-        .in("role", ["barber", "admin"]);
-
-      const barberIds = barberRoles?.map((r: any) => r.user_id) || [];
-
-      if (barberIds.length === 0) {
-        return new Response(JSON.stringify({ barbers: [] }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
-
-      const { data: profiles } = await supabaseAdmin
+      // Get admin's own profile + barbers under this admin
+      const { data: adminProfile } = await supabaseAdmin
         .from("profiles")
         .select("user_id, full_name, phone, is_available, avatar_url")
-        .in("user_id", barberIds);
+        .eq("user_id", caller.id)
+        .maybeSingle();
+
+      const { data: teamProfiles } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, full_name, phone, is_available, avatar_url")
+        .eq("admin_id", caller.id);
+
+      const allProfiles = [
+        ...(adminProfile ? [adminProfile] : []),
+        ...(teamProfiles || []).filter((p: any) => p.user_id !== caller.id),
+      ];
 
       const barbers = [];
-      for (const id of barberIds) {
-        const { data: { user: u } } = await supabaseAdmin.auth.admin.getUserById(id);
-        const profile = profiles?.find((p: any) => p.user_id === id);
+      for (const profile of allProfiles) {
+        const { data: { user: u } } = await supabaseAdmin.auth.admin.getUserById(profile.user_id);
         barbers.push({
-          user_id: id,
-          full_name: profile?.full_name || "",
-          phone: profile?.phone || "",
+          user_id: profile.user_id,
+          full_name: profile.full_name || "",
+          phone: profile.phone || "",
           email: u?.email || "",
-          is_available: profile?.is_available ?? true,
-          avatar_url: profile?.avatar_url || "",
+          is_available: profile.is_available ?? true,
+          avatar_url: profile.avatar_url || "",
         });
       }
 
