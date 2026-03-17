@@ -16,6 +16,7 @@ interface Appointment {
   price: number;
   payment_status: string;
   client_name: string;
+  client_phone: string | null;
   service_name: string;
 }
 
