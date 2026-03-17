@@ -1,4 +1,4 @@
-import { Calendar, DollarSign, Scissors, Clock, LogOut, LayoutDashboard, Users, UserPlus, User } from 'lucide-react';
+import { Calendar, DollarSign, Scissors, Clock, LogOut, LayoutDashboard, Users, UserPlus, User, CreditCard } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useMemo } from 'react';
