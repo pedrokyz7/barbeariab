@@ -64,7 +64,7 @@ const isSameBookingGroup = (group: AppointmentGroup, appointment: EnrichedAppoin
 export default function ClientAppointments() {
   const { user, loading } = useAuth();
   const [appointments, setAppointments] = useState<AppointmentGroup[]>([]);
-  const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
+  const [filter, setFilter] = useState<'upcoming' | 'cancelled' | 'completed'>('upcoming');
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(true);
   const [editingAppointment, setEditingAppointment] = useState<AppointmentGroup | null>(null);
 
