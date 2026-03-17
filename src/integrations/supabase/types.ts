@@ -100,6 +100,36 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_payments: {
+        Row: {
+          admin_user_id: string
+          amount: number
+          billing_period: string
+          created_at: string
+          id: string
+          notes: string | null
+          recorded_by: string | null
+        }
+        Insert: {
+          admin_user_id: string
+          amount: number
+          billing_period?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recorded_by?: string | null
+        }
+        Update: {
+          admin_user_id?: string
+          amount?: number
+          billing_period?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recorded_by?: string | null
+        }
+        Relationships: []
+      }
       billing_settings: {
         Row: {
           amount: number
