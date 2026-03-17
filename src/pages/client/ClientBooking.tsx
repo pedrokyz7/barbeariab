@@ -397,9 +397,34 @@ export default function ClientBooking() {
               </div>
             </div>
 
+            {/* Payment Method Selection */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-center">Forma de Pagamento</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setPaymentMethod('local')}
+                  className={`glass-card p-4 flex flex-col items-center gap-2 transition-all animate-press ${
+                    paymentMethod === 'local' ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/50'
+                  }`}
+                >
+                  <Banknote className={`w-6 h-6 ${paymentMethod === 'local' ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <span className="text-sm font-medium">Pagar no local</span>
+                  <span className="text-[10px] text-muted-foreground">Na hora do corte</span>
+                </button>
+                <button
+                  disabled
+                  className="glass-card p-4 flex flex-col items-center gap-2 opacity-50 cursor-not-allowed relative"
+                >
+                  <CreditCard className="w-6 h-6 text-muted-foreground" />
+                  <span className="text-sm font-medium">Pagar online</span>
+                  <span className="text-[10px] text-accent font-semibold">Em breve</span>
+                </button>
+              </div>
+            </div>
+
             <Button
               onClick={handleBook}
-              disabled={isBooking}
+              disabled={isBooking || !paymentMethod}
               className="w-full h-12 rounded-xl text-base font-semibold animate-press"
             >
               {isBooking ? 'Agendando...' : 'Confirmar Agendamento'}
