@@ -5,6 +5,7 @@ import { BarberLayout } from '@/components/barber/BarberLayout';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { DollarSign, TrendingUp, Calendar, BarChart3, CheckCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { EarningsCharts } from '@/components/barber/EarningsCharts';
 
 interface AppointmentRecord {
   id: string;
