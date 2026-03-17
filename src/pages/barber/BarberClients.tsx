@@ -9,6 +9,7 @@ interface ClientInfo {
   full_name: string;
   phone: string | null;
   email: string;
+  avatar_url: string | null;
   totalSpent: number;
   appointmentCount: number;
 }
@@ -43,7 +44,7 @@ export default function BarberClients() {
       
       const { data: allProfiles } = await supabase
         .from('profiles')
-        .select('user_id, full_name, phone');
+        .select('user_id, full_name, phone, avatar_url');
 
       if (!allProfiles?.length) return;
 
@@ -72,6 +73,7 @@ export default function BarberClients() {
           full_name: profile?.full_name || 'Cliente',
           phone: profile?.phone || null,
           email: '',
+          avatar_url: profile?.avatar_url || null,
           totalSpent: clientMap[id]?.total ?? 0,
           appointmentCount: clientMap[id]?.count ?? 0,
         };
@@ -87,7 +89,7 @@ export default function BarberClients() {
     // Get profiles
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('user_id, full_name, phone')
+      .select('user_id, full_name, phone, avatar_url')
       .in('user_id', clientIds);
 
     // Get appointments for this barber to calculate spending
@@ -109,6 +111,7 @@ export default function BarberClients() {
       full_name: profiles?.find(p => p.user_id === id)?.full_name || 'Cliente',
       phone: profiles?.find(p => p.user_id === id)?.phone || null,
       email: '',
+      avatar_url: profiles?.find(p => p.user_id === id)?.avatar_url || null,
       totalSpent: clientMap[id]?.total ?? 0,
       appointmentCount: clientMap[id]?.count ?? 0,
     }));
@@ -138,16 +141,27 @@ export default function BarberClients() {
           <div className="space-y-3">
             {clients.map((c) => (
               <div key={c.user_id} className="glass-card p-4 flex items-center justify-between animate-slide-up">
-                <div className="space-y-1">
-                  <p className="font-medium">{c.full_name}</p>
-                  {c.phone && (
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Phone className="w-3 h-3" /> {formatPhoneDisplay(c.phone)}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                    {c.avatar_url ? (
+                      <img src={c.avatar_url} alt={c.full_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Users className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-medium">{c.full_name}</p>
+                    {c.phone && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Phone className="w-3 h-3" /> {formatPhoneDisplay(c.phone)}
+                      </p>
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      {c.appointmentCount} atendimento{c.appointmentCount > 1 ? 's' : ''}
                     </p>
-                  )}
-                  <p className="text-sm text-muted-foreground">
-                    {c.appointmentCount} atendimento{c.appointmentCount > 1 ? 's' : ''}
-                  </p>
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-success text-lg">R$ {c.totalSpent.toFixed(2)}</p>
