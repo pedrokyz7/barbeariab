@@ -176,14 +176,26 @@ export default function ClientAppointments() {
     void fetchAppointments();
   };
 
+  const markArrived = async (ids: string[]) => {
+    const { error } = await supabase.from('appointments').update({ status: 'arrived' }).in('id', ids);
+    if (error) {
+      toast.error('Erro ao confirmar chegada');
+      return;
+    }
+    toast.success('Chegada confirmada! O barbeiro foi notificado.');
+    void fetchAppointments();
+  };
+
   const statusLabel: Record<string, string> = {
     scheduled: 'Agendado',
+    arrived: 'Chegou',
     completed: 'Concluído',
     cancelled: 'Cancelado',
   };
 
   const statusColor: Record<string, string> = {
     scheduled: 'text-primary',
+    arrived: 'text-yellow-400',
     completed: 'text-success',
     cancelled: 'text-destructive',
   };
