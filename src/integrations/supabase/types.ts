@@ -100,6 +100,30 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_settings: {
+        Row: {
+          amount: number
+          billing_period: string
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          amount?: number
+          billing_period?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          amount?: number
+          billing_period?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
