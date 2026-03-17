@@ -73,6 +73,7 @@ export default function BarberClients() {
           full_name: profile?.full_name || 'Cliente',
           phone: profile?.phone || null,
           email: '',
+          avatar_url: profile?.avatar_url || null,
           totalSpent: clientMap[id]?.total ?? 0,
           appointmentCount: clientMap[id]?.count ?? 0,
         };
