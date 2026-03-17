@@ -215,11 +215,11 @@ export default function ClientAppointments() {
       <div className="max-w-3xl mx-auto space-y-6 animate-fade-in px-4 sm:px-0">
         <h1 className="text-3xl font-bold font-display">Meus Agendamentos</h1>
 
-        <div className="flex gap-2 justify-center sm:justify-start">
+        <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
           <Button
             variant={filter === 'upcoming' ? 'default' : 'outline'}
             size="sm"
-            className="rounded-xl"
+            className="rounded-xl text-xs px-3"
             onClick={() => setFilter('upcoming')}
           >
             Agendamentos
@@ -227,7 +227,7 @@ export default function ClientAppointments() {
           <Button
             variant={filter === 'cancelled' ? 'default' : 'outline'}
             size="sm"
-            className="rounded-xl"
+            className="rounded-xl text-xs px-3"
             onClick={() => setFilter('cancelled')}
           >
             Cancelados
@@ -235,7 +235,7 @@ export default function ClientAppointments() {
           <Button
             variant={filter === 'completed' ? 'default' : 'outline'}
             size="sm"
-            className="rounded-xl"
+            className="rounded-xl text-xs px-3"
             onClick={() => setFilter('completed')}
           >
             Concluídos
