@@ -66,9 +66,82 @@ export default function BarberManageBarbers() {
   const [showEditPassword, setShowEditPassword] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
 
+  interface BarberEarningsSummary {
+    barber_id: string;
+    barber_name: string;
+    today: number;
+    week: number;
+    month: number;
+    prevDay: number;
+    prevWeek: number;
+    prevMonth: number;
+  }
+  const [earningsSummary, setEarningsSummary] = useState<BarberEarningsSummary[]>([]);
+
   useEffect(() => {
-    if (user) fetchBarbers();
+    if (user) {
+      fetchBarbers();
+      fetchEarningsSummary();
+    }
   }, [user]);
+
+  const fetchEarningsSummary = async () => {
+    if (!user) return;
+    const { data: myBarbers } = await supabase
+      .from('profiles')
+      .select('user_id, full_name')
+      .eq('admin_id', user.id);
+
+    const { data: selfProfile } = await supabase
+      .from('profiles')
+      .select('user_id, full_name')
+      .eq('user_id', user.id)
+      .single();
+
+    const allBarbers = [
+      ...(selfProfile ? [{ user_id: selfProfile.user_id, full_name: selfProfile.full_name }] : []),
+      ...(myBarbers || []).filter(b => b.user_id !== user.id),
+    ];
+
+    if (allBarbers.length === 0) return;
+
+    const now = new Date();
+    const today = format(now, 'yyyy-MM-dd');
+    const yesterday = format(subDays(now, 1), 'yyyy-MM-dd');
+    const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const prevWeekStart = format(startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const prevWeekEnd = format(endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const monthStart = format(startOfMonth(now), 'yyyy-MM-dd');
+    const monthEnd = format(endOfMonth(now), 'yyyy-MM-dd');
+    const prevMonthStart = format(startOfMonth(subMonths(now, 1)), 'yyyy-MM-dd');
+    const prevMonthEnd = format(endOfMonth(subMonths(now, 1)), 'yyyy-MM-dd');
+
+    const ids = allBarbers.map(b => b.user_id);
+
+    const [todayRes, weekRes, monthRes, prevDayRes, prevWeekRes, prevMonthRes] = await Promise.all([
+      supabase.from('appointments').select('price, barber_id').in('barber_id', ids).eq('appointment_date', today).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', ids).gte('appointment_date', weekStart).lte('appointment_date', weekEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', ids).gte('appointment_date', monthStart).lte('appointment_date', monthEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', ids).eq('appointment_date', yesterday).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', ids).gte('appointment_date', prevWeekStart).lte('appointment_date', prevWeekEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', ids).gte('appointment_date', prevMonthStart).lte('appointment_date', prevMonthEnd).eq('payment_status', 'paid'),
+    ]);
+
+    const sumBy = (data: any[] | null, bid: string) =>
+      data?.filter(a => a.barber_id === bid).reduce((s, a) => s + Number(a.price), 0) ?? 0;
+
+    setEarningsSummary(allBarbers.map(b => ({
+      barber_id: b.user_id,
+      barber_name: b.full_name || 'Barbeiro',
+      today: sumBy(todayRes.data, b.user_id),
+      week: sumBy(weekRes.data, b.user_id),
+      month: sumBy(monthRes.data, b.user_id),
+      prevDay: sumBy(prevDayRes.data, b.user_id),
+      prevWeek: sumBy(prevWeekRes.data, b.user_id),
+      prevMonth: sumBy(prevMonthRes.data, b.user_id),
+    })));
+  };
 
   const fetchBarbers = async () => {
     try {
