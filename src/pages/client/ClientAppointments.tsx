@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
-import { Calendar, Clock, XCircle, Pencil } from 'lucide-react';
+import { Calendar, Clock, XCircle, Pencil, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -176,14 +176,26 @@ export default function ClientAppointments() {
     void fetchAppointments();
   };
 
+  const markArrived = async (ids: string[]) => {
+    const { error } = await supabase.from('appointments').update({ status: 'arrived' }).in('id', ids);
+    if (error) {
+      toast.error('Erro ao confirmar chegada');
+      return;
+    }
+    toast.success('Chegada confirmada! O barbeiro foi notificado.');
+    void fetchAppointments();
+  };
+
   const statusLabel: Record<string, string> = {
     scheduled: 'Agendado',
+    arrived: 'Chegou',
     completed: 'Concluído',
     cancelled: 'Cancelado',
   };
 
   const statusColor: Record<string, string> = {
     scheduled: 'text-primary',
+    arrived: 'text-yellow-400',
     completed: 'text-success',
     cancelled: 'text-destructive',
   };
@@ -242,24 +254,37 @@ export default function ClientAppointments() {
                     {statusLabel[appointment.status] || appointment.status}
                   </p>
                   {appointment.status === 'scheduled' && filter === 'upcoming' && (
-                    <div className="flex items-center gap-1">
+                    <div className="flex flex-col items-end gap-1 mt-1">
                       <Button
-                        variant="ghost"
+                        variant="default"
                         size="sm"
-                        className="text-muted-foreground hover:text-foreground text-xs h-7"
-                        onClick={() => setEditingAppointment(appointment)}
+                        className="rounded-xl text-xs h-8 gap-1"
+                        onClick={() => markArrived(appointment.ids)}
                       >
-                        <Pencil className="w-3 h-3 mr-1" /> Editar
+                        <MapPin className="w-3.5 h-3.5" /> Cheguei!
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive text-xs h-7"
-                        onClick={() => cancelAppointment(appointment.ids)}
-                      >
-                        <XCircle className="w-3 h-3 mr-1" /> Cancelar
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-muted-foreground hover:text-foreground text-xs h-7"
+                          onClick={() => setEditingAppointment(appointment)}
+                        >
+                          <Pencil className="w-3 h-3 mr-1" /> Editar
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive text-xs h-7"
+                          onClick={() => cancelAppointment(appointment.ids)}
+                        >
+                          <XCircle className="w-3 h-3 mr-1" /> Cancelar
+                        </Button>
+                      </div>
                     </div>
+                  )}
+                  {appointment.status === 'arrived' && filter === 'upcoming' && (
+                    <p className="text-xs text-yellow-400 font-medium mt-1">✓ Aguardando atendimento</p>
                   )}
                 </div>
               </div>
