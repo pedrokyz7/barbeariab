@@ -5,6 +5,7 @@ import { BarberLayout } from '@/components/barber/BarberLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Phone, Mail, Save, Camera } from 'lucide-react';
+import { ThemeSelector } from '@/components/ThemeSelector';
 import { toast } from 'sonner';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -213,6 +214,8 @@ export default function BarberProfile() {
               className="pl-10 h-12 bg-card border-border rounded-xl"
             />
           </div>
+
+          <ThemeSelector />
 
           <Button type="submit" disabled={isSaving} className="w-full h-12 rounded-xl text-base font-semibold">
             <Save className="w-4 h-4 mr-2" />

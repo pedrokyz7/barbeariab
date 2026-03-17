@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -22,7 +23,16 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    const saved = localStorage.getItem('app-theme') || 'dark';
+    const resolved = saved === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : saved;
+    document.documentElement.classList.add(resolved);
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -50,6 +60,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
