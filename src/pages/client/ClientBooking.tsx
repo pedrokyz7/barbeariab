@@ -255,24 +255,49 @@ export default function ClientBooking() {
               {services.map((s) => {
                 const isSelected = selectedServices.some(ss => ss.id === s.id);
                 return (
-                  <button
+                  <div
                     key={s.id}
-                    onClick={() => toggleService(s)}
-                    className={`glass-card p-4 w-full text-left flex items-center justify-between transition-all animate-press ${
+                    className={`glass-card overflow-hidden transition-all ${
                       isSelected ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/50'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <Checkbox checked={isSelected} className="pointer-events-none" />
-                      <div>
-                        <p className="font-medium">{s.name}</p>
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {s.duration_minutes} min</span>
+                    {/* Service media (photo or video) */}
+                    {(s.video_url || s.image_url) && (
+                      <div className="w-full aspect-video bg-muted/30 relative overflow-hidden">
+                        {s.video_url ? (
+                          <video
+                            src={s.video_url}
+                            className="w-full h-full object-cover"
+                            controls
+                            preload="metadata"
+                            playsInline
+                            muted
+                          />
+                        ) : s.image_url ? (
+                          <img
+                            src={s.image_url}
+                            alt={s.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : null}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => toggleService(s)}
+                      className="p-4 w-full text-left flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Checkbox checked={isSelected} className="pointer-events-none" />
+                        <div>
+                          <p className="font-medium">{s.name}</p>
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {s.duration_minutes} min</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <span className="font-bold font-display text-success">R$ {Number(s.price).toFixed(2)}</span>
-                  </button>
+                      <span className="font-bold font-display text-success">R$ {Number(s.price).toFixed(2)}</span>
+                    </button>
+                  </div>
                 );
               })}
             </div>
