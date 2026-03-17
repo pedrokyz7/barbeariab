@@ -82,8 +82,11 @@ export default function Auth() {
           return;
         }
         await signUp(email, password, fullName, selectedRole, phone);
-        toast.success('Conta criada com sucesso!');
-        navigate('/');
+        // Sign out so user must login with their credentials
+        await supabase.auth.signOut();
+        toast.success('Conta criada com sucesso! Faça login para continuar.');
+        setIsLogin(true);
+        setPassword('');
       }
     } catch (error: any) {
       toast.error(error.message || 'Erro ao autenticar');
