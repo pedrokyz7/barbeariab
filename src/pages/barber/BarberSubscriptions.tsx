@@ -396,9 +396,9 @@ export default function BarberSubscriptions() {
                 </div>
               ) : (
                 payments.map((payment) => (
-                  <div key={payment.id} className="glass-card p-4 animate-slide-up">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="space-y-1 min-w-0">
+                  <div key={payment.id} className="glass-card p-4 animate-slide-up overflow-hidden">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="space-y-1.5 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="text-sm font-medium">{formatCurrency(Number(payment.amount))}</p>
                           <Badge variant="outline" className="text-[10px]">
@@ -407,21 +407,19 @@ export default function BarberSubscriptions() {
                           <Badge variant="outline" className="text-[10px]">
                             {payment.billing_period === 'quarterly' ? 'Trimestral' : 'Mensal'}
                           </Badge>
-                          {payment.subscription_activated && (
-                            <Badge variant="default" className="text-[10px] bg-primary/20 text-primary border-primary/30">
-                              <CheckCircle className="w-3 h-3 mr-1" /> Ativou assinatura
-                            </Badge>
-                          )}
                         </div>
+                        {payment.subscription_activated && (
+                          <Badge variant="default" className="text-[10px] bg-primary/20 text-primary border-primary/30">
+                            <CheckCircle className="w-3 h-3 mr-1" /> Ativou assinatura
+                          </Badge>
+                        )}
                         {payment.notes && (
                           <p className="text-xs text-muted-foreground truncate">{payment.notes}</p>
                         )}
                       </div>
-                      <div className="text-right shrink-0">
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          {formatDate(payment.created_at)}
-                        </div>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                        <Clock className="w-3 h-3" />
+                        {formatDate(payment.created_at)}
                       </div>
                     </div>
                   </div>
