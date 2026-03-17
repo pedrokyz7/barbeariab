@@ -53,10 +53,10 @@ Deno.serve(async (req) => {
       // Insert role
       await supabaseAdmin.from("user_roles").insert({ user_id: newUser.user.id, role: "barber" });
 
-      // Update profile phone if provided
-      if (phone) {
-        await supabaseAdmin.from("profiles").update({ phone: phone.replace(/\D/g, "") }).eq("user_id", newUser.user.id);
-      }
+      // Set admin_id to link barber to the admin who created them, and update phone
+      const profileUpdates: Record<string, any> = { admin_id: caller.id };
+      if (phone) profileUpdates.phone = phone.replace(/\D/g, "");
+      await supabaseAdmin.from("profiles").update(profileUpdates).eq("user_id", newUser.user.id);
 
       return new Response(JSON.stringify({ success: true, user_id: newUser.user.id }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
