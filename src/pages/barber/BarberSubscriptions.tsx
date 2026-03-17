@@ -230,7 +230,7 @@ export default function BarberSubscriptions() {
 
   return (
     <BarberLayout>
-      <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
+      <div className="max-w-3xl mx-auto space-y-6 animate-fade-in overflow-hidden">
         <div>
           <h1 className="text-3xl font-bold font-display">Assinaturas</h1>
           <p className="text-muted-foreground mt-1">Acompanhe sua assinatura e histórico de pagamentos</p>
