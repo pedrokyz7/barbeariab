@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CheckCircle2, XCircle, Clock, CalendarDays, MessageCircle, User } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, CalendarDays, MessageCircle, User, Banknote, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Appointment {
@@ -15,6 +15,7 @@ interface Appointment {
   status: string;
   price: number;
   payment_status: string;
+  payment_method: string;
   client_name: string;
   client_phone: string | null;
   client_avatar: string | null;
@@ -27,7 +28,17 @@ export default function BarberSchedule() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) fetchAppointments();
+    if (user) {
+      fetchAppointments();
+      // Realtime subscription
+      const channel = supabase
+        .channel('barber-appointments')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: `barber_id=eq.${user.id}` }, () => {
+          fetchAppointments();
+        })
+        .subscribe();
+      return () => { supabase.removeChannel(channel); };
+    }
   }, [user]);
 
   const fetchAppointments = async () => {
@@ -37,7 +48,7 @@ export default function BarberSchedule() {
 
     const { data: appts } = await supabase
       .from('appointments')
-      .select('id, appointment_date, start_time, end_time, status, price, payment_status, client_id, service_id')
+      .select('id, appointment_date, start_time, end_time, status, price, payment_status, payment_method, client_id, service_id')
       .eq('barber_id', user.id)
       .gte('appointment_date', today)
       .neq('status', 'cancelled')
@@ -69,6 +80,7 @@ export default function BarberSchedule() {
       status: a.status,
       price: a.price,
       payment_status: a.payment_status,
+      payment_method: (a as any).payment_method || 'local',
       client_name: profileMap[a.client_id]?.name || 'Cliente',
       client_phone: profileMap[a.client_id]?.phone || null,
       client_avatar: profileMap[a.client_id]?.avatar || null,
@@ -170,6 +182,12 @@ export default function BarberSchedule() {
                       </div>
                     )}
                     <span className="font-semibold font-display whitespace-nowrap">R$ {Number(apt.price).toFixed(2)}</span>
+                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${
+                      apt.payment_method === 'local' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-primary/20 text-primary'
+                    }`}>
+                      {apt.payment_method === 'local' ? <Banknote className="w-3 h-3" /> : <CreditCard className="w-3 h-3" />}
+                      {apt.payment_method === 'local' ? 'No local' : 'Online'}
+                    </span>
                   </div>
                 </div>
               ))}

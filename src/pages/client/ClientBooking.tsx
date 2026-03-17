@@ -161,7 +161,8 @@ export default function ClientBooking() {
           start_time: currentStart,
           end_time: svcEnd,
           price: svc.price,
-        });
+          payment_method: paymentMethod || 'local',
+        } as any);
         if (error) throw error;
         currentStart = svcEnd;
       }
