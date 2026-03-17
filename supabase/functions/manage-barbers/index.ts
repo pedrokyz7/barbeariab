@@ -15,7 +15,6 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-    // Verify caller is a barber
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
     const { data: { user: caller } } = await supabaseAdmin.auth.getUser(token);
@@ -38,7 +37,6 @@ Deno.serve(async (req) => {
     const { action, email, password, full_name, phone, barber_user_id, is_available } = await req.json();
 
     if (action === "create") {
-      // Create barber user
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email,
         password,
@@ -50,17 +48,14 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: createError.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Insert role
       await supabaseAdmin.from("user_roles").insert({ user_id: newUser.user.id, role: "barber" });
 
-      // Check if admin is frozen to propagate to new barber
       const { data: adminProfile } = await supabaseAdmin
         .from("profiles")
         .select("is_frozen")
         .eq("user_id", caller.id)
         .maybeSingle();
 
-      // Set admin_id to link barber to the admin who created them, and update phone + frozen status
       const profileUpdates: Record<string, any> = {
         admin_id: caller.id,
         is_frozen: adminProfile?.is_frozen ?? false,
@@ -75,7 +70,6 @@ Deno.serve(async (req) => {
       if (!barber_user_id) {
         return new Response(JSON.stringify({ error: "barber_user_id é obrigatório" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      // Prevent self-deletion
       if (barber_user_id === caller.id) {
         return new Response(JSON.stringify({ error: "Você não pode remover a si mesmo" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
@@ -87,7 +81,6 @@ Deno.serve(async (req) => {
     }
 
     if (action === "list") {
-      // Also include admin users who manage the shop
       const { data: barberRoles } = await supabaseAdmin
         .from("user_roles")
         .select("user_id")
@@ -137,6 +130,56 @@ Deno.serve(async (req) => {
       const totalAppointments = completed.length;
       const totalRevenue = completed.filter((a: any) => a.payment_status === "paid").reduce((sum: number, a: any) => sum + Number(a.price || 0), 0);
 
+      // Period-based earnings
+      const now = new Date();
+      const todayStr = now.toISOString().split("T")[0];
+      
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+      // Week bounds (Monday-based)
+      const dayOfWeek = now.getDay();
+      const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - mondayOffset);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      const weekStartStr = weekStart.toISOString().split("T")[0];
+      const weekEndStr = weekEnd.toISOString().split("T")[0];
+
+      const prevWeekStart = new Date(weekStart);
+      prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+      const prevWeekEnd = new Date(prevWeekStart);
+      prevWeekEnd.setDate(prevWeekStart.getDate() + 6);
+      const prevWeekStartStr = prevWeekStart.toISOString().split("T")[0];
+      const prevWeekEndStr = prevWeekEnd.toISOString().split("T")[0];
+
+      // Month bounds
+      const monthStartStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const monthEndStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(lastDayOfMonth).padStart(2, '0')}`;
+      
+      const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const prevMonthStartStr = prevMonth.toISOString().split("T")[0];
+      const lastDayPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+      const prevMonthEndStr = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}-${String(lastDayPrevMonth).padStart(2, '0')}`;
+
+      const paidCompleted = all.filter((a: any) => a.payment_status === "paid");
+      const sumByRange = (data: any[], start: string, end: string) =>
+        data.filter(a => a.appointment_date >= start && a.appointment_date <= end).reduce((s, a) => s + Number(a.price || 0), 0);
+      const sumByDate = (data: any[], date: string) =>
+        data.filter(a => a.appointment_date === date).reduce((s, a) => s + Number(a.price || 0), 0);
+
+      const earnings = {
+        today: sumByDate(paidCompleted, todayStr),
+        prevDay: sumByDate(paidCompleted, yesterdayStr),
+        week: sumByRange(paidCompleted, weekStartStr, weekEndStr),
+        prevWeek: sumByRange(paidCompleted, prevWeekStartStr, prevWeekEndStr),
+        month: sumByRange(paidCompleted, monthStartStr, monthEndStr),
+        prevMonth: sumByRange(paidCompleted, prevMonthStartStr, prevMonthEndStr),
+      };
+
       // Revenue per client
       const clientMap: Record<string, { count: number; revenue: number }> = {};
       for (const a of completed) {
@@ -145,13 +188,11 @@ Deno.serve(async (req) => {
         if (a.payment_status === "paid") clientMap[a.client_id].revenue += Number(a.price || 0);
       }
 
-      // Upcoming scheduled appointments
-      const today = new Date().toISOString().split("T")[0];
+      // Upcoming
       const upcoming = all
-        .filter((a: any) => a.status === "scheduled" && a.appointment_date >= today)
+        .filter((a: any) => a.status === "scheduled" && a.appointment_date >= todayStr)
         .sort((a: any, b: any) => a.appointment_date.localeCompare(b.appointment_date) || a.start_time.localeCompare(b.start_time));
 
-      // Gather all client IDs (from history + upcoming)
       const allClientIds = [...new Set([...Object.keys(clientMap), ...upcoming.map((a: any) => a.client_id)])];
       const allServiceIds = [...new Set(upcoming.map((a: any) => a.service_id).filter(Boolean))];
 
@@ -188,7 +229,7 @@ Deno.serve(async (req) => {
         price: Number(a.price || 0),
       }));
 
-      return new Response(JSON.stringify({ totalClients, totalAppointments, totalRevenue, clients: clientDetails, upcoming: upcomingDetails }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ totalClients, totalAppointments, totalRevenue, earnings, clients: clientDetails, upcoming: upcomingDetails }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (action === "toggle_availability") {

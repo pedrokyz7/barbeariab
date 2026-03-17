@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
-import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users, CalendarClock, Pencil, Check, X } from 'lucide-react';
+import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users, CalendarClock, Pencil, Check, X, ArrowUpRight, ArrowDownRight, TrendingUp, Calendar } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
@@ -32,10 +32,20 @@ interface UpcomingAppointment {
   price: number;
 }
 
+interface BarberEarnings {
+  today: number;
+  prevDay: number;
+  week: number;
+  prevWeek: number;
+  month: number;
+  prevMonth: number;
+}
+
 interface BarberStats {
   totalClients: number;
   totalAppointments: number;
   totalRevenue: number;
+  earnings?: BarberEarnings;
   clients: ClientDetail[];
   upcoming: UpcomingAppointment[];
 }
@@ -177,6 +187,24 @@ export default function BarberManageBarbers() {
 
   const formatCurrency = (value: number) =>
     value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  const calcPercent = (current: number, previous: number): number | null => {
+    if (previous === 0 && current === 0) return null;
+    if (previous === 0) return 100;
+    return ((current - previous) / previous) * 100;
+  };
+
+  const PercentBadge = ({ current, previous }: { current: number; previous: number }) => {
+    const pct = calcPercent(current, previous);
+    if (pct === null) return <span className="text-[10px] text-muted-foreground">—</span>;
+    const isUp = pct >= 0;
+    return (
+      <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium ${isUp ? 'text-success' : 'text-destructive'}`}>
+        {isUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+        {Math.abs(pct).toFixed(0)}%
+      </span>
+    );
+  };
 
   return (
     <BarberLayout>
@@ -335,6 +363,36 @@ export default function BarberManageBarbers() {
                         <p className="text-sm text-muted-foreground text-center py-4">Carregando estatísticas...</p>
                       ) : stats ? (
                         <>
+                          {/* Earnings by period */}
+                          {stats.earnings && (
+                            <div>
+                              <h3 className="text-sm font-semibold mb-2 text-muted-foreground flex items-center gap-1">
+                                <TrendingUp className="w-4 h-4" /> Ganhos por Período
+                              </h3>
+                              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                <div className="bg-success/10 rounded-xl p-2 sm:p-3 text-center">
+                                  <DollarSign className="w-4 h-4 mx-auto mb-1 text-success" />
+                                  <p className="text-sm sm:text-lg font-bold text-success">{formatCurrency(stats.earnings.today)}</p>
+                                  <p className="text-[10px] sm:text-xs text-muted-foreground">Hoje</p>
+                                  <PercentBadge current={stats.earnings.today} previous={stats.earnings.prevDay} />
+                                </div>
+                                <div className="bg-primary/10 rounded-xl p-2 sm:p-3 text-center">
+                                  <TrendingUp className="w-4 h-4 mx-auto mb-1 text-primary" />
+                                  <p className="text-sm sm:text-lg font-bold">{formatCurrency(stats.earnings.week)}</p>
+                                  <p className="text-[10px] sm:text-xs text-muted-foreground">Semana</p>
+                                  <PercentBadge current={stats.earnings.week} previous={stats.earnings.prevWeek} />
+                                </div>
+                                <div className="bg-primary/10 rounded-xl p-2 sm:p-3 text-center">
+                                  <Calendar className="w-4 h-4 mx-auto mb-1 text-primary" />
+                                  <p className="text-sm sm:text-lg font-bold">{formatCurrency(stats.earnings.month)}</p>
+                                  <p className="text-[10px] sm:text-xs text-muted-foreground">Mês</p>
+                                  <PercentBadge current={stats.earnings.month} previous={stats.earnings.prevMonth} />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* General stats */}
                           <div className="grid grid-cols-3 gap-2 sm:gap-3">
                             <div className="bg-accent/10 rounded-xl p-2 sm:p-3 text-center">
                               <Users className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 text-primary" />
@@ -349,7 +407,7 @@ export default function BarberManageBarbers() {
                             <div className="bg-accent/10 rounded-xl p-2 sm:p-3 text-center">
                               <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 text-primary" />
                               <p className="text-lg sm:text-2xl font-bold truncate">{formatCurrency(stats.totalRevenue)}</p>
-                              <p className="text-[10px] sm:text-xs text-muted-foreground">Faturamento</p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground">Faturamento Total</p>
                             </div>
                           </div>
 
