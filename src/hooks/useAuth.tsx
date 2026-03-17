@@ -77,13 +77,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (currentSession.user.user_metadata?.role as UserRole) ?? null,
     );
 
-    // Check frozen status
+    // Check frozen status - own profile OR admin's profile
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_frozen')
+      .select('is_frozen, admin_id')
       .eq('user_id', currentSession.user.id)
       .maybeSingle();
-    setIsFrozen(profile?.is_frozen ?? false);
+
+    let frozen = profile?.is_frozen ?? false;
+
+    // If not directly frozen but has an admin, check if admin is frozen
+    if (!frozen && profile?.admin_id) {
+      const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('is_frozen')
+        .eq('user_id', profile.admin_id)
+        .maybeSingle();
+      frozen = adminProfile?.is_frozen ?? false;
+    }
+
+    setIsFrozen(frozen);
 
     setLoading(false);
   };
