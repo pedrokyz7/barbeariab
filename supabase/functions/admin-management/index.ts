@@ -15,12 +15,14 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-    const { action, email, password, full_name, phone, target_user_id, role, setup_key } = await req.json();
+    const { action, email, password, full_name, phone, target_user_id, role } = await req.json();
 
-    // Special action: initial setup (no auth required, but needs setup key)
+    // Special action: initial setup (uses service role key as auth)
     if (action === "setup") {
-      if (setup_key !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
-        return new Response(JSON.stringify({ error: "Chave inválida" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const authHeader = req.headers.get("Authorization") || "";
+      const token = authHeader.replace("Bearer ", "");
+      if (token !== serviceRoleKey) {
+        return new Response(JSON.stringify({ error: "Não autorizado" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       // Check if super_admin already exists
