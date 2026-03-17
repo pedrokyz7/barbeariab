@@ -119,7 +119,7 @@ export function BarberLayout({ children }: { children: ReactNode }) {
               <NotificationBell />
             </div>
           </header>
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="flex-1 p-4 sm:p-6 overflow-y-auto overflow-x-hidden">
             {children}
           </main>
         </div>
