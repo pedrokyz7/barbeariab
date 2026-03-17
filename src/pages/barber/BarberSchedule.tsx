@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CheckCircle2, XCircle, Clock, CalendarDays } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, CalendarDays, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Appointment {
@@ -16,6 +16,7 @@ interface Appointment {
   price: number;
   payment_status: string;
   client_name: string;
+  client_phone: string | null;
   service_name: string;
 }
 
@@ -52,11 +53,11 @@ export default function BarberSchedule() {
     const serviceIds = [...new Set(appts.map(a => a.service_id))];
 
     const [{ data: profiles }, { data: services }] = await Promise.all([
-      supabase.from('profiles').select('user_id, full_name').in('user_id', clientIds),
+      supabase.from('profiles').select('user_id, full_name, phone').in('user_id', clientIds),
       supabase.from('services').select('id, name').in('id', serviceIds),
     ]);
 
-    const profileMap = Object.fromEntries((profiles || []).map(p => [p.user_id, p.full_name]));
+    const profileMap = Object.fromEntries((profiles || []).map(p => [p.user_id, { name: p.full_name, phone: p.phone }]));
     const serviceMap = Object.fromEntries((services || []).map(s => [s.id, s.name]));
 
     setAppointments(appts.map(a => ({
@@ -67,7 +68,8 @@ export default function BarberSchedule() {
       status: a.status,
       price: a.price,
       payment_status: a.payment_status,
-      client_name: profileMap[a.client_id] || 'Cliente',
+      client_name: profileMap[a.client_id]?.name || 'Cliente',
+      client_phone: profileMap[a.client_id]?.phone || null,
       service_name: serviceMap[a.service_id] || 'Serviço',
     })));
     setLoading(false);
@@ -127,7 +129,20 @@ export default function BarberSchedule() {
                       <p className="text-xs text-muted-foreground">{apt.end_time.slice(0, 5)}</p>
                     </div>
                     <div>
-                      <p className="font-medium">{apt.client_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{apt.client_name}</p>
+                        {apt.client_phone && (
+                          <a
+                            href={`https://wa.me/55${apt.client_phone}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-500 hover:text-green-400 transition-colors"
+                            title={`WhatsApp: ${apt.client_phone}`}
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">{apt.service_name}</p>
                     </div>
                   </div>
