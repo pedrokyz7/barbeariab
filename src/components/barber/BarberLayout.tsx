@@ -4,6 +4,8 @@ import { BarberSidebar } from './BarberSidebar';
 import { NotificationBell } from './NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
 import { Lock } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import logo from '@/assets/logo.jpg';
 
 export function BarberLayout({ children }: { children: ReactNode }) {
