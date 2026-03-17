@@ -55,6 +55,7 @@ export default function AdminBilling() {
   // Payment tracking
   const [paymentTotals, setPaymentTotals] = useState<Record<string, number>>({});
   const [totalReceived, setTotalReceived] = useState(0);
+  const [lastActivatedPayments, setLastActivatedPayments] = useState<Record<string, string>>({});
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentAdmin, setPaymentAdmin] = useState<BarberAdmin | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -93,19 +94,44 @@ export default function AdminBilling() {
   };
 
   const fetchPayments = async () => {
-    const { data, error } = await supabase
-      .from('billing_payments')
-      .select('admin_user_id, amount');
-    if (!error && data) {
+    const [allRes, activatedRes] = await Promise.all([
+      supabase.from('billing_payments').select('admin_user_id, amount'),
+      supabase.from('billing_payments').select('admin_user_id, created_at, billing_period')
+        .eq('subscription_activated', true)
+        .order('created_at', { ascending: false }),
+    ]);
+    if (!allRes.error && allRes.data) {
       const totals: Record<string, number> = {};
       let total = 0;
-      for (const p of data) {
+      for (const p of allRes.data) {
         totals[p.admin_user_id] = (totals[p.admin_user_id] || 0) + Number(p.amount);
         total += Number(p.amount);
       }
       setPaymentTotals(totals);
       setTotalReceived(total);
     }
+    if (!activatedRes.error && activatedRes.data) {
+      const lastDates: Record<string, string> = {};
+      for (const p of activatedRes.data) {
+        if (!lastDates[p.admin_user_id]) {
+          lastDates[p.admin_user_id] = p.created_at;
+        }
+      }
+      setLastActivatedPayments(lastDates);
+    }
+  };
+
+  const isSubscriptionActiveByDate = (userId: string): boolean => {
+    const lastPaymentDate = lastActivatedPayments[userId];
+    if (!lastPaymentDate) return false;
+    const date = new Date(lastPaymentDate);
+    const period = billingSettings?.billing_period || 'monthly';
+    if (period === 'quarterly') {
+      date.setMonth(date.getMonth() + 3);
+    } else {
+      date.setMonth(date.getMonth() + 1);
+    }
+    return date > new Date();
   };
 
   const saveBillingSettings = async () => {
@@ -254,7 +280,8 @@ export default function AdminBilling() {
     if (error) {
       toast.error('Erro ao registrar pagamento');
     } else {
-      // Update subscription status locally to show as active
+      const now = new Date().toISOString();
+      setLastActivatedPayments(prev => ({ ...prev, [paymentAdmin.user_id]: now }));
       setSubscriptions(prev => ({
         ...prev,
         [paymentAdmin.user_id]: { subscribed: true },
@@ -281,6 +308,8 @@ export default function AdminBilling() {
       if (error) {
         toast.error('Erro ao ativar assinatura');
       } else {
+        const now = new Date().toISOString();
+        setLastActivatedPayments(prev => ({ ...prev, [admin.user_id]: now }));
         setSubscriptions(prev => ({
           ...prev,
           [admin.user_id]: { subscribed: true },
@@ -308,7 +337,7 @@ export default function AdminBilling() {
   const formatCurrency = (value: number) =>
     value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  const activeCount = Object.values(subscriptions).filter(s => s.subscribed).length;
+  const activeCount = barberAdmins.filter(a => isSubscriptionActiveByDate(a.user_id) || subscriptions[a.user_id]?.subscribed).length;
   const periodLabel = billingSettings?.billing_period === 'quarterly' ? 'trimestre' : 'mês';
   const formattedPlanAmount = billingSettings
     ? billingSettings.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -426,7 +455,8 @@ export default function AdminBilling() {
           <div className="space-y-3">
             {barberAdmins.map((admin) => {
               const sub = subscriptions[admin.user_id];
-              const isActive = sub?.subscribed;
+              const isActiveByDate = isSubscriptionActiveByDate(admin.user_id);
+              const isActive = isActiveByDate || sub?.subscribed;
               const isChecking = checkingEmail === admin.user_id;
               const isCreating = creatingCheckout === admin.user_id;
               const adminPaid = paymentTotals[admin.user_id] || 0;
