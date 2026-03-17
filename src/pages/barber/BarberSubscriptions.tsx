@@ -3,8 +3,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
 import { Navigate } from 'react-router-dom';
-import { CreditCard, CheckCircle, XCircle, Clock, CalendarDays } from 'lucide-react';
+import { CreditCard, CheckCircle, XCircle, Clock, CalendarDays, QrCode, Globe, Copy, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface PaymentRecord {
   id: string;
