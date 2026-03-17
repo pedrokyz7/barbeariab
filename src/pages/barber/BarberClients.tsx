@@ -128,7 +128,7 @@ export default function BarberClients() {
     <BarberLayout>
       <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
         <div>
-          <h1 className="text-3xl font-bold font-display">Clientes</h1>
+          <h1 className="text-3xl font-bold font-display">Clientes Cadastrados</h1>
           <p className="text-muted-foreground mt-1">{clients.length} cliente{clients.length !== 1 ? 's' : ''}</p>
         </div>
 
