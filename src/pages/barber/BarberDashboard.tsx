@@ -121,23 +121,38 @@ export default function BarberDashboard() {
     const today = format(new Date(), 'yyyy-MM-dd');
     const { data } = await supabase
       .from('appointments')
-      .select('*, services(name), profiles!appointments_client_id_fkey(full_name)')
+      .select('id, appointment_date, start_time, end_time, status, price, client_id, service_id')
       .eq('barber_id', user.id)
       .eq('appointment_date', today)
       .eq('status', 'scheduled')
       .order('start_time');
 
-    if (data) {
-      setTodayAppointments(data.map((a: any) => ({
+    if (data && data.length > 0) {
+      const clientIds = [...new Set(data.map(a => a.client_id))];
+      const serviceIds = [...new Set(data.map(a => a.service_id))];
+
+      const [profilesRes, servicesRes] = await Promise.all([
+        supabase.from('profiles').select('user_id, full_name').in('user_id', clientIds),
+        supabase.from('services').select('id, name').in('id', serviceIds),
+      ]);
+
+      const profileMap: Record<string, string> = {};
+      (profilesRes.data || []).forEach(p => { profileMap[p.user_id] = p.full_name; });
+      const serviceMap: Record<string, string> = {};
+      (servicesRes.data || []).forEach(s => { serviceMap[s.id] = s.name; });
+
+      setTodayAppointments(data.map(a => ({
         id: a.id,
         appointment_date: a.appointment_date,
         start_time: a.start_time,
         end_time: a.end_time,
         status: a.status,
         price: a.price,
-        client_name: a.profiles?.full_name || 'Cliente',
-        service_name: a.services?.name || 'Serviço',
+        client_name: profileMap[a.client_id] || 'Cliente',
+        service_name: serviceMap[a.service_id] || 'Serviço',
       })));
+    } else {
+      setTodayAppointments([]);
     }
   };
 
@@ -146,7 +161,7 @@ export default function BarberDashboard() {
     const today = format(new Date(), 'yyyy-MM-dd');
     const { data } = await supabase
       .from('appointments')
-      .select('*, services(name), profiles!appointments_client_id_fkey(full_name)')
+      .select('id, appointment_date, start_time, end_time, status, price, client_id, service_id')
       .eq('barber_id', user.id)
       .gte('appointment_date', today)
       .eq('status', 'scheduled')
