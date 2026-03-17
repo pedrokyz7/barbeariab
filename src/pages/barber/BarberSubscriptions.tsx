@@ -45,7 +45,7 @@ export default function BarberSubscriptions() {
         .from('billing_settings')
         .select('amount, billing_period')
         .limit(1)
-        .single(),
+        .maybeSingle(),
     ]);
 
     if (!paymentsRes.error && paymentsRes.data) {
