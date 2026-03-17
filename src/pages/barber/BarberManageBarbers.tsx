@@ -188,6 +188,24 @@ export default function BarberManageBarbers() {
   const formatCurrency = (value: number) =>
     value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+  const calcPercent = (current: number, previous: number): number | null => {
+    if (previous === 0 && current === 0) return null;
+    if (previous === 0) return 100;
+    return ((current - previous) / previous) * 100;
+  };
+
+  const PercentBadge = ({ current, previous }: { current: number; previous: number }) => {
+    const pct = calcPercent(current, previous);
+    if (pct === null) return <span className="text-[10px] text-muted-foreground">—</span>;
+    const isUp = pct >= 0;
+    return (
+      <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium ${isUp ? 'text-success' : 'text-destructive'}`}>
+        {isUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+        {Math.abs(pct).toFixed(0)}%
+      </span>
+    );
+  };
+
   return (
     <BarberLayout>
         <div className="max-w-4xl mx-auto space-y-6 animate-fade-in overflow-x-hidden">
