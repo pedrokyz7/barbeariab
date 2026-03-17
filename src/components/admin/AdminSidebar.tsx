@@ -16,6 +16,7 @@ import {
 const items = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
   { title: 'Usuários', url: '/admin/users', icon: Users },
+  { title: 'Cobranças', url: '/admin/billing', icon: CreditCard },
 ];
 
 export function AdminSidebar() {
