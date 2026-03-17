@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
-import { Calendar, Clock, XCircle, Pencil, MapPin } from 'lucide-react';
+import { Calendar, Clock, XCircle, Pencil, MapPin, Banknote, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -35,6 +35,7 @@ interface AppointmentGroup {
   price: number;
   barber_name: string;
   service_names: string[];
+  payment_method: string;
 }
 
 const getAppointmentTimestamp = (appointment: { appointment_date: string; start_time: string }) =>
@@ -155,6 +156,7 @@ export default function ClientAppointments() {
         price: Number(appointment.price),
         barber_name: appointment.barber_name,
         service_names: [appointment.service_name],
+        payment_method: (appointment as any).payment_method || 'local',
       });
 
       return groups;
@@ -268,6 +270,14 @@ export default function ClientAppointments() {
                 </div>
                 <div className="sm:text-right space-y-1 shrink-0">
                   <p className="font-bold text-success">R$ {Number(appointment.price).toFixed(2)}</p>
+                  <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium w-fit sm:ml-auto ${
+                    appointment.payment_method === 'local'
+                      ? 'bg-yellow-500/20 text-yellow-400'
+                      : 'bg-primary/20 text-primary'
+                  }`}>
+                    {appointment.payment_method === 'local' ? <Banknote className="w-3 h-3" /> : <CreditCard className="w-3 h-3" />}
+                    {appointment.payment_method === 'local' ? 'Pagar no local' : 'Online'}
+                  </span>
                   <p className={`text-xs font-medium ${statusColor[appointment.status] || ''}`}>
                     {statusLabel[appointment.status] || appointment.status}
                   </p>
