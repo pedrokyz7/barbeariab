@@ -15,6 +15,7 @@ import BarberFinances from "./pages/barber/BarberFinances";
 import BarberClients from "./pages/barber/BarberClients";
 import BarberManageBarbers from "./pages/barber/BarberManageBarbers";
 import BarberProfile from "./pages/barber/BarberProfile";
+import BarberSubscriptions from "./pages/barber/BarberSubscriptions";
 import ClientBooking from "./pages/client/ClientBooking";
 import ClientAppointments from "./pages/client/ClientAppointments";
 import ClientSpending from "./pages/client/ClientSpending";
