@@ -224,11 +224,11 @@ export default function AdminBilling() {
                       ) : (
                         <Button
                           size="sm"
-                          onClick={() => handleCreateCheckout(admin.email, admin.user_id)}
+                          onClick={() => handleCharge(admin.email, admin.user_id, admin.full_name)}
                           disabled={isCreating}
                         >
                           <CreditCard className="w-3.5 h-3.5 mr-1.5" />
-                          {isCreating ? 'Criando...' : 'Assinar'}
+                          {isCreating ? 'Enviando...' : 'Cobrar'}
                         </Button>
                       )}
                       <Button
