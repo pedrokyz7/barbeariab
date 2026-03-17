@@ -4,12 +4,19 @@ import { BarberSidebar } from './BarberSidebar';
 import { NotificationBell } from './NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
 import { Lock } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import logo from '@/assets/logo.jpg';
 
 export function BarberLayout({ children }: { children: ReactNode }) {
   const { user, isFrozen } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const fullName = user?.user_metadata?.full_name || '';
   const shortName = fullName.trim().split(/\s+/).slice(0, 2).join(' ');
+
+  const isSubscriptionsPage = location.pathname === '/barber/subscriptions';
+  const showFrozenBlock = isFrozen && !isSubscriptionsPage;
 
   return (
     <SidebarProvider>
@@ -29,13 +36,16 @@ export function BarberLayout({ children }: { children: ReactNode }) {
             </div>
           </header>
           <main className="flex-1 p-6 overflow-auto">
-            {isFrozen ? (
+            {showFrozenBlock ? (
               <div className="flex flex-col items-center justify-center py-20 space-y-4">
                 <Lock className="w-16 h-16 text-destructive" />
                 <h2 className="text-2xl font-bold text-destructive">Conta Congelada</h2>
                 <p className="text-muted-foreground text-center max-w-md">
-                  Sua conta foi congelada pelo administrador. Entre em contato com o suporte para regularizar sua situação.
+                  Sua conta foi congelada pelo administrador. Acesse a aba Assinaturas para regularizar sua situação.
                 </p>
+                <Button variant="default" onClick={() => navigate('/barber/subscriptions')}>
+                  Ir para Assinaturas
+                </Button>
               </div>
             ) : (
               children
