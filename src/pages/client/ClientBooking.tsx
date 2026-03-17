@@ -220,7 +220,7 @@ export default function ClientBooking() {
                 {barbers.map((b) => (
                   <button
                     key={b.user_id}
-                    onClick={() => { if (b.is_available) { setSelectedBarber(b); setStep('service'); } }}
+                    onClick={() => { if (b.is_available) { setSelectedBarber(b); setStep('category'); } }}
                     disabled={!b.is_available}
                     className={`glass-card p-6 text-center transition-all animate-press relative ${
                       b.is_available ? 'hover:border-primary' : 'opacity-50 cursor-not-allowed'
