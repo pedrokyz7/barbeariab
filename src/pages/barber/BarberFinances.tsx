@@ -5,7 +5,7 @@ import { BarberLayout } from '@/components/barber/BarberLayout';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { DollarSign, TrendingUp, Calendar, BarChart3, CheckCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { EarningsCharts } from '@/components/barber/EarningsCharts';
+
 
 interface AppointmentRecord {
   id: string;
@@ -143,9 +143,6 @@ export default function BarberFinances() {
             </div>
           ))}
         </div>
-
-        {/* Charts */}
-        {user && <EarningsCharts barberId={user.id} />}
 
         <div className="glass-card p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">

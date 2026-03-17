@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
 import { Calendar, DollarSign, Users, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { EarningsCharts } from '@/components/barber/EarningsCharts';
+
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -167,9 +167,6 @@ export default function BarberDashboard() {
           ))}
         </div>
 
-
-        {/* Charts */}
-        {user && <EarningsCharts barberId={user.id} />}
 
         {/* Upcoming */}
         <div className="glass-card p-6">
