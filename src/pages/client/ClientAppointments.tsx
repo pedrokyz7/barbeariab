@@ -251,7 +251,7 @@ export default function ClientAppointments() {
         ) : (
           <div className="space-y-3">
             {appointments.map((appointment) => (
-              <div key={appointment.ids.join('-')} className="glass-card p-4 flex items-center justify-between animate-slide-up gap-4">
+              <div key={appointment.ids.join('-')} className="glass-card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between animate-slide-up gap-3">
                 <div className="space-y-1 min-w-0">
                   <p className="font-medium break-words">{appointment.service_names.join(' • ')}</p>
                   <p className="text-sm text-muted-foreground">com {appointment.barber_name}</p>
@@ -266,13 +266,13 @@ export default function ClientAppointments() {
                     </span>
                   </div>
                 </div>
-                <div className="text-right space-y-1 shrink-0">
+                <div className="sm:text-right space-y-1 shrink-0">
                   <p className="font-bold text-success">R$ {Number(appointment.price).toFixed(2)}</p>
                   <p className={`text-xs font-medium ${statusColor[appointment.status] || ''}`}>
                     {statusLabel[appointment.status] || appointment.status}
                   </p>
                   {appointment.status === 'scheduled' && filter === 'upcoming' && (
-                    <div className="flex flex-col items-end gap-1 mt-1">
+                    <div className="flex flex-col sm:items-end gap-1 mt-1">
                       <Button
                         variant="default"
                         size="sm"
@@ -302,7 +302,7 @@ export default function ClientAppointments() {
                     </div>
                   )}
                   {appointment.status === 'arrived' && filter === 'upcoming' && (
-                    <div className="flex flex-col items-end gap-1 mt-1">
+                    <div className="flex flex-col sm:items-end gap-1 mt-1">
                       <p className="text-xs text-yellow-400 font-medium">✓ Aguardando atendimento</p>
                       <Button
                         variant="outline"
