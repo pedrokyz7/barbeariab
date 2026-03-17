@@ -21,6 +21,7 @@ interface BarberAdmin {
   full_name: string;
   email: string;
   roles: string[];
+  is_frozen: boolean;
 }
 
 interface SubscriptionInfo {
