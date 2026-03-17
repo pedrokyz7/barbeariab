@@ -81,7 +81,7 @@ export function BarberLayout({ children }: { children: ReactNode }) {
           <Button variant="default" onClick={() => navigate('/barber/subscriptions')}>
             Ir para Assinaturas
           </Button>
-          <Button variant="outline" onClick={() => signOut()}>
+          <Button variant="outline" onClick={async () => { await signOut(); window.location.href = '/auth'; }}>
             Sair
           </Button>
         </div>
