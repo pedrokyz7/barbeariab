@@ -156,6 +156,7 @@ export default function ClientAppointments() {
         price: Number(appointment.price),
         barber_name: appointment.barber_name,
         service_names: [appointment.service_name],
+        payment_method: (appointment as any).payment_method || 'local',
       });
 
       return groups;
