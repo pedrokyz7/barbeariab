@@ -284,7 +284,17 @@ export default function ClientAppointments() {
                     </div>
                   )}
                   {appointment.status === 'arrived' && filter === 'upcoming' && (
-                    <p className="text-xs text-yellow-400 font-medium mt-1">✓ Aguardando atendimento</p>
+                    <div className="flex flex-col items-end gap-1 mt-1">
+                      <p className="text-xs text-yellow-400 font-medium">✓ Aguardando atendimento</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7 rounded-xl"
+                        onClick={() => undoArrival(appointment.ids)}
+                      >
+                        Ainda estou a caminho
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
