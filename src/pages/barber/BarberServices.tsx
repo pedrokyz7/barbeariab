@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Pencil, Trash2, X, Check, Camera, ImageIcon, Clock, DollarSign } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Check, Camera, ImageIcon, Clock, DollarSign, Video, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -23,12 +23,16 @@ interface Service {
   is_active: boolean;
   category: string;
   image_url: string | null;
+  video_url: string | null;
 }
 
 const CATEGORIES = [
   { value: 'masculino', label: '💇‍♂️ Masculino', description: 'Serviços masculinos' },
   { value: 'feminino', label: '💇‍♀️ Feminino', description: 'Serviços femininos' },
 ];
+
+const MAX_VIDEO_DURATION = 15;
+const MAX_VIDEO_SIZE_MB = 50;
 
 function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number) {
   return centerCrop(
@@ -55,6 +59,13 @@ export default function BarberServices() {
   const [serviceImageUrl, setServiceImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Video state
+  const [serviceVideoUrl, setServiceVideoUrl] = useState<string | null>(null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const [videoPreviewDialogOpen, setVideoPreviewDialogOpen] = useState(false);
+  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) fetchServices();
@@ -146,6 +157,80 @@ export default function BarberServices() {
     }
   };
 
+  // Video upload handler
+  const onSelectVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0 || !user) return;
+    const file = e.target.files[0];
+
+    // Validate file size
+    if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+      toast.error(`O vídeo deve ter no máximo ${MAX_VIDEO_SIZE_MB}MB`);
+      if (videoInputRef.current) videoInputRef.current.value = '';
+      return;
+    }
+
+    // Validate video type
+    if (!file.type.startsWith('video/')) {
+      toast.error('Por favor, selecione um arquivo de vídeo válido');
+      if (videoInputRef.current) videoInputRef.current.value = '';
+      return;
+    }
+
+    // Validate duration
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    
+    const durationCheck = new Promise<boolean>((resolve) => {
+      video.onloadedmetadata = () => {
+        URL.revokeObjectURL(video.src);
+        if (video.duration > MAX_VIDEO_DURATION) {
+          toast.error(`O vídeo deve ter no máximo ${MAX_VIDEO_DURATION} segundos. Duração: ${Math.round(video.duration)}s`);
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      };
+      video.onerror = () => {
+        toast.error('Erro ao ler o vídeo');
+        resolve(false);
+      };
+    });
+    
+    video.src = URL.createObjectURL(file);
+    const isValid = await durationCheck;
+    
+    if (!isValid) {
+      if (videoInputRef.current) videoInputRef.current.value = '';
+      return;
+    }
+
+    setUploadingVideo(true);
+    try {
+      const ext = file.name.split('.').pop() || 'mp4';
+      const fileName = `${user.id}/${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('service-videos')
+        .upload(fileName, file, { contentType: file.type, upsert: true });
+
+      if (uploadError) {
+        toast.error('Erro ao enviar vídeo: ' + uploadError.message);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('service-videos')
+        .getPublicUrl(fileName);
+
+      setServiceVideoUrl(urlData.publicUrl);
+      toast.success('Vídeo enviado com sucesso!');
+    } catch {
+      toast.error('Erro ao processar vídeo');
+    } finally {
+      setUploadingVideo(false);
+      if (videoInputRef.current) videoInputRef.current.value = '';
+    }
+  };
+
   const handleSave = async () => {
     if (!user) {
       toast.error('Você precisa estar logado');
@@ -162,6 +247,7 @@ export default function BarberServices() {
       price: form.price,
       category: form.category,
       image_url: serviceImageUrl,
+      video_url: serviceVideoUrl,
     };
 
     if (editingId) {
@@ -188,6 +274,7 @@ export default function BarberServices() {
     setEditingId(s.id);
     setForm({ name: s.name, duration_minutes: s.duration_minutes, price: Number(s.price), category: s.category || 'masculino' });
     setServiceImageUrl(s.image_url || null);
+    setServiceVideoUrl(s.video_url || null);
     setShowForm(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
   };
@@ -197,8 +284,15 @@ export default function BarberServices() {
     setEditingId(null);
     setForm({ name: '', duration_minutes: 30, price: 0, category: 'masculino' });
     setServiceImageUrl(null);
+    setServiceVideoUrl(null);
     setImgSrc('');
     if (fileInputRef.current) fileInputRef.current.value = '';
+    if (videoInputRef.current) videoInputRef.current.value = '';
+  };
+
+  const removeVideo = () => {
+    setServiceVideoUrl(null);
+    if (videoInputRef.current) videoInputRef.current.value = '';
   };
 
   const masculinos = services.filter(s => (s.category || 'masculino') === 'masculino');
@@ -206,7 +300,7 @@ export default function BarberServices() {
 
   const ServiceCard = ({ s }: { s: Service }) => (
     <div className="group relative bg-card border border-border rounded-2xl overflow-hidden transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
-      {/* Image */}
+      {/* Image / Video */}
       <div className="relative h-36 bg-secondary/50 overflow-hidden">
         {s.image_url ? (
           <img src={s.image_url} alt={s.name} className="w-full h-full object-cover" />
@@ -214,6 +308,20 @@ export default function BarberServices() {
           <div className="w-full h-full flex items-center justify-center">
             <ImageIcon className="w-10 h-10 text-muted-foreground/30" />
           </div>
+        )}
+        {/* Video play button */}
+        {s.video_url && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setPreviewVideoUrl(s.video_url);
+              setVideoPreviewDialogOpen(true);
+            }}
+            className="absolute bottom-2 left-2 p-1.5 bg-background/90 backdrop-blur-sm rounded-lg hover:bg-accent transition-colors flex items-center gap-1"
+          >
+            <Play className="w-3.5 h-3.5 text-primary fill-primary" />
+            <span className="text-[10px] font-medium text-foreground">Vídeo</span>
+          </button>
         )}
         {/* Overlay actions */}
         <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -289,28 +397,63 @@ export default function BarberServices() {
           <div ref={formRef} className="bg-card border border-border rounded-2xl p-6 space-y-5 animate-slide-up">
             <h3 className="font-semibold font-display text-lg">{editingId ? 'Editar' : 'Novo'} Serviço</h3>
 
-            {/* Image upload */}
-            <div className="flex items-center gap-4">
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="w-24 h-24 rounded-xl bg-secondary border-2 border-dashed border-border hover:border-primary/50 cursor-pointer flex items-center justify-center overflow-hidden transition-colors"
-              >
-                {serviceImageUrl ? (
-                  <img src={serviceImageUrl} alt="Preview" className="w-full h-full object-cover" />
-                ) : (
-                  <Camera className="w-6 h-6 text-muted-foreground" />
-                )}
+            {/* Image & Video uploads */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Image upload */}
+              <div className="flex items-center gap-3 flex-1">
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-20 h-20 rounded-xl bg-secondary border-2 border-dashed border-border hover:border-primary/50 cursor-pointer flex items-center justify-center overflow-hidden transition-colors shrink-0"
+                >
+                  {serviceImageUrl ? (
+                    <img src={serviceImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <Camera className="w-5 h-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium text-foreground">📷 Foto</p>
+                  <p className="text-xs text-muted-foreground">Clique para adicionar</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={onSelectFile}
+                    className="hidden"
+                  />
+                </div>
               </div>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium text-foreground">Foto do serviço</p>
-                <p className="text-xs text-muted-foreground">Clique para adicionar ou trocar a imagem. Você poderá recortar antes de salvar.</p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={onSelectFile}
-                  className="hidden"
-                />
+
+              {/* Video upload */}
+              <div className="flex items-center gap-3 flex-1">
+                <div
+                  onClick={() => !uploadingVideo && videoInputRef.current?.click()}
+                  className={`w-20 h-20 rounded-xl bg-secondary border-2 border-dashed border-border hover:border-primary/50 cursor-pointer flex items-center justify-center overflow-hidden transition-colors shrink-0 ${uploadingVideo ? 'opacity-50 pointer-events-none' : ''}`}
+                >
+                  {serviceVideoUrl ? (
+                    <video src={serviceVideoUrl} className="w-full h-full object-cover" muted />
+                  ) : uploadingVideo ? (
+                    <div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" />
+                  ) : (
+                    <Video className="w-5 h-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium text-foreground">🎬 Vídeo</p>
+                  <p className="text-xs text-muted-foreground">Até {MAX_VIDEO_DURATION}s</p>
+                  {serviceVideoUrl && (
+                    <button onClick={removeVideo} className="text-xs text-destructive hover:underline">
+                      Remover vídeo
+                    </button>
+                  )}
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/*"
+                    onChange={onSelectVideo}
+                    className="hidden"
+                  />
+                </div>
               </div>
             </div>
 
@@ -412,6 +555,26 @@ export default function BarberServices() {
                 Cancelar
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Video Preview Dialog */}
+      <Dialog open={videoPreviewDialogOpen} onOpenChange={setVideoPreviewDialogOpen}>
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle>Vídeo do serviço</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 pt-2">
+            {previewVideoUrl && (
+              <video
+                src={previewVideoUrl}
+                controls
+                autoPlay
+                className="w-full rounded-xl max-h-[400px]"
+                style={{ background: 'hsl(var(--secondary))' }}
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>
