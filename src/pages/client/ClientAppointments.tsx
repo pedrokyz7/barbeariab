@@ -225,12 +225,20 @@ export default function ClientAppointments() {
             Próximos
           </Button>
           <Button
-            variant={filter === 'past' ? 'default' : 'outline'}
+            variant={filter === 'cancelled' ? 'default' : 'outline'}
             size="sm"
             className="rounded-xl"
-            onClick={() => setFilter('past')}
+            onClick={() => setFilter('cancelled')}
           >
-            Histórico
+            Cancelados
+          </Button>
+          <Button
+            variant={filter === 'completed' ? 'default' : 'outline'}
+            size="sm"
+            className="rounded-xl"
+            onClick={() => setFilter('completed')}
+          >
+            Concluídos
           </Button>
         </div>
 
