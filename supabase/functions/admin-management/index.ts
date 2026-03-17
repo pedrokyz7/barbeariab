@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
 
       const { data: profiles } = await supabaseAdmin
         .from("profiles")
-        .select("user_id, full_name, phone, is_available, avatar_url")
+        .select("user_id, full_name, phone, is_available, avatar_url, is_frozen")
         .in("user_id", userIds);
 
       const users = [];
