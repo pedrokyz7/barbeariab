@@ -483,6 +483,68 @@ export default function ClientBooking() {
             </Button>
           </div>
         )}
+
+        {/* Step: Success */}
+        {step === 'success' && selectedBarber && (
+          <div className="flex flex-col items-center justify-center py-8 animate-fade-in">
+            {/* Logo with glow animation */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 rounded-full bg-primary/20 blur-2xl animate-pulse scale-150" />
+              <div className="relative w-24 h-24 rounded-full overflow-hidden ring-4 ring-primary/30 shadow-2xl animate-logo-pulse">
+                <img src={logo} alt="BLACKOUT" className="w-full h-full object-cover" />
+              </div>
+            </div>
+
+            {/* Success icon */}
+            <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mb-4">
+              <CheckCircle className="w-10 h-10 text-success" />
+            </div>
+
+            {/* Text */}
+            <h2 className="text-2xl font-bold font-display text-center mb-2">
+              Agendamento Confirmado!
+            </h2>
+            <p className="text-muted-foreground text-center text-sm mb-1">
+              Tudo pronto, estamos esperando por você.
+            </p>
+            <p className="text-center text-sm font-medium mb-6">
+              {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })} às {selectedTime} com <span className="text-primary">{selectedBarber.full_name}</span>
+            </p>
+
+            {/* Services summary */}
+            <div className="glass-card p-4 w-full max-w-xs mb-6 space-y-2">
+              {selectedServices.map(s => (
+                <div key={s.id} className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{s.name}</span>
+                  <span className="font-medium text-success">R$ {Number(s.price).toFixed(2)}</span>
+                </div>
+              ))}
+              <div className="border-t border-border pt-2 flex justify-between font-bold text-sm">
+                <span>Total</span>
+                <span className="text-success">R$ {totalPrice.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Brand */}
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground/50 font-display mb-6">
+              BLACKOUT BARBER SHOP
+            </p>
+
+            <Button
+              onClick={() => {
+                setStep('barber');
+                setSelectedBarber(null);
+                setSelectedCategory(null);
+                setSelectedServices([]);
+                setSelectedTime(null);
+                setPaymentMethod(null);
+              }}
+              className="w-full max-w-xs h-12 rounded-xl text-base font-semibold animate-press"
+            >
+              Novo Agendamento
+            </Button>
+          </div>
+        )}
       </div>
     </ClientLayout>
   );
