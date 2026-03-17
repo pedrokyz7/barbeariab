@@ -94,19 +94,44 @@ export default function AdminBilling() {
   };
 
   const fetchPayments = async () => {
-    const { data, error } = await supabase
-      .from('billing_payments')
-      .select('admin_user_id, amount');
-    if (!error && data) {
+    const [allRes, activatedRes] = await Promise.all([
+      supabase.from('billing_payments').select('admin_user_id, amount'),
+      supabase.from('billing_payments').select('admin_user_id, created_at, billing_period')
+        .eq('subscription_activated', true)
+        .order('created_at', { ascending: false }),
+    ]);
+    if (!allRes.error && allRes.data) {
       const totals: Record<string, number> = {};
       let total = 0;
-      for (const p of data) {
+      for (const p of allRes.data) {
         totals[p.admin_user_id] = (totals[p.admin_user_id] || 0) + Number(p.amount);
         total += Number(p.amount);
       }
       setPaymentTotals(totals);
       setTotalReceived(total);
     }
+    if (!activatedRes.error && activatedRes.data) {
+      const lastDates: Record<string, string> = {};
+      for (const p of activatedRes.data) {
+        if (!lastDates[p.admin_user_id]) {
+          lastDates[p.admin_user_id] = p.created_at;
+        }
+      }
+      setLastActivatedPayments(lastDates);
+    }
+  };
+
+  const isSubscriptionActiveByDate = (userId: string): boolean => {
+    const lastPaymentDate = lastActivatedPayments[userId];
+    if (!lastPaymentDate) return false;
+    const date = new Date(lastPaymentDate);
+    const period = billingSettings?.billing_period || 'monthly';
+    if (period === 'quarterly') {
+      date.setMonth(date.getMonth() + 3);
+    } else {
+      date.setMonth(date.getMonth() + 1);
+    }
+    return date > new Date();
   };
 
   const saveBillingSettings = async () => {
