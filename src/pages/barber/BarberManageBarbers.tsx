@@ -51,7 +51,9 @@ export default function BarberManageBarbers() {
   const [statsCache, setStatsCache] = useState<Record<string, BarberStats>>({});
   const [loadingStats, setLoadingStats] = useState<string | null>(null);
   const [editingBarber, setEditingBarber] = useState<string | null>(null);
-  const [editName, setEditName] = useState('');
+  const [editForm, setEditForm] = useState({ full_name: '', email: '', password: '' });
+  const [showEditPassword, setShowEditPassword] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
     if (user) fetchBarbers();
@@ -117,17 +119,27 @@ export default function BarberManageBarbers() {
     setShowForm(false);
     fetchBarbers();
   };
-  const handleRename = async (barberId: string) => {
-    if (!editName.trim()) { toast.error('Nome não pode ser vazio'); return; }
-    const { data, error } = await supabase.functions.invoke('manage-barbers', {
-      body: { action: 'rename', barber_user_id: barberId, full_name: editName.trim() },
-    });
-    if (error || data?.error) {
-      toast.error(data?.error || 'Erro ao renomear');
+  const handleEditSave = async (barberId: string) => {
+    const { full_name, email, password } = editForm;
+    if (!full_name.trim() && !email.trim() && !password.trim()) {
+      toast.error('Preencha ao menos um campo');
       return;
     }
-    toast.success('Nome atualizado!');
+    setSavingEdit(true);
+    const body: any = { action: 'update_credentials', barber_user_id: barberId };
+    if (full_name.trim()) body.full_name = full_name.trim();
+    if (email.trim()) body.email = email.trim();
+    if (password.trim()) body.password = password.trim();
+
+    const { data, error } = await supabase.functions.invoke('manage-barbers', { body });
+    setSavingEdit(false);
+    if (error || data?.error) {
+      toast.error(data?.error || 'Erro ao atualizar');
+      return;
+    }
+    toast.success('Dados atualizados!');
     setEditingBarber(null);
+    setEditForm({ full_name: '', email: '', password: '' });
     fetchBarbers();
   };
 
@@ -234,16 +246,40 @@ export default function BarberManageBarbers() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-1 min-w-0 flex-1">
                         {editingBarber === b.user_id ? (
-                          <div className="flex items-center gap-1 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                          <div className="space-y-2 w-full" onClick={(e) => e.stopPropagation()}>
                             <Input
-                              value={editName}
-                              onChange={(e) => setEditName(e.target.value)}
-                              className="h-8 text-sm flex-1 min-w-[120px] max-w-[200px]"
-                              autoFocus
-                              onKeyDown={(e) => { if (e.key === 'Enter') handleRename(b.user_id); if (e.key === 'Escape') setEditingBarber(null); }}
+                              value={editForm.full_name}
+                              onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                              placeholder="Novo nome"
+                              className="h-8 text-sm"
                             />
-                            <button onClick={() => handleRename(b.user_id)} className="p-1 rounded hover:bg-primary/20 text-primary"><Check className="w-4 h-4" /></button>
-                            <button onClick={() => setEditingBarber(null)} className="p-1 rounded hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
+                            <Input
+                              type="email"
+                              value={editForm.email}
+                              onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                              placeholder="Novo email"
+                              className="h-8 text-sm"
+                            />
+                            <div className="relative">
+                              <Input
+                                type={showEditPassword ? 'text' : 'password'}
+                                value={editForm.password}
+                                onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                                placeholder="Nova senha (deixe vazio para manter)"
+                                className="h-8 text-sm pr-9"
+                              />
+                              <button type="button" onClick={() => setShowEditPassword(!showEditPassword)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                                {showEditPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              </button>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" onClick={() => handleEditSave(b.user_id)} disabled={savingEdit} className="h-7 text-xs">
+                                {savingEdit ? 'Salvando...' : 'Salvar'}
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => { setEditingBarber(null); setEditForm({ full_name: '', email: '', password: '' }); }} className="h-7 text-xs">
+                                Cancelar
+                              </Button>
+                            </div>
                           </div>
                         ) : (
                           <p className="font-medium flex items-center gap-2 text-sm sm:text-base">
@@ -269,7 +305,7 @@ export default function BarberManageBarbers() {
                         </div>
                         {role === 'admin' && (
                           <button
-                            onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditName(b.full_name); }}
+                            onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditForm({ full_name: b.full_name, email: b.email, password: '' }); }}
                             className="p-1.5 sm:p-2 rounded-lg hover:bg-accent/20 text-muted-foreground hover:text-foreground transition-colors"
                             title="Editar nome"
                           >
