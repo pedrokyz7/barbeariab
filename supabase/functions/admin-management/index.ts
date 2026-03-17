@@ -17,13 +17,8 @@ Deno.serve(async (req) => {
 
     const { action, email, password, full_name, phone, target_user_id, role } = await req.json();
 
-    // Special action: initial setup (uses service role key as auth)
     if (action === "setup") {
-      const authHeader = req.headers.get("Authorization") || "";
-      const token = authHeader.replace("Bearer ", "");
-      if (token !== serviceRoleKey) {
-        return new Response(JSON.stringify({ error: "Não autorizado" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
+      // Guard: only works if no super_admin exists yet
 
       // Check if super_admin already exists
       const { data: existingRoles } = await supabaseAdmin
