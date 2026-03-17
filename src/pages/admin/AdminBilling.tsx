@@ -3,9 +3,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Navigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, CheckCircle, XCircle, ExternalLink, RefreshCw, Shield, Scissors } from 'lucide-react';
+import { CreditCard, CheckCircle, XCircle, ExternalLink, RefreshCw, Shield, Settings, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
 interface BarberAdmin {
@@ -21,6 +23,13 @@ interface SubscriptionInfo {
   subscription_end?: string;
 }
 
+interface BillingSettings {
+  id: string;
+  billing_period: string;
+  amount: number;
+  updated_at: string;
+}
+
 export default function AdminBilling() {
   const { role, loading } = useAuth();
   const [searchParams] = useSearchParams();
@@ -29,6 +38,13 @@ export default function AdminBilling() {
   const [loadingData, setLoadingData] = useState(true);
   const [checkingEmail, setCheckingEmail] = useState<string | null>(null);
   const [creatingCheckout, setCreatingCheckout] = useState<string | null>(null);
+
+  // Billing settings state
+  const [billingSettings, setBillingSettings] = useState<BillingSettings | null>(null);
+  const [editAmount, setEditAmount] = useState('');
+  const [editPeriod, setEditPeriod] = useState('monthly');
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [editingSettings, setEditingSettings] = useState(false);
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
@@ -41,19 +57,57 @@ export default function AdminBilling() {
 
   useEffect(() => {
     fetchBarberAdmins();
+    fetchBillingSettings();
   }, []);
+
+  const fetchBillingSettings = async () => {
+    const { data, error } = await supabase
+      .from('billing_settings')
+      .select('*')
+      .limit(1)
+      .single();
+    if (!error && data) {
+      setBillingSettings(data as BillingSettings);
+      setEditAmount(String(data.amount));
+      setEditPeriod(data.billing_period);
+    }
+  };
+
+  const saveBillingSettings = async () => {
+    if (!billingSettings) return;
+    const amount = parseFloat(editAmount.replace(',', '.'));
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Insira um valor válido');
+      return;
+    }
+    setSavingSettings(true);
+    const { error } = await supabase
+      .from('billing_settings')
+      .update({
+        amount,
+        billing_period: editPeriod,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', billingSettings.id);
+    if (error) {
+      toast.error('Erro ao salvar configurações');
+    } else {
+      toast.success('Valor da cobrança atualizado!');
+      setBillingSettings({ ...billingSettings, amount, billing_period: editPeriod });
+      setEditingSettings(false);
+    }
+    setSavingSettings(false);
+  };
 
   const fetchBarberAdmins = async () => {
     const { data, error } = await supabase.functions.invoke('admin-management', {
       body: { action: 'list_all_users' },
     });
     if (!error && data?.users) {
-      // Filter to only admin roles (not barbers, not super_admin, not client)
       const admins = data.users.filter((u: any) =>
         u.roles.some((r: string) => r === 'admin')
       );
       setBarberAdmins(admins);
-      // Check subscriptions for all admins
       for (const admin of admins) {
         checkSubscription(admin.email, admin.user_id);
       }
@@ -78,11 +132,14 @@ export default function AdminBilling() {
 
   const handleCharge = async (email: string, userId: string, fullName: string) => {
     setCreatingCheckout(userId);
+    const amount = billingSettings?.amount ?? 99.90;
+    const period = billingSettings?.billing_period === 'quarterly' ? 'trimestral' : 'mensal';
+    const formattedAmount = amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     try {
       const { error } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'Assinatura Pendente',
-        message: `Sua assinatura mensal de R$ 99,90 precisa ser paga. Entre em contato com o administrador ou acesse sua área para regularizar.`,
+        message: `Sua assinatura ${period} de R$ ${formattedAmount} precisa ser paga. Entre em contato com o administrador ou acesse sua área para regularizar.`,
         type: 'billing',
       });
       if (error) {
@@ -125,13 +182,78 @@ export default function AdminBilling() {
   };
 
   const activeCount = Object.values(subscriptions).filter(s => s.subscribed).length;
+  const periodLabel = billingSettings?.billing_period === 'quarterly' ? 'trimestre' : 'mês';
+  const formattedPlanAmount = billingSettings
+    ? billingSettings.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : '99,90';
 
   return (
     <AdminLayout>
       <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
         <div>
           <h1 className="text-3xl font-bold font-display">Cobranças</h1>
-          <p className="text-muted-foreground mt-1">Gerencie as assinaturas dos administradores e barbeiros</p>
+          <p className="text-muted-foreground mt-1">Gerencie as assinaturas dos administradores barbeiros</p>
+        </div>
+
+        {/* Billing Settings Config */}
+        <div className="glass-card p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Settings className="w-4 h-4 text-primary" />
+              <h2 className="font-semibold text-sm">Configuração de Cobrança</h2>
+            </div>
+            {!editingSettings && (
+              <Button size="sm" variant="outline" onClick={() => setEditingSettings(true)}>
+                Editar
+              </Button>
+            )}
+          </div>
+
+          {editingSettings ? (
+            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3">
+              <div className="space-y-1 flex-1 w-full">
+                <label className="text-xs text-muted-foreground">Valor (R$)</label>
+                <Input
+                  type="text"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  placeholder="99.90"
+                  className="max-w-[160px]"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Período</label>
+                <Select value={editPeriod} onValueChange={setEditPeriod}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">Mensal</SelectItem>
+                    <SelectItem value="quarterly">Trimestral</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={saveBillingSettings} disabled={savingSettings}>
+                  <Save className="w-3.5 h-3.5 mr-1.5" />
+                  {savingSettings ? 'Salvando...' : 'Salvar'}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => {
+                  setEditingSettings(false);
+                  if (billingSettings) {
+                    setEditAmount(String(billingSettings.amount));
+                    setEditPeriod(billingSettings.billing_period);
+                  }
+                }}>
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Plano atual: <span className="font-medium text-foreground">R$ {formattedPlanAmount}/{periodLabel} por barbearia</span>
+            </p>
+          )}
         </div>
 
         {/* Summary */}
@@ -139,7 +261,7 @@ export default function AdminBilling() {
           <div className="glass-card p-4 text-center">
             <CreditCard className="w-6 h-6 mx-auto mb-2 text-primary" />
             <p className="text-2xl font-bold">{barberAdmins.length}</p>
-            <p className="text-xs text-muted-foreground">Total Barbeiros/Admins</p>
+            <p className="text-xs text-muted-foreground">Total Admins</p>
           </div>
           <div className="glass-card p-4 text-center">
             <CheckCircle className="w-6 h-6 mx-auto mb-2 text-primary" />
@@ -166,7 +288,7 @@ export default function AdminBilling() {
           <p className="text-muted-foreground text-center py-12">Carregando...</p>
         ) : barberAdmins.length === 0 ? (
           <div className="glass-card p-12 text-center">
-            <p className="text-muted-foreground">Nenhum barbeiro ou admin cadastrado</p>
+            <p className="text-muted-foreground">Nenhum admin barbeiro cadastrado</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -175,23 +297,21 @@ export default function AdminBilling() {
               const isActive = sub?.subscribed;
               const isChecking = checkingEmail === admin.user_id;
               const isCreating = creatingCheckout === admin.user_id;
-              const RoleIcon = admin.roles.includes('admin') ? Shield : Scissors;
 
               return (
                 <div key={admin.user_id} className="glass-card p-4 animate-slide-up">
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="min-w-0 space-y-1">
                       <div className="flex items-center gap-2">
-                        <RoleIcon className="w-4 h-4 text-primary shrink-0" />
+                        <Shield className="w-4 h-4 text-primary shrink-0" />
                         <p className="font-medium text-sm sm:text-base truncate">{admin.full_name || 'Sem nome'}</p>
                       </div>
                       <p className="text-xs text-muted-foreground truncate">{admin.email}</p>
                       <div className="flex items-center gap-2 flex-wrap">
-                        {admin.roles.map(r => (
-                          <Badge key={r} variant="secondary" className="text-[10px]">
-                            {r === 'admin' ? 'Admin Barbeiro' : 'Barbeiro'}
-                          </Badge>
-                        ))}
+                        <Badge variant="secondary" className="text-[10px]">Admin Barbeiro</Badge>
+                        <Badge variant="outline" className="text-[10px]">
+                          R$ {formattedPlanAmount}/{periodLabel}
+                        </Badge>
                         {isChecking ? (
                           <Badge variant="outline" className="text-[10px]">Verificando...</Badge>
                         ) : isActive ? (
@@ -249,7 +369,7 @@ export default function AdminBilling() {
 
         <div className="glass-card p-4 text-center">
           <p className="text-xs text-muted-foreground">
-            Plano: <span className="font-medium text-foreground">R$ 99,90/mês por barbearia</span> • Pagamentos processados via Stripe
+            Plano: <span className="font-medium text-foreground">R$ {formattedPlanAmount}/{periodLabel} por barbearia</span> • Pagamentos processados via Stripe
           </p>
         </div>
       </div>
