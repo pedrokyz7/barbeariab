@@ -253,20 +253,39 @@ export default function BarberSubscriptions() {
 
               {showPix && (
                 <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3 animate-fade-in">
-                  <p className="text-sm font-medium">Chave PIX para pagamento:</p>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 text-sm bg-background rounded px-3 py-2 border border-border truncate">
-                      {PIX_KEY}
-                    </code>
-                    <Button size="sm" variant="outline" onClick={handleCopyPix}>
-                      <Copy className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {settings
-                      ? `Valor: ${formatCurrency(settings.amount)} — Após o pagamento, envie o comprovante ao administrador para ativação.`
-                      : 'Envie o comprovante ao administrador para ativação da assinatura.'}
-                  </p>
+                  {pixPaymentSent ? (
+                    <div className="text-center space-y-2 py-2">
+                      <Clock className="w-8 h-8 text-primary mx-auto" />
+                      <p className="text-sm font-medium">Aguarde a aprovação do cobrador</p>
+                      <p className="text-xs text-muted-foreground">Você será notificado quando o pagamento for confirmado.</p>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-sm font-medium">Chave PIX (CPF) para pagamento:</p>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 text-sm bg-background rounded px-3 py-2 border border-border truncate">
+                          {PIX_KEY}
+                        </code>
+                        <Button size="sm" variant="outline" onClick={handleCopyPix}>
+                          <Copy className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {settings
+                          ? `Valor: ${formatCurrency(settings.amount)}`
+                          : ''}
+                      </p>
+                      <Button
+                        className="w-full gap-2"
+                        variant="outline"
+                        onClick={handlePixPaymentDone}
+                        disabled={sendingPixNotification}
+                      >
+                        {sendingPixNotification ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                        Pagamento efetuado
+                      </Button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
