@@ -21,6 +21,8 @@ interface Service {
   name: string;
   duration_minutes: number;
   price: number;
+  image_url: string | null;
+  video_url: string | null;
 }
 
 type Step = 'barber' | 'service' | 'datetime' | 'confirm';
