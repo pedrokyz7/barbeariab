@@ -188,7 +188,8 @@ export default function ClientBooking() {
   return (
     <ClientLayout>
       <div className="max-w-lg mx-auto space-y-6 animate-fade-in">
-        {/* Progress */}
+        {/* Progress - hide on success */}
+        {step !== 'success' && (
         <div className="flex items-center gap-2 justify-center">
           {STEPS.map((s, i) => (
             <div key={s} className="flex items-center gap-2">
@@ -203,6 +204,7 @@ export default function ClientBooking() {
             </div>
           ))}
         </div>
+        )}
 
         {/* Step: Select Barber */}
         {step === 'barber' && (
