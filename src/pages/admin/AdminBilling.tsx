@@ -58,6 +58,7 @@ export default function AdminBilling() {
   const [paymentAdmin, setPaymentAdmin] = useState<BarberAdmin | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentNotes, setPaymentNotes] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('pix');
   const [savingPayment, setSavingPayment] = useState(false);
 
   useEffect(() => {
