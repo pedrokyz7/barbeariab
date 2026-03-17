@@ -254,24 +254,37 @@ export default function ClientAppointments() {
                     {statusLabel[appointment.status] || appointment.status}
                   </p>
                   {appointment.status === 'scheduled' && filter === 'upcoming' && (
-                    <div className="flex items-center gap-1">
+                    <div className="flex flex-col items-end gap-1 mt-1">
                       <Button
-                        variant="ghost"
+                        variant="default"
                         size="sm"
-                        className="text-muted-foreground hover:text-foreground text-xs h-7"
-                        onClick={() => setEditingAppointment(appointment)}
+                        className="rounded-xl text-xs h-8 gap-1"
+                        onClick={() => markArrived(appointment.ids)}
                       >
-                        <Pencil className="w-3 h-3 mr-1" /> Editar
+                        <MapPin className="w-3.5 h-3.5" /> Cheguei!
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive text-xs h-7"
-                        onClick={() => cancelAppointment(appointment.ids)}
-                      >
-                        <XCircle className="w-3 h-3 mr-1" /> Cancelar
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-muted-foreground hover:text-foreground text-xs h-7"
+                          onClick={() => setEditingAppointment(appointment)}
+                        >
+                          <Pencil className="w-3 h-3 mr-1" /> Editar
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive text-xs h-7"
+                          onClick={() => cancelAppointment(appointment.ids)}
+                        >
+                          <XCircle className="w-3 h-3 mr-1" /> Cancelar
+                        </Button>
+                      </div>
                     </div>
+                  )}
+                  {appointment.status === 'arrived' && filter === 'upcoming' && (
+                    <p className="text-xs text-yellow-400 font-medium mt-1">✓ Aguardando atendimento</p>
                   )}
                 </div>
               </div>
