@@ -108,7 +108,9 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          payment_method: string
           recorded_by: string | null
+          subscription_activated: boolean
         }
         Insert: {
           admin_user_id: string
@@ -117,7 +119,9 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          payment_method?: string
           recorded_by?: string | null
+          subscription_activated?: boolean
         }
         Update: {
           admin_user_id?: string
@@ -126,7 +130,9 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          payment_method?: string
           recorded_by?: string | null
+          subscription_activated?: boolean
         }
         Relationships: []
       }

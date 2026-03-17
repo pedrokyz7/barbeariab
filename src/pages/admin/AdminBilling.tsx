@@ -58,6 +58,7 @@ export default function AdminBilling() {
   const [paymentAdmin, setPaymentAdmin] = useState<BarberAdmin | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentNotes, setPaymentNotes] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('pix');
   const [savingPayment, setSavingPayment] = useState(false);
 
   useEffect(() => {
@@ -205,6 +206,7 @@ export default function AdminBilling() {
     setPaymentAdmin(admin);
     setPaymentAmount(billingSettings ? String(billingSettings.amount) : '99.90');
     setPaymentNotes('');
+    setPaymentMethod('pix');
     setPaymentDialogOpen(true);
   };
 
@@ -221,11 +223,18 @@ export default function AdminBilling() {
       amount,
       billing_period: billingSettings?.billing_period || 'monthly',
       notes: paymentNotes,
-    });
+      payment_method: paymentMethod,
+      subscription_activated: true,
+    } as any);
     if (error) {
       toast.error('Erro ao registrar pagamento');
     } else {
-      toast.success(`Pagamento de R$ ${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado para ${paymentAdmin.full_name || paymentAdmin.email}`);
+      // Update subscription status locally to show as active
+      setSubscriptions(prev => ({
+        ...prev,
+        [paymentAdmin.user_id]: { subscribed: true },
+      }));
+      toast.success(`Pagamento de R$ ${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado para ${paymentAdmin.full_name || paymentAdmin.email}. Assinatura ativada!`);
       setPaymentDialogOpen(false);
       fetchPayments();
     }
@@ -476,14 +485,32 @@ export default function AdminBilling() {
               />
             </div>
             <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Método de Pagamento</label>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pix">PIX</SelectItem>
+                  <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                  <SelectItem value="transferencia">Transferência</SelectItem>
+                  <SelectItem value="cartao">Cartão</SelectItem>
+                  <SelectItem value="boleto">Boleto</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
               <label className="text-xs text-muted-foreground">Observação (opcional)</label>
               <Input
                 type="text"
                 value={paymentNotes}
                 onChange={(e) => setPaymentNotes(e.target.value)}
-                placeholder="Pagamento via PIX, referente a março..."
+                placeholder="Pagamento referente a março..."
               />
             </div>
+            <p className="text-xs text-primary font-medium">
+              ✓ Ao confirmar, a assinatura será ativada automaticamente.
+            </p>
           </div>
           <DialogFooter>
             <DialogClose asChild>
