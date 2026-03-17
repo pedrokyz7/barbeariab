@@ -26,6 +26,7 @@ export default function Auth() {
   const [selectedRole, setSelectedRole] = useState<'barber' | 'client'>('client');
   const [loginRole, setLoginRole] = useState<'barber' | 'client'>('client');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [showEmailSuggestions, setShowEmailSuggestions] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const { signIn, signUp } = useAuth();
