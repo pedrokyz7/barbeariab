@@ -53,7 +53,7 @@ export default function BarberSchedule() {
     const serviceIds = [...new Set(appts.map(a => a.service_id))];
 
     const [{ data: profiles }, { data: services }] = await Promise.all([
-      supabase.from('profiles').select('user_id, full_name').in('user_id', clientIds),
+      supabase.from('profiles').select('user_id, full_name, phone').in('user_id', clientIds),
       supabase.from('services').select('id, name').in('id', serviceIds),
     ]);
 
