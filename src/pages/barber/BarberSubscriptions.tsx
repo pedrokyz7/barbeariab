@@ -73,7 +73,8 @@ export default function BarberSubscriptions() {
   const periodLabel = settings?.billing_period === 'quarterly' ? 'trimestre' : 'mês';
   const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
 
-  // Calculate subscription status based on most recent activated payment
+  // Use most recent payment (any) for last payment date, and most recent activated for subscription status
+  const lastPayment = payments.length > 0 ? payments[0] : null;
   const lastActivated = payments.find(p => p.subscription_activated);
   const isActive = !!lastActivated;
 
