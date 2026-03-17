@@ -13,6 +13,7 @@ import BarberWorkHours from "./pages/barber/BarberWorkHours";
 import BarberFinances from "./pages/barber/BarberFinances";
 import BarberClients from "./pages/barber/BarberClients";
 import BarberManageBarbers from "./pages/barber/BarberManageBarbers";
+import BarberProfile from "./pages/barber/BarberProfile";
 import ClientBooking from "./pages/client/ClientBooking";
 import ClientAppointments from "./pages/client/ClientAppointments";
 import ClientSpending from "./pages/client/ClientSpending";
