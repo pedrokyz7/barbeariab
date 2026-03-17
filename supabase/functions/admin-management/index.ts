@@ -91,6 +91,7 @@ Deno.serve(async (req) => {
           email: u?.email || "",
           is_available: profile?.is_available ?? true,
           avatar_url: profile?.avatar_url || "",
+          is_frozen: profile?.is_frozen ?? false,
           roles: userRoles,
           created_at: u?.created_at || "",
         });
