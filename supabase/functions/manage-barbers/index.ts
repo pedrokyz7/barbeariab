@@ -315,6 +315,7 @@ Deno.serve(async (req) => {
       }));
 
       return new Response(JSON.stringify({ earnings }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     if (action === "toggle_availability") {
       if (!barber_user_id || typeof is_available !== "boolean") {
