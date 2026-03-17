@@ -247,18 +247,45 @@ export default function ClientBooking() {
           </div>
         )}
 
+        {/* Step: Select Category */}
+        {step === 'category' && (
+          <div className="space-y-4 animate-slide-up">
+            <button onClick={() => { setStep('barber'); setSelectedCategory(null); }} className="flex items-center text-sm text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
+            </button>
+            <h2 className="text-2xl font-bold font-display text-center">Tipo de Serviço</h2>
+            <p className="text-center text-sm text-muted-foreground">Selecione a categoria</p>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => { setSelectedCategory('masculino'); setSelectedServices([]); setStep('service'); }}
+                className="glass-card p-8 flex flex-col items-center gap-3 transition-all animate-press hover:border-primary"
+              >
+                <span className="text-4xl">🧔</span>
+                <p className="font-bold font-display text-lg">Masculino</p>
+              </button>
+              <button
+                onClick={() => { setSelectedCategory('feminino'); setSelectedServices([]); setStep('service'); }}
+                className="glass-card p-8 flex flex-col items-center gap-3 transition-all animate-press hover:border-primary"
+              >
+                <span className="text-4xl">💇‍♀️</span>
+                <p className="font-bold font-display text-lg">Feminino</p>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Step: Select Services (multi) */}
         {step === 'service' && (
           <div className="space-y-4 animate-slide-up">
-            <button onClick={() => setStep('barber')} className="flex items-center text-sm text-muted-foreground hover:text-foreground">
+            <button onClick={() => { setStep('category'); setSelectedServices([]); }} className="flex items-center text-sm text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
             </button>
-            <h2 className="text-2xl font-bold font-display text-center">Escolha os Serviços</h2>
+            <h2 className="text-2xl font-bold font-display text-center">
+              Serviços {selectedCategory === 'masculino' ? '🧔 Masculinos' : '💇‍♀️ Femininos'}
+            </h2>
             <p className="text-center text-sm text-muted-foreground">Selecione um ou mais serviços</p>
-            {(() => {
-              const masculino = services.filter(s => s.category === 'masculino');
-              const feminino = services.filter(s => s.category === 'feminino');
-              const renderService = (s: Service) => {
+            <div className="space-y-3">
+              {services.filter(s => s.category === selectedCategory).map((s) => {
                 const isSelected = selectedServices.some(ss => ss.id === s.id);
                 return (
                   <div
@@ -304,32 +331,11 @@ export default function ClientBooking() {
                     </button>
                   </div>
                 );
-              };
-              return (
-                <div className="space-y-6">
-                  {masculino.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                        <span>🧔</span> Masculino
-                      </h3>
-                      <div className="space-y-3">
-                        {masculino.map(renderService)}
-                      </div>
-                    </div>
-                  )}
-                  {feminino.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                        <span>💇‍♀️</span> Feminino
-                      </h3>
-                      <div className="space-y-3">
-                        {feminino.map(renderService)}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
+              })}
+              {services.filter(s => s.category === selectedCategory).length === 0 && (
+                <p className="text-center text-muted-foreground py-8">Nenhum serviço disponível nesta categoria</p>
+              )}
+            </div>
 
             {selectedServices.length > 0 && (
               <div className="space-y-3">
