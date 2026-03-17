@@ -472,6 +472,28 @@ export default function AdminBilling() {
                           {isCreating ? 'Enviando...' : 'Cobrar'}
                         </Button>
                       )}
+                      {admin.is_frozen ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleFreezeToggle(admin)}
+                          disabled={isFreezing}
+                          className="border-primary/30 text-primary hover:bg-primary/10"
+                        >
+                          <Unlock className="w-3.5 h-3.5 mr-1.5" />
+                          {isFreezing ? 'Processando...' : 'Descongelar'}
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleFreezeToggle(admin)}
+                          disabled={isFreezing}
+                        >
+                          <Lock className="w-3.5 h-3.5 mr-1.5" />
+                          {isFreezing ? 'Processando...' : 'Congelar'}
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="ghost"
