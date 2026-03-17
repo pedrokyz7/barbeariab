@@ -28,7 +28,17 @@ export default function BarberSchedule() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) fetchAppointments();
+    if (user) {
+      fetchAppointments();
+      // Realtime subscription
+      const channel = supabase
+        .channel('barber-appointments')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: `barber_id=eq.${user.id}` }, () => {
+          fetchAppointments();
+        })
+        .subscribe();
+      return () => { supabase.removeChannel(channel); };
+    }
   }, [user]);
 
   const fetchAppointments = async () => {
