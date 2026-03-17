@@ -55,7 +55,6 @@ export default function BarberDashboard() {
     if (!user) return;
     fetchStats();
     fetchUpcoming();
-    fetchBarberEarnings();
   }, [user]);
 
   const getDateRanges = () => {
