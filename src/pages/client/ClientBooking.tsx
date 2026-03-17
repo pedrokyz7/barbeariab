@@ -23,6 +23,7 @@ interface Service {
   price: number;
   image_url: string | null;
   video_url: string | null;
+  category: string;
 }
 
 type Step = 'barber' | 'service' | 'datetime' | 'confirm';
