@@ -181,6 +181,14 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ totalClients, totalAppointments, totalRevenue, clients: clientDetails, upcoming: upcomingDetails }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    if (action === "toggle_availability") {
+      if (!barber_user_id || typeof is_available !== "boolean") {
+        return new Response(JSON.stringify({ error: "barber_user_id e is_available são obrigatórios" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      await supabaseAdmin.from("profiles").update({ is_available }).eq("user_id", barber_user_id);
+      return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     if (action === "rename") {
       if (!barber_user_id || !full_name) {
         return new Response(JSON.stringify({ error: "barber_user_id e full_name são obrigatórios" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
