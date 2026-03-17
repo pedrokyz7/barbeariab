@@ -106,7 +106,44 @@ export default function BarberSubscriptions() {
     boleto: 'Boleto',
   };
 
-  const PIX_KEY = 'SUA_CHAVE_PIX_AQUI'; // TODO: substituir pela chave PIX real
+  const PIX_KEY = '16484750602';
+
+  const handlePixPaymentDone = async () => {
+    setSendingPixNotification(true);
+    try {
+      // Notify super_admin about the payment
+      const { data: superAdmins } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'super_admin');
+
+      if (superAdmins && superAdmins.length > 0) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('user_id', user!.id)
+          .maybeSingle();
+
+        const name = profile?.full_name || user!.email;
+        const amount = settings ? formatCurrency(settings.amount) : '';
+
+        for (const admin of superAdmins) {
+          await supabase.from('notifications').insert({
+            user_id: admin.user_id,
+            title: 'Pagamento PIX informado',
+            message: `${name} informou que realizou o pagamento PIX${amount ? ` de ${amount}` : ''}. Verifique e aprove.`,
+            type: 'billing',
+          });
+        }
+      }
+      setPixPaymentSent(true);
+      toast.success('Notificação enviada ao cobrador!');
+    } catch {
+      toast.error('Erro ao enviar notificação');
+    } finally {
+      setSendingPixNotification(false);
+    }
+  };
 
   const handlePayOnline = async () => {
     setLoadingCheckout(true);
