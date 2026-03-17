@@ -180,7 +180,7 @@ export default function BarberManageBarbers() {
 
   return (
     <BarberLayout>
-      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in overflow-x-hidden">
+        <div className="max-w-4xl mx-auto space-y-6 animate-fade-in overflow-x-hidden">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold font-display">Barbeiros</h1>
