@@ -51,8 +51,15 @@ export default function Auth() {
 
         const actualRole = roleData?.role ?? (loggedUser?.user_metadata?.role as string | undefined) ?? null;
 
-        // Admin can login as barber
         const isBarberLike = actualRole === 'barber' || actualRole === 'admin';
+        const isSuperAdmin = actualRole === 'super_admin';
+
+        if (isSuperAdmin) {
+          toast.success('Login realizado com sucesso!');
+          window.location.href = '/admin';
+          return;
+        }
+
         if (loginRole === 'barber' && !isBarberLike) {
           await supabase.auth.signOut();
           toast.error('Esta conta não é de barbeiro');
@@ -67,7 +74,6 @@ export default function Auth() {
         }
 
         toast.success('Login realizado com sucesso!');
-        // Navigate based on confirmed role — use direct redirect to avoid race with auth context
         if (isBarberLike) {
           window.location.href = '/barber';
         } else {
