@@ -523,6 +523,18 @@ export default function AdminBilling() {
                           {isFreezing ? 'Processando...' : 'Congelar'}
                         </Button>
                       )}
+                      {!isActive && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleActivateSubscription(admin)}
+                          disabled={activatingUser === admin.user_id}
+                          className="border-green-500/30 text-green-500 hover:bg-green-500/10"
+                        >
+                          <Zap className="w-3.5 h-3.5 mr-1.5" />
+                          {activatingUser === admin.user_id ? 'Ativando...' : 'Ativar Assinatura'}
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="ghost"
