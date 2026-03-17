@@ -258,26 +258,26 @@ export default function BarberSubscriptions() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1 min-w-0">
                   <p className="text-xs text-muted-foreground">Plano</p>
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium truncate">
                     {settings ? `${formatCurrency(settings.amount)}/${periodLabel}` : '—'}
                   </p>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className="text-xs text-muted-foreground">Total Pago</p>
-                  <p className="text-sm font-medium">{formatCurrency(totalPaid)}</p>
+                  <p className="text-sm font-medium truncate">{formatCurrency(totalPaid)}</p>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className="text-xs text-muted-foreground">Último Pagamento</p>
-                  <p className="text-sm font-medium">
+                  <p className="text-xs font-medium truncate">
                     {lastPayment ? `${formatDate(lastPayment.created_at)} — ${formatCurrency(Number(lastPayment.amount))}` : '—'}
                   </p>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className="text-xs text-muted-foreground">Próximo Vencimento</p>
-                  <p className={`text-sm font-medium ${isOverdue ? 'text-destructive' : ''}`}>
+                  <p className={`text-sm font-medium truncate ${isOverdue ? 'text-destructive' : ''}`}>
                     {nextDue ? formatDate(nextDue.toISOString()) : '—'}
                   </p>
                 </div>
