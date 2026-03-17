@@ -297,37 +297,6 @@ export default function BarberManageBarbers() {
             {showForm ? 'Cancelar' : 'Adicionar'}
           </Button>
         </div>
-
-        {/* Ganhos por Barbeiro */}
-        {earningsSummary.length > 0 && (
-          <div className="glass-card p-6">
-            <h2 className="text-xl font-semibold font-display mb-4">Ganhos por Barbeiro</h2>
-            <div className="space-y-4">
-              {earningsSummary.map((b) => (
-                <div key={b.barber_id} className="p-4 rounded-xl bg-secondary/50 animate-slide-up">
-                  <p className="font-semibold mb-3">{b.barber_name}</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Hoje</p>
-                      <p className="text-sm font-bold">R$ {b.today.toFixed(2)}</p>
-                      <PercentBadge current={b.today} previous={b.prevDay} />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Semana</p>
-                      <p className="text-sm font-bold">R$ {b.week.toFixed(2)}</p>
-                      <PercentBadge current={b.week} previous={b.prevWeek} />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Mês</p>
-                      <p className="text-sm font-bold">R$ {b.month.toFixed(2)}</p>
-                      <PercentBadge current={b.month} previous={b.prevMonth} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
         {showForm && (
           <form onSubmit={handleCreate} className="glass-card p-6 space-y-4 animate-slide-up">
             <h2 className="text-lg font-semibold font-display">Novo Barbeiro</h2>
@@ -459,6 +428,33 @@ export default function BarberManageBarbers() {
                         </div>
                       )}
                     </div>
+
+                    {/* Inline earnings */}
+                    {(() => {
+                      const earning = earningsSummary.find(e => e.barber_id === b.user_id);
+                      if (!earning) return null;
+                      return (
+                        <div className="border-t border-border/30 px-3 sm:px-4 py-3">
+                          <div className="grid grid-cols-3 gap-2 text-center">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground">Hoje</p>
+                              <p className="text-xs font-bold text-success">R$ {earning.today.toFixed(2)}</p>
+                              <PercentBadge current={earning.today} previous={earning.prevDay} />
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground">Semana</p>
+                              <p className="text-xs font-bold">R$ {earning.week.toFixed(2)}</p>
+                              <PercentBadge current={earning.week} previous={earning.prevWeek} />
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground">Mês</p>
+                              <p className="text-xs font-bold">R$ {earning.month.toFixed(2)}</p>
+                              <PercentBadge current={earning.month} previous={earning.prevMonth} />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {isExpanded && (
