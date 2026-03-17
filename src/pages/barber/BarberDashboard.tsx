@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
-import { Calendar, DollarSign, Users, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Calendar, DollarSign, Users, TrendingUp, ArrowUpRight, ArrowDownRight, ChevronDown, Clock } from 'lucide-react';
 
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -16,7 +16,6 @@ interface Stats {
   prevWeek: number;
   prevMonth: number;
 }
-
 
 interface UpcomingAppointment {
   id: string;
@@ -51,11 +50,14 @@ export default function BarberDashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats>({ today: 0, week: 0, month: 0, todayCount: 0, prevDay: 0, prevWeek: 0, prevMonth: 0 });
   const [upcoming, setUpcoming] = useState<UpcomingAppointment[]>([]);
+  const [todayAppointments, setTodayAppointments] = useState<UpcomingAppointment[]>([]);
+  const [showTodayList, setShowTodayList] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     fetchStats();
     fetchUpcoming();
+    fetchTodayAppointments();
   }, [user]);
 
   const getDateRanges = () => {
@@ -102,6 +104,30 @@ export default function BarberDashboard() {
     });
   };
 
+  const fetchTodayAppointments = async () => {
+    if (!user) return;
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const { data } = await supabase
+      .from('appointments')
+      .select('*, services(name), profiles!appointments_client_id_fkey(full_name)')
+      .eq('barber_id', user.id)
+      .eq('appointment_date', today)
+      .eq('status', 'scheduled')
+      .order('start_time');
+
+    if (data) {
+      setTodayAppointments(data.map((a: any) => ({
+        id: a.id,
+        appointment_date: a.appointment_date,
+        start_time: a.start_time,
+        end_time: a.end_time,
+        status: a.status,
+        price: a.price,
+        client_name: a.profiles?.full_name || 'Cliente',
+        service_name: a.services?.name || 'Serviço',
+      })));
+    }
+  };
 
   const fetchUpcoming = async () => {
     if (!user) return;
@@ -134,7 +160,6 @@ export default function BarberDashboard() {
     { label: 'Hoje', value: stats.today, prev: stats.prevDay, icon: DollarSign, color: 'text-success' },
     { label: 'Semana', value: stats.week, prev: stats.prevWeek, icon: TrendingUp, color: 'text-primary' },
     { label: 'Mês', value: stats.month, prev: stats.prevMonth, icon: Calendar, color: 'text-primary' },
-    { label: 'Agendamentos Hoje', value: stats.todayCount, icon: Users, color: 'text-primary', isCurrency: false },
   ];
 
   return (
@@ -148,7 +173,7 @@ export default function BarberDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {statCards.map((card) => (
             <div key={card.label} className="glass-card p-5 animate-slide-up">
               <div className="flex items-center justify-between mb-3">
@@ -156,7 +181,7 @@ export default function BarberDashboard() {
                 <card.icon className={`w-5 h-5 ${card.color}`} />
               </div>
               <p className="text-2xl font-bold font-display">
-                {card.isCurrency === false ? card.value : `R$ ${Number(card.value).toFixed(2)}`}
+                R$ {Number(card.value).toFixed(2)}
               </p>
               {'prev' in card && card.prev !== undefined && (
                 <div className="mt-1">
@@ -167,6 +192,53 @@ export default function BarberDashboard() {
           ))}
         </div>
 
+        {/* Agendamentos Hoje - Clickable */}
+        <div className="glass-card overflow-hidden animate-slide-up">
+          <button
+            onClick={() => setShowTodayList(!showTodayList)}
+            className="w-full p-5 flex items-center justify-between hover:bg-secondary/30 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <Users className="w-5 h-5 text-primary" />
+              <div className="text-left">
+                <p className="text-sm text-muted-foreground">Agendamentos Hoje</p>
+                <p className="text-2xl font-bold font-display">{stats.todayCount}</p>
+              </div>
+            </div>
+            <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${showTodayList ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showTodayList && (
+            <div className="border-t border-border">
+              {todayAppointments.length === 0 ? (
+                <p className="text-muted-foreground text-center py-6 text-sm">Nenhum agendamento para hoje</p>
+              ) : (
+                <div className="divide-y divide-border/50">
+                  {todayAppointments.map((apt) => (
+                    <div key={apt.id} className="flex items-center justify-between px-5 py-4 hover:bg-secondary/20 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-sm font-bold text-primary">{apt.client_name.charAt(0).toUpperCase()}</span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{apt.client_name}</p>
+                          <p className="text-xs text-muted-foreground">{apt.service_name}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>{apt.start_time.slice(0, 5)} - {apt.end_time.slice(0, 5)}</span>
+                        </div>
+                        <p className="text-sm font-semibold text-success">R$ {Number(apt.price).toFixed(2)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Upcoming */}
         <div className="glass-card p-6">
