@@ -9,6 +9,7 @@ interface ClientInfo {
   full_name: string;
   phone: string | null;
   email: string;
+  avatar_url: string | null;
   totalSpent: number;
   appointmentCount: number;
 }
