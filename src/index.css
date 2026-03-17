@@ -163,3 +163,18 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+@keyframes logo-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px hsl(0 85% 50% / 0));
+  }
+  50% {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 12px hsl(0 85% 50% / 0.5));
+  }
+}
+
+.animate-logo-pulse {
+  animation: logo-pulse 2.5s ease-in-out infinite;
+}
