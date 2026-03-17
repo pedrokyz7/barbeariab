@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Phone, Mail, Save } from 'lucide-react';
+import { User, Phone, Mail, Save, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 
 function formatPhone(value: string): string {
@@ -18,7 +18,10 @@ export default function ClientProfile() {
   const { user } = useAuth();
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) fetchProfile();
@@ -26,11 +29,47 @@ export default function ClientProfile() {
 
   const fetchProfile = async () => {
     if (!user) return;
-    const { data } = await supabase.from('profiles').select('full_name, phone').eq('user_id', user.id).single();
+    const { data } = await supabase.from('profiles').select('full_name, phone, avatar_url').eq('user_id', user.id).single();
     if (data) {
       setFullName(data.full_name || '');
       setPhone(data.phone ? formatPhone(data.phone) : '');
+      setAvatarUrl(data.avatar_url || null);
     }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Selecione uma imagem válida');
+      return;
+    }
+
+    setIsUploading(true);
+    const filePath = `${user.id}/avatar.${file.name.split('.').pop()}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error('Erro ao enviar foto');
+      setIsUploading(false);
+      return;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    const newUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`;
+
+    await supabase.from('profiles').update({ avatar_url: newUrl }).eq('user_id', user.id);
+
+    setAvatarUrl(newUrl);
+    toast.success('Foto atualizada!');
+    setIsUploading(false);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -53,6 +92,40 @@ export default function ClientProfile() {
         <h1 className="text-3xl font-bold font-display">Meu Perfil</h1>
 
         <form onSubmit={handleSave} className="glass-card p-6 space-y-4">
+          {/* Avatar */}
+          <div className="flex flex-col items-center gap-3">
+            <div
+              className="relative w-24 h-24 rounded-full overflow-hidden bg-card border-2 border-border cursor-pointer group"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Foto de perfil" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <User className="w-10 h-10 text-muted-foreground" />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="text-xs text-primary hover:underline"
+            >
+              {isUploading ? 'Enviando...' : 'Alterar foto'}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarUpload}
+            />
+          </div>
+
           <div className="relative">
             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
