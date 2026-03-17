@@ -286,13 +286,14 @@ export default function ClientBooking() {
               Serviços {selectedCategory === 'masculino' ? '🧔 Masculinos' : '💇‍♀️ Femininos'}
             </h2>
             <p className="text-center text-sm text-muted-foreground">Selecione um ou mais serviços</p>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
               {services.filter(s => s.category === selectedCategory).map((s) => {
                 const isSelected = selectedServices.some(ss => ss.id === s.id);
                 return (
-                  <div
+                  <button
                     key={s.id}
-                    className={`glass-card overflow-hidden transition-all ${
+                    onClick={() => toggleService(s)}
+                    className={`glass-card overflow-hidden transition-all text-left flex flex-col ${
                       isSelected ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/50'
                     }`}
                   >
@@ -301,28 +302,30 @@ export default function ClientBooking() {
                       videoUrl={s.video_url}
                       serviceName={s.name}
                     />
-                    <button
-                      onClick={() => toggleService(s)}
-                      className="p-4 w-full text-left flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Checkbox checked={isSelected} className="pointer-events-none" />
-                        <div>
-                          <p className="font-medium">{s.name}</p>
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {s.duration_minutes} min</span>
-                          </div>
-                        </div>
+                    {!s.image_url && !s.video_url && (
+                      <div className="w-full aspect-[4/3] bg-muted/30 flex items-center justify-center">
+                        <Scissors className="w-8 h-8 text-muted-foreground/40" />
                       </div>
-                      <span className="font-bold font-display text-success">R$ {Number(s.price).toFixed(2)}</span>
-                    </button>
-                  </div>
+                    )}
+                    <div className="p-3 flex flex-col gap-1.5 flex-1">
+                      <div className="flex items-start gap-2">
+                        <Checkbox checked={isSelected} className="pointer-events-none mt-0.5 shrink-0" />
+                        <p className="font-medium text-sm leading-tight">{s.name}</p>
+                      </div>
+                      <div className="flex items-center justify-between mt-auto">
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {s.duration_minutes} min
+                        </span>
+                        <span className="font-bold text-xs text-success">R$ {Number(s.price).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </button>
                 );
               })}
-              {services.filter(s => s.category === selectedCategory).length === 0 && (
-                <p className="text-center text-muted-foreground py-8">Nenhum serviço disponível nesta categoria</p>
-              )}
             </div>
+            {services.filter(s => s.category === selectedCategory).length === 0 && (
+              <p className="text-center text-muted-foreground py-8">Nenhum serviço disponível nesta categoria</p>
+            )}
 
             {selectedServices.length > 0 && (
               <div className="space-y-3">
