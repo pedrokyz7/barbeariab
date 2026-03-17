@@ -92,12 +92,12 @@ export default function BarberDashboard() {
     const d = getDateRanges();
 
     const [todayRes, weekRes, monthRes, prevDayRes, prevWeekRes, prevMonthRes] = await Promise.all([
-      supabase.from('appointments').select('price').eq('barber_id', user.id).eq('appointment_date', d.today).eq('status', 'completed'),
-      supabase.from('appointments').select('price').eq('barber_id', user.id).gte('appointment_date', d.weekStart).lte('appointment_date', d.weekEnd).eq('status', 'completed'),
-      supabase.from('appointments').select('price').eq('barber_id', user.id).gte('appointment_date', d.monthStart).lte('appointment_date', d.monthEnd).eq('status', 'completed'),
-      supabase.from('appointments').select('price').eq('barber_id', user.id).eq('appointment_date', d.yesterday).eq('status', 'completed'),
-      supabase.from('appointments').select('price').eq('barber_id', user.id).gte('appointment_date', d.prevWeekStart).lte('appointment_date', d.prevWeekEnd).eq('status', 'completed'),
-      supabase.from('appointments').select('price').eq('barber_id', user.id).gte('appointment_date', d.prevMonthStart).lte('appointment_date', d.prevMonthEnd).eq('status', 'completed'),
+      supabase.from('appointments').select('price').eq('barber_id', user.id).eq('appointment_date', d.today).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price').eq('barber_id', user.id).gte('appointment_date', d.weekStart).lte('appointment_date', d.weekEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price').eq('barber_id', user.id).gte('appointment_date', d.monthStart).lte('appointment_date', d.monthEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price').eq('barber_id', user.id).eq('appointment_date', d.yesterday).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price').eq('barber_id', user.id).gte('appointment_date', d.prevWeekStart).lte('appointment_date', d.prevWeekEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price').eq('barber_id', user.id).gte('appointment_date', d.prevMonthStart).lte('appointment_date', d.prevMonthEnd).eq('payment_status', 'paid'),
     ]);
 
     const todayCount = await supabase.from('appointments').select('id', { count: 'exact', head: true })
@@ -141,12 +141,12 @@ export default function BarberDashboard() {
 
     // Fetch all appointments for these barbers in relevant periods
     const [todayRes, weekRes, monthRes, prevDayRes, prevWeekRes, prevMonthRes] = await Promise.all([
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).eq('appointment_date', d.today).eq('status', 'completed'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.weekStart).lte('appointment_date', d.weekEnd).eq('status', 'completed'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.monthStart).lte('appointment_date', d.monthEnd).eq('status', 'completed'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).eq('appointment_date', d.yesterday).eq('status', 'completed'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.prevWeekStart).lte('appointment_date', d.prevWeekEnd).eq('status', 'completed'),
-      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.prevMonthStart).lte('appointment_date', d.prevMonthEnd).eq('status', 'completed'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).eq('appointment_date', d.today).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.weekStart).lte('appointment_date', d.weekEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.monthStart).lte('appointment_date', d.monthEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).eq('appointment_date', d.yesterday).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.prevWeekStart).lte('appointment_date', d.prevWeekEnd).eq('payment_status', 'paid'),
+      supabase.from('appointments').select('price, barber_id').in('barber_id', barberIds).gte('appointment_date', d.prevMonthStart).lte('appointment_date', d.prevMonthEnd).eq('payment_status', 'paid'),
     ]);
 
     const sumByBarber = (data: any[] | null, barberId: string) =>
