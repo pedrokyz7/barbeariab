@@ -38,7 +38,7 @@ export default function BarberSchedule() {
 
     const { data: appts } = await supabase
       .from('appointments')
-      .select('id, appointment_date, start_time, end_time, status, price, payment_status, client_id, service_id')
+      .select('id, appointment_date, start_time, end_time, status, price, payment_status, payment_method, client_id, service_id')
       .eq('barber_id', user.id)
       .gte('appointment_date', today)
       .neq('status', 'cancelled')
