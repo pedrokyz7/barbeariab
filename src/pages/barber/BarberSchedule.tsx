@@ -96,7 +96,7 @@ export default function BarberSchedule() {
   return (
     <BarberLayout>
       <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-        <h1 className="text-3xl font-bold font-display">Agenda</h1>
+        <h1 className="text-3xl font-bold font-display">Clientes Agendados</h1>
         <p className="text-muted-foreground text-sm">Todos os agendamentos feitos pelos clientes aparecem aqui automaticamente.</p>
 
         {loading ? (

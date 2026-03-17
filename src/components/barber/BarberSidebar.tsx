@@ -16,7 +16,7 @@ import {
 
 const baseItems = [
   { title: 'Painel Financeiro', url: '/barber', icon: LayoutDashboard },
-  { title: 'Agenda', url: '/barber/schedule', icon: Calendar },
+  { title: 'Clientes Agendados', url: '/barber/schedule', icon: Calendar },
   { title: 'Serviços', url: '/barber/services', icon: Scissors },
   { title: 'Horários', url: '/barber/work-hours', icon: Clock },
 ];
