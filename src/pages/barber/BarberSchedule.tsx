@@ -81,6 +81,7 @@ export default function BarberSchedule() {
 
   const statusColors: Record<string, string> = {
     scheduled: 'bg-primary/20 text-primary',
+    arrived: 'bg-yellow-500/20 text-yellow-400',
     completed: 'bg-success/20 text-success',
     cancelled: 'bg-destructive/20 text-destructive',
   };
