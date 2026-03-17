@@ -127,11 +127,11 @@ export default function ClientAppointments() {
 
     const now = new Date();
     const appointmentsForSelectedTab = enrichedAppointments
-      .filter((appointment) =>
-        filter === 'upcoming'
-          ? isUpcomingAppointment(appointment, now)
-          : !isUpcomingAppointment(appointment, now)
-      )
+      .filter((appointment) => {
+        if (filter === 'upcoming') return isUpcomingAppointment(appointment, now);
+        if (filter === 'cancelled') return appointment.status === 'cancelled';
+        return appointment.status === 'completed';
+      })
       .sort(filter === 'upcoming' ? compareAppointmentsAsc : compareAppointmentsDesc);
 
     const groupedAppointments = appointmentsForSelectedTab.reduce<AppointmentGroup[]>((groups, appointment) => {
