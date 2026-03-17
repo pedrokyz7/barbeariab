@@ -76,22 +76,22 @@ export default function AdminBilling() {
     setCheckingEmail(null);
   };
 
-  const handleCreateCheckout = async (email: string, userId: string) => {
+  const handleCharge = async (email: string, userId: string, fullName: string) => {
     setCreatingCheckout(userId);
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { email, return_url: window.location.origin },
+      const { error } = await supabase.from('notifications').insert({
+        user_id: userId,
+        title: 'Assinatura Pendente',
+        message: `Sua assinatura mensal de R$ 99,90 precisa ser paga. Entre em contato com o administrador ou acesse sua área para regularizar.`,
+        type: 'billing',
       });
-      if (error || data?.error) {
-        toast.error(data?.error || 'Erro ao criar checkout');
-        setCreatingCheckout(null);
-        return;
-      }
-      if (data?.url) {
-        window.open(data.url, '_blank');
+      if (error) {
+        toast.error('Erro ao enviar cobrança');
+      } else {
+        toast.success(`Cobrança enviada para ${fullName || email}`);
       }
     } catch {
-      toast.error('Erro ao criar checkout');
+      toast.error('Erro ao enviar cobrança');
     }
     setCreatingCheckout(null);
   };
