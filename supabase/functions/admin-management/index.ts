@@ -18,7 +18,8 @@ Deno.serve(async (req) => {
     const { action, email, password, full_name, phone, target_user_id, role } = await req.json();
 
     if (action === "setup") {
-      // Guard: only works if no super_admin exists yet
+      // Setup is disabled after initial creation
+      return new Response(JSON.stringify({ error: "Setup desabilitado" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
       // Check if super_admin already exists
       const { data: existingRoles } = await supabaseAdmin
