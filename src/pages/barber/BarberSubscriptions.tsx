@@ -144,7 +144,7 @@ export default function BarberSubscriptions() {
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Último Pagamento</p>
                   <p className="text-sm font-medium">
-                    {lastActivated ? formatDate(lastActivated.created_at) : '—'}
+                    {lastPayment ? `${formatDate(lastPayment.created_at)} — ${formatCurrency(Number(lastPayment.amount))}` : '—'}
                   </p>
                 </div>
                 <div className="space-y-1">
