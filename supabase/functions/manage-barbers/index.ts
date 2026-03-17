@@ -53,8 +53,18 @@ Deno.serve(async (req) => {
       // Insert role
       await supabaseAdmin.from("user_roles").insert({ user_id: newUser.user.id, role: "barber" });
 
-      // Set admin_id to link barber to the admin who created them, and update phone
-      const profileUpdates: Record<string, any> = { admin_id: caller.id };
+      // Check if admin is frozen to propagate to new barber
+      const { data: adminProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("is_frozen")
+        .eq("user_id", caller.id)
+        .maybeSingle();
+
+      // Set admin_id to link barber to the admin who created them, and update phone + frozen status
+      const profileUpdates: Record<string, any> = {
+        admin_id: caller.id,
+        is_frozen: adminProfile?.is_frozen ?? false,
+      };
       if (phone) profileUpdates.phone = phone.replace(/\D/g, "");
       await supabaseAdmin.from("profiles").update(profileUpdates).eq("user_id", newUser.user.id);
 
