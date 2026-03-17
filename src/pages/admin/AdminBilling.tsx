@@ -223,11 +223,18 @@ export default function AdminBilling() {
       amount,
       billing_period: billingSettings?.billing_period || 'monthly',
       notes: paymentNotes,
-    });
+      payment_method: paymentMethod,
+      subscription_activated: true,
+    } as any);
     if (error) {
       toast.error('Erro ao registrar pagamento');
     } else {
-      toast.success(`Pagamento de R$ ${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado para ${paymentAdmin.full_name || paymentAdmin.email}`);
+      // Update subscription status locally to show as active
+      setSubscriptions(prev => ({
+        ...prev,
+        [paymentAdmin.user_id]: { subscribed: true },
+      }));
+      toast.success(`Pagamento de R$ ${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado para ${paymentAdmin.full_name || paymentAdmin.email}. Assinatura ativada!`);
       setPaymentDialogOpen(false);
       fetchPayments();
     }
