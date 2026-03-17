@@ -112,7 +112,7 @@ export default function BarberSchedule() {
 
   return (
     <BarberLayout>
-      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in overflow-x-hidden">
         <h1 className="text-3xl font-bold font-display">Clientes Agendados</h1>
         <p className="text-muted-foreground text-sm">Todos os agendamentos feitos pelos clientes aparecem aqui automaticamente.</p>
 
@@ -136,52 +136,54 @@ export default function BarberSchedule() {
                 <span className="text-xs text-muted-foreground">({grouped[date].length})</span>
               </div>
               {grouped[date].map((apt) => (
-                <div key={apt.id} className="glass-card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between animate-slide-up gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="text-center min-w-[50px] shrink-0">
-                      <p className="font-bold font-display">{apt.start_time.slice(0, 5)}</p>
-                      <p className="text-xs text-muted-foreground">{apt.end_time.slice(0, 5)}</p>
+                <div key={apt.id} className="glass-card p-3 sm:p-4 animate-slide-up space-y-3">
+                  {/* Top row: time + avatar + client info */}
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="text-center min-w-[44px] shrink-0">
+                      <p className="font-bold font-display text-sm">{apt.start_time.slice(0, 5)}</p>
+                      <p className="text-[10px] text-muted-foreground">{apt.end_time.slice(0, 5)}</p>
                     </div>
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-card border border-border shrink-0">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-card border border-border shrink-0">
                       {apt.client_avatar ? (
                         <img src={apt.client_avatar} alt={apt.client_name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-muted-foreground" />
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                         </div>
                       )}
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-medium truncate">{apt.client_name}</p>
-                      <p className="text-sm text-muted-foreground truncate">{apt.service_name}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm truncate">{apt.client_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
                       {apt.client_phone && (
                         <a
                           href={`https://wa.me/55${apt.client_phone}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 text-xs text-green-500 hover:text-green-400 transition-colors mt-1"
+                          className="flex items-center gap-1 text-[10px] sm:text-xs text-green-500 hover:text-green-400 transition-colors mt-0.5"
                         >
-                          <MessageCircle className="w-3.5 h-3.5 shrink-0" />
-                          <span>(+55) {apt.client_phone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')}</span>
+                          <MessageCircle className="w-3 h-3 shrink-0" />
+                          <span className="truncate">(+55) {apt.client_phone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')}</span>
                         </a>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 justify-between sm:justify-end pl-[62px] sm:pl-0">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${statusColors[apt.status]}`}>
+                  {/* Bottom row: status + actions + price + payment */}
+                  <div className="flex items-center gap-2 flex-wrap pl-[44px] sm:pl-0 sm:justify-end">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium whitespace-nowrap ${statusColors[apt.status]}`}>
                       {apt.status === 'scheduled' ? 'Agendado' : apt.status === 'arrived' ? 'Chegou' : apt.status === 'completed' ? 'Concluído' : 'Cancelado'}
                     </span>
                     {(apt.status === 'scheduled' || apt.status === 'arrived') && (
                       <div className="flex gap-1">
-                        <button onClick={() => updateStatus(apt.id, 'completed')} className="p-1.5 hover:bg-success/10 rounded-lg">
-                          <CheckCircle2 className="w-5 h-5 text-success" />
+                        <button onClick={() => updateStatus(apt.id, 'completed')} className="p-1 hover:bg-success/10 rounded-lg">
+                          <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
                         </button>
-                        <button onClick={() => updateStatus(apt.id, 'cancelled')} className="p-1.5 hover:bg-destructive/10 rounded-lg">
-                          <XCircle className="w-5 h-5 text-destructive" />
+                        <button onClick={() => updateStatus(apt.id, 'cancelled')} className="p-1 hover:bg-destructive/10 rounded-lg">
+                          <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
                         </button>
                       </div>
                     )}
-                    <span className="font-semibold font-display whitespace-nowrap">R$ {Number(apt.price).toFixed(2)}</span>
+                    <span className="font-semibold font-display text-sm whitespace-nowrap">R$ {Number(apt.price).toFixed(2)}</span>
                     <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${
                       apt.payment_method === 'local' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-primary/20 text-primary'
                     }`}>
