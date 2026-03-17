@@ -77,6 +77,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (currentSession.user.user_metadata?.role as UserRole) ?? null,
     );
 
+    // Check frozen status
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_frozen')
+      .eq('user_id', currentSession.user.id)
+      .maybeSingle();
+    setIsFrozen(profile?.is_frozen ?? false);
+
     setLoading(false);
   };
 
