@@ -130,6 +130,15 @@ export default function BarberSchedule() {
                       <p className="font-bold font-display">{apt.start_time.slice(0, 5)}</p>
                       <p className="text-xs text-muted-foreground">{apt.end_time.slice(0, 5)}</p>
                     </div>
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-card border border-border shrink-0">
+                      {apt.client_avatar ? (
+                        <img src={apt.client_avatar} alt={apt.client_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
                     <div>
                       <p className="font-medium">{apt.client_name}</p>
                       <p className="text-sm text-muted-foreground">{apt.service_name}</p>
