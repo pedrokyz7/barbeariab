@@ -192,16 +192,16 @@ export default function ClientBooking() {
       <div className="max-w-lg mx-auto space-y-6 animate-fade-in">
         {/* Progress */}
         <div className="flex items-center gap-2 justify-center">
-          {['barber', 'service', 'datetime', 'confirm'].map((s, i) => (
+          {STEPS.map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                 step === s ? 'bg-primary text-primary-foreground' :
-                ['barber', 'service', 'datetime', 'confirm'].indexOf(step) > i ? 'bg-success text-success-foreground' :
+                STEPS.indexOf(step) > i ? 'bg-success text-success-foreground' :
                 'bg-secondary text-muted-foreground'
               }`}>
-                {['barber', 'service', 'datetime', 'confirm'].indexOf(step) > i ? '✓' : i + 1}
+                {STEPS.indexOf(step) > i ? '✓' : i + 1}
               </div>
-              {i < 3 && <div className={`w-8 h-0.5 ${['barber', 'service', 'datetime', 'confirm'].indexOf(step) > i ? 'bg-success' : 'bg-border'}`} />}
+              {i < STEPS.length - 1 && <div className={`w-6 h-0.5 ${STEPS.indexOf(step) > i ? 'bg-success' : 'bg-border'}`} />}
             </div>
           ))}
         </div>
