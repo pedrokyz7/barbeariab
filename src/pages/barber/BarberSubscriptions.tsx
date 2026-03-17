@@ -104,6 +104,33 @@ export default function BarberSubscriptions() {
     boleto: 'Boleto',
   };
 
+  const PIX_KEY = 'SUA_CHAVE_PIX_AQUI'; // TODO: substituir pela chave PIX real
+
+  const handlePayOnline = async () => {
+    setLoadingCheckout(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { email: user!.email, return_url: window.location.origin },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || 'Erro ao criar sessão de pagamento');
+        return;
+      }
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch {
+      toast.error('Erro ao iniciar pagamento online');
+    } finally {
+      setLoadingCheckout(false);
+    }
+  };
+
+  const handleCopyPix = () => {
+    navigator.clipboard.writeText(PIX_KEY);
+    toast.success('Chave PIX copiada!');
+  };
+
   return (
     <BarberLayout>
       <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
