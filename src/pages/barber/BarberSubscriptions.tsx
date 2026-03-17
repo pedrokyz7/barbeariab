@@ -306,7 +306,8 @@ export default function BarberSubscriptions() {
               )}
             </div>
 
-            {/* Payment actions */}
+            {/* Payment actions - show only when ≤3 days or overdue */}
+            {(daysRemaining === null || daysRemaining <= 3) && (
             <div className="glass-card p-5 space-y-4">
               <h2 className="font-semibold flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-primary" />
