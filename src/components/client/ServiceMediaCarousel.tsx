@@ -29,7 +29,7 @@ export function ServiceMediaCarousel({ imageUrl, videoUrl, serviceName }: Servic
   const current = media[activeIndex];
 
   return (
-    <div className="w-full aspect-video bg-muted/30 relative overflow-hidden group">
+    <div className="w-full aspect-[4/3] bg-muted/30 relative overflow-hidden group" onClick={(e) => e.stopPropagation()}>
       {current.type === 'video' ? (
         <video
           key={current.url}
