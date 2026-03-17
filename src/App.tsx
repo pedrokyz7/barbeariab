@@ -19,6 +19,8 @@ import ClientBooking from "./pages/client/ClientBooking";
 import ClientAppointments from "./pages/client/ClientAppointments";
 import ClientSpending from "./pages/client/ClientSpending";
 import ClientProfile from "./pages/client/ClientProfile";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
