@@ -251,7 +251,7 @@ export default function ClientAppointments() {
         ) : (
           <div className="space-y-3">
             {appointments.map((appointment) => (
-              <div key={appointment.ids.join('-')} className="glass-card p-4 flex items-center justify-between animate-slide-up gap-4">
+              <div key={appointment.ids.join('-')} className="glass-card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between animate-slide-up gap-3">
                 <div className="space-y-1 min-w-0">
                   <p className="font-medium break-words">{appointment.service_names.join(' • ')}</p>
                   <p className="text-sm text-muted-foreground">com {appointment.barber_name}</p>
