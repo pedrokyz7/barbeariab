@@ -266,6 +266,34 @@ export default function AdminBilling() {
     setSavingPayment(false);
   };
 
+  const handleActivateSubscription = async (admin: BarberAdmin) => {
+    setActivatingUser(admin.user_id);
+    try {
+      const amount = billingSettings?.amount ?? 99.90;
+      const { error } = await supabase.from('billing_payments').insert({
+        admin_user_id: admin.user_id,
+        amount,
+        billing_period: billingSettings?.billing_period || 'monthly',
+        notes: 'Assinatura ativada manualmente pelo Super Admin',
+        payment_method: 'manual',
+        subscription_activated: true,
+      } as any);
+      if (error) {
+        toast.error('Erro ao ativar assinatura');
+      } else {
+        setSubscriptions(prev => ({
+          ...prev,
+          [admin.user_id]: { subscribed: true },
+        }));
+        toast.success(`Assinatura de ${admin.full_name || admin.email} ativada com sucesso!`);
+        fetchPayments();
+      }
+    } catch {
+      toast.error('Erro ao ativar assinatura');
+    }
+    setActivatingUser(null);
+  };
+
   if (loading) return null;
   if (role !== 'super_admin') return <Navigate to="/" replace />;
 
