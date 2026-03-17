@@ -48,9 +48,9 @@ export default function AdminBilling() {
       body: { action: 'list_all_users' },
     });
     if (!error && data?.users) {
-      // Filter to only admin and barber roles (not super_admin, not client)
+      // Filter to only admin roles (not barbers, not super_admin, not client)
       const admins = data.users.filter((u: any) =>
-        u.roles.some((r: string) => r === 'admin' || r === 'barber')
+        u.roles.some((r: string) => r === 'admin')
       );
       setBarberAdmins(admins);
       // Check subscriptions for all admins
