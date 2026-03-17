@@ -260,7 +260,7 @@ export default function BarberServices() {
           <p className="text-sm text-muted-foreground">Nenhum serviço cadastrado nesta categoria</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {items.map((s) => <ServiceCard key={s.id} s={s} />)}
         </div>
       )}
