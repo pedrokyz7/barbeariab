@@ -485,14 +485,32 @@ export default function AdminBilling() {
               />
             </div>
             <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Método de Pagamento</label>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pix">PIX</SelectItem>
+                  <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                  <SelectItem value="transferencia">Transferência</SelectItem>
+                  <SelectItem value="cartao">Cartão</SelectItem>
+                  <SelectItem value="boleto">Boleto</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
               <label className="text-xs text-muted-foreground">Observação (opcional)</label>
               <Input
                 type="text"
                 value={paymentNotes}
                 onChange={(e) => setPaymentNotes(e.target.value)}
-                placeholder="Pagamento via PIX, referente a março..."
+                placeholder="Pagamento referente a março..."
               />
             </div>
+            <p className="text-xs text-primary font-medium">
+              ✓ Ao confirmar, a assinatura será ativada automaticamente.
+            </p>
           </div>
           <DialogFooter>
             <DialogClose asChild>
