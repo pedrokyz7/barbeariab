@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Apenas barbeiros podem gerenciar barbeiros" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const { action, email, password, full_name, phone, barber_user_id } = await req.json();
+    const { action, email, password, full_name, phone, barber_user_id, is_available } = await req.json();
 
     if (action === "create") {
       // Create barber user
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
 
       const { data: profiles } = await supabaseAdmin
         .from("profiles")
-        .select("user_id, full_name, phone")
+        .select("user_id, full_name, phone, is_available, avatar_url")
         .in("user_id", barberIds);
 
       const barbers = [];
@@ -103,6 +103,8 @@ Deno.serve(async (req) => {
           full_name: profile?.full_name || "",
           phone: profile?.phone || "",
           email: u?.email || "",
+          is_available: profile?.is_available ?? true,
+          avatar_url: profile?.avatar_url || "",
         });
       }
 
@@ -177,6 +179,14 @@ Deno.serve(async (req) => {
       }));
 
       return new Response(JSON.stringify({ totalClients, totalAppointments, totalRevenue, clients: clientDetails, upcoming: upcomingDetails }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "toggle_availability") {
+      if (!barber_user_id || typeof is_available !== "boolean") {
+        return new Response(JSON.stringify({ error: "barber_user_id e is_available são obrigatórios" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      await supabaseAdmin.from("profiles").update({ is_available }).eq("user_id", barber_user_id);
+      return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (action === "rename") {

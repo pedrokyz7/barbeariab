@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Scissors, ArrowLeft, ArrowRight, Clock, DollarSign, Calendar, CheckCircle } from 'lucide-react';
+import { Scissors, ArrowLeft, ArrowRight, Clock, DollarSign, Calendar, CheckCircle, User, Circle } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 interface Barber {
   user_id: string;
   full_name: string;
+  is_available: boolean;
+  avatar_url: string | null;
 }
 
 interface Service {
@@ -63,8 +65,8 @@ export default function ClientBooking() {
     const { data: roles } = await supabase.from('user_roles').select('user_id').in('role', ['barber', 'admin']);
     if (!roles?.length) return;
     const ids = roles.map(r => r.user_id);
-    const { data: profiles } = await supabase.from('profiles').select('user_id, full_name').in('user_id', ids);
-    if (profiles) setBarbers(profiles);
+    const { data: profiles } = await supabase.from('profiles').select('user_id, full_name, is_available, avatar_url').in('user_id', ids);
+    if (profiles) setBarbers(profiles.map(p => ({ ...p, is_available: (p as any).is_available ?? true })));
   };
 
   const fetchServices = async () => {
@@ -210,13 +212,26 @@ export default function ClientBooking() {
                 {barbers.map((b) => (
                   <button
                     key={b.user_id}
-                    onClick={() => { setSelectedBarber(b); setStep('service'); }}
-                    className="glass-card p-6 text-center hover:border-primary transition-all animate-press"
+                    onClick={() => { if (b.is_available) { setSelectedBarber(b); setStep('service'); } }}
+                    disabled={!b.is_available}
+                    className={`glass-card p-6 text-center transition-all animate-press relative ${
+                      b.is_available ? 'hover:border-primary' : 'opacity-50 cursor-not-allowed'
+                    }`}
                   >
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                      <Scissors className="w-7 h-7 text-primary" />
+                    <div className="absolute top-2 right-2">
+                      <Circle className={`w-3 h-3 ${b.is_available ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'}`} />
+                    </div>
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3 overflow-hidden">
+                      {b.avatar_url ? (
+                        <img src={b.avatar_url} alt={b.full_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Scissors className="w-7 h-7 text-primary" />
+                      )}
                     </div>
                     <p className="font-medium">{b.full_name || 'Barbeiro'}</p>
+                    <p className={`text-xs mt-1 ${b.is_available ? 'text-green-500' : 'text-red-500'}`}>
+                      {b.is_available ? 'Disponível' : 'Indisponível'}
+                    </p>
                   </button>
                 ))}
               </div>

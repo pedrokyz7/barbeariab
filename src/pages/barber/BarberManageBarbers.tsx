@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
-import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users, CalendarClock, Pencil, Check, X } from 'lucide-react';
+import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users, CalendarClock, Pencil, Check, X, Circle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,8 @@ interface BarberInfo {
   full_name: string;
   phone: string;
   email: string;
+  is_available: boolean;
+  avatar_url: string;
 }
 
 interface ClientDetail {
@@ -126,6 +128,18 @@ export default function BarberManageBarbers() {
     toast.success('Nome atualizado!');
     setEditingBarber(null);
     fetchBarbers();
+  };
+
+  const handleToggleAvailability = async (barberId: string, newValue: boolean) => {
+    const { data, error } = await supabase.functions.invoke('manage-barbers', {
+      body: { action: 'toggle_availability', barber_user_id: barberId, is_available: newValue },
+    });
+    if (error || data?.error) {
+      toast.error('Erro ao alterar disponibilidade');
+      return;
+    }
+    toast.success(newValue ? 'Barbeiro disponível' : 'Barbeiro indisponível');
+    setBarbers(prev => prev.map(b => b.user_id === barberId ? { ...b, is_available: newValue } : b));
   };
 
   const handleDelete = async (barberUserId: string, name: string) => {
@@ -245,7 +259,18 @@ export default function BarberManageBarbers() {
                       )}
                     </div>
                     <div className="flex items-center gap-1">
-                      {role === 'admin' && ( /* edit btn */
+                      {/* Availability toggle */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleAvailability(b.user_id, !b.is_available);
+                        }}
+                        className="p-2 rounded-lg hover:bg-accent/20 transition-colors"
+                        title={b.is_available ? 'Disponível – clique para desativar' : 'Indisponível – clique para ativar'}
+                      >
+                        <Circle className={`w-4 h-4 ${b.is_available ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'}`} />
+                      </button>
+                      {role === 'admin' && (
                         <button
                           onClick={(e) => { e.stopPropagation(); setEditingBarber(b.user_id); setEditName(b.full_name); }}
                           className="p-2 rounded-lg hover:bg-accent/20 text-muted-foreground hover:text-foreground transition-colors"
