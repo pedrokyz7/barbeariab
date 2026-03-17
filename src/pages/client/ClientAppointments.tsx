@@ -270,6 +270,14 @@ export default function ClientAppointments() {
                 </div>
                 <div className="sm:text-right space-y-1 shrink-0">
                   <p className="font-bold text-success">R$ {Number(appointment.price).toFixed(2)}</p>
+                  <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium w-fit sm:ml-auto ${
+                    appointment.payment_method === 'local'
+                      ? 'bg-yellow-500/20 text-yellow-400'
+                      : 'bg-primary/20 text-primary'
+                  }`}>
+                    {appointment.payment_method === 'local' ? <Banknote className="w-3 h-3" /> : <CreditCard className="w-3 h-3" />}
+                    {appointment.payment_method === 'local' ? 'Pagar no local' : 'Online'}
+                  </span>
                   <p className={`text-xs font-medium ${statusColor[appointment.status] || ''}`}>
                     {statusLabel[appointment.status] || appointment.status}
                   </p>
