@@ -26,6 +26,8 @@ const adminOnlyItems = [
   { title: 'Barbeiros', url: '/barber/barbers', icon: UserPlus },
 ];
 
+const profileItem = { title: 'Perfil', url: '/barber/profile', icon: User };
+
 export function BarberSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
