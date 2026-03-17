@@ -12,6 +12,8 @@ interface BarberInfo {
   full_name: string;
   phone: string;
   email: string;
+  is_available: boolean;
+  avatar_url: string;
 }
 
 interface ClientDetail {
