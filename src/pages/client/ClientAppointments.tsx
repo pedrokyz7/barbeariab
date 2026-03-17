@@ -222,7 +222,7 @@ export default function ClientAppointments() {
             className="rounded-xl"
             onClick={() => setFilter('upcoming')}
           >
-            Próximos
+            Agendamentos
           </Button>
           <Button
             variant={filter === 'cancelled' ? 'default' : 'outline'}
