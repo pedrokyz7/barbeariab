@@ -258,16 +258,20 @@ export default function ClientBooking() {
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={() => { setSelectedCategory('masculino'); setSelectedServices([]); setStep('service'); }}
-                className="glass-card p-8 flex flex-col items-center gap-3 transition-all animate-press hover:border-primary"
+                className="glass-card p-8 flex flex-col items-center gap-4 transition-all animate-press hover:border-primary group"
               >
-                <span className="text-4xl">🧔</span>
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center animate-float group-hover:animate-icon-glow transition-all">
+                  <Scissors className="w-8 h-8 text-primary" />
+                </div>
                 <p className="font-bold font-display text-lg">Masculino</p>
               </button>
               <button
                 onClick={() => { setSelectedCategory('feminino'); setSelectedServices([]); setStep('service'); }}
-                className="glass-card p-8 flex flex-col items-center gap-3 transition-all animate-press hover:border-primary"
+                className="glass-card p-8 flex flex-col items-center gap-4 transition-all animate-press hover:border-primary group"
               >
-                <span className="text-4xl">💇‍♀️</span>
+                <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center animate-float group-hover:animate-icon-glow transition-all" style={{ animationDelay: '0.4s' }}>
+                  <Sparkles className="w-8 h-8 text-accent" />
+                </div>
                 <p className="font-bold font-display text-lg">Feminino</p>
               </button>
             </div>
@@ -280,8 +284,9 @@ export default function ClientBooking() {
             <button onClick={() => { setStep('category'); setSelectedServices([]); }} className="flex items-center text-sm text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
             </button>
-            <h2 className="text-2xl font-bold font-display text-center">
-              Serviços {selectedCategory === 'masculino' ? '🧔 Masculinos' : '💇‍♀️ Femininos'}
+            <h2 className="text-2xl font-bold font-display text-center flex items-center justify-center gap-2">
+              {selectedCategory === 'masculino' ? <Scissors className="w-5 h-5 text-primary" /> : <Sparkles className="w-5 h-5 text-accent" />}
+              Serviços {selectedCategory === 'masculino' ? 'Masculinos' : 'Femininos'}
             </h2>
             <p className="text-center text-sm text-muted-foreground">Selecione um ou mais serviços</p>
             <div className="grid grid-cols-2 gap-3">
