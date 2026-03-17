@@ -31,7 +31,7 @@ const CATEGORIES = [
   { value: 'feminino', label: '💇‍♀️ Feminino', description: 'Serviços femininos' },
 ];
 
-const MAX_VIDEO_DURATION = 15;
+const MAX_VIDEO_DURATION = 20;
 const MAX_VIDEO_SIZE_MB = 50;
 
 function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number) {
