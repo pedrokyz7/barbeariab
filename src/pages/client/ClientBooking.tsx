@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 interface Barber {
   user_id: string;
   full_name: string;
+  is_available: boolean;
+  avatar_url: string | null;
 }
 
 interface Service {
