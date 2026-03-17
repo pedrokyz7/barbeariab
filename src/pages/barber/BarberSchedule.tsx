@@ -58,7 +58,7 @@ export default function BarberSchedule() {
       supabase.from('services').select('id, name').in('id', serviceIds),
     ]);
 
-    const profileMap = Object.fromEntries((profiles || []).map(p => [p.user_id, { name: p.full_name, phone: p.phone }]));
+    const profileMap = Object.fromEntries((profiles || []).map(p => [p.user_id, { name: p.full_name, phone: p.phone, avatar: p.avatar_url }]));
     const serviceMap = Object.fromEntries((services || []).map(s => [s.id, s.name]));
 
     setAppointments(appts.map(a => ({
