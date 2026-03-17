@@ -21,6 +21,7 @@ import ClientSpending from "./pages/client/ClientSpending";
 import ClientProfile from "./pages/client/ClientProfile";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminBilling from "./pages/admin/AdminBilling";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
