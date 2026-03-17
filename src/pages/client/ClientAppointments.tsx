@@ -212,10 +212,10 @@ export default function ClientAppointments() {
 
   return (
     <ClientLayout>
-      <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
+      <div className="max-w-3xl mx-auto space-y-6 animate-fade-in px-4 sm:px-0">
         <h1 className="text-3xl font-bold font-display">Meus Agendamentos</h1>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 justify-center sm:justify-start">
           <Button
             variant={filter === 'upcoming' ? 'default' : 'outline'}
             size="sm"
