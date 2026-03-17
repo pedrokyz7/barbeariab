@@ -279,6 +279,9 @@ export default function BarberSubscriptions() {
                         </Button>
                       </div>
                       <p className="text-xs text-muted-foreground">
+                        Destinatário: <span className="font-medium text-foreground">Pedro Henriqu</span> · CPF: <span className="font-medium text-foreground">164.847.506-02</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
                         {settings
                           ? `Valor: ${formatCurrency(settings.amount)}`
                           : ''}
