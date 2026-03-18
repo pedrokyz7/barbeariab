@@ -287,7 +287,7 @@ export default function ClientBooking() {
               <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
             </button>
             <h2 className="text-2xl font-bold font-display text-center flex items-center justify-center gap-2">
-              {selectedCategory === 'masculino' ? <Scissors className="w-5 h-5 text-primary" /> : <Sparkles className="w-5 h-5 text-accent" />}
+              <img src={selectedCategory === 'masculino' ? categoryMasculino : categoryFeminino} alt="" className="w-6 h-6 rounded-full object-cover" />
               Serviços {selectedCategory === 'masculino' ? 'Masculinos' : 'Femininos'}
             </h2>
             <p className="text-center text-sm text-muted-foreground">Selecione um ou mais serviços</p>
