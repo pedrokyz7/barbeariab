@@ -352,6 +352,8 @@ export default function ClientAppointments() {
                     </div>
                   )}
                 </div>
+                </div>
+                </div>
               </div>
             ))}
           </div>
