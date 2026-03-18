@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
 import { Calendar, Clock, XCircle, Pencil, MapPin, Banknote, CreditCard } from 'lucide-react';
+import { ServiceMediaCarousel } from '@/components/client/ServiceMediaCarousel';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -23,6 +24,8 @@ interface AppointmentRecord {
 interface EnrichedAppointment extends AppointmentRecord {
   barber_name: string;
   service_name: string;
+  service_image_url: string | null;
+  service_video_url: string | null;
 }
 
 interface AppointmentGroup {
@@ -35,6 +38,7 @@ interface AppointmentGroup {
   price: number;
   barber_name: string;
   service_names: string[];
+  service_media: { image_url: string | null; video_url: string | null; name: string }[];
   payment_method: string;
 }
 
@@ -112,18 +116,23 @@ export default function ClientAppointments() {
 
     const [profilesRes, servicesRes] = await Promise.all([
       supabase.from('profiles').select('user_id, full_name').in('user_id', barberIds),
-      supabase.from('services').select('id, name').in('id', serviceIds),
+      supabase.from('services').select('id, name, image_url, video_url').in('id', serviceIds),
     ]);
 
     const profileMap = new Map((profilesRes.data || []).map((profile) => [profile.user_id, profile.full_name]));
-    const serviceMap = new Map((servicesRes.data || []).map((service) => [service.id, service.name]));
+    const serviceMap = new Map((servicesRes.data || []).map((service) => [service.id, { name: service.name, image_url: service.image_url, video_url: service.video_url }]));
 
     const enrichedAppointments: EnrichedAppointment[] = appointmentsData
-      .map((appointment) => ({
-        ...appointment,
-        barber_name: profileMap.get(appointment.barber_id) || 'Barbeiro',
-        service_name: serviceMap.get(appointment.service_id) || 'Serviço',
-      }))
+      .map((appointment) => {
+        const svc = serviceMap.get(appointment.service_id);
+        return {
+          ...appointment,
+          barber_name: profileMap.get(appointment.barber_id) || 'Barbeiro',
+          service_name: svc?.name || 'Serviço',
+          service_image_url: svc?.image_url || null,
+          service_video_url: svc?.video_url || null,
+        };
+      })
       .sort(compareAppointmentsAsc);
 
     const now = new Date();
@@ -141,6 +150,7 @@ export default function ClientAppointments() {
       if (lastGroup && isSameBookingGroup(lastGroup, appointment)) {
         lastGroup.ids.push(appointment.id);
         lastGroup.service_names.push(appointment.service_name);
+        lastGroup.service_media.push({ image_url: appointment.service_image_url, video_url: appointment.service_video_url, name: appointment.service_name });
         lastGroup.end_time = appointment.end_time;
         lastGroup.price += Number(appointment.price);
         return groups;
@@ -156,6 +166,7 @@ export default function ClientAppointments() {
         price: Number(appointment.price),
         barber_name: appointment.barber_name,
         service_names: [appointment.service_name],
+        service_media: [{ image_url: appointment.service_image_url, video_url: appointment.service_video_url, name: appointment.service_name }],
         payment_method: (appointment as any).payment_method || 'local',
       });
 
@@ -254,7 +265,22 @@ export default function ClientAppointments() {
           <div className="space-y-3">
             {appointments.map((appointment) => (
               <div key={appointment.ids.join('-')} className="glass-card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between animate-slide-up gap-3">
-                <div className="space-y-1 min-w-0">
+                <div className="space-y-2 min-w-0">
+                  {appointment.service_media.some(m => m.image_url || m.video_url) && (
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {appointment.service_media.map((media, idx) => (
+                        (media.image_url || media.video_url) && (
+                          <div key={idx} className="shrink-0 w-24">
+                            <ServiceMediaCarousel
+                              imageUrl={media.image_url}
+                              videoUrl={media.video_url}
+                              serviceName={media.name}
+                            />
+                          </div>
+                        )
+                      ))}
+                    </div>
+                  )}
                   <p className="font-medium break-words">{appointment.service_names.join(' • ')}</p>
                   <p className="text-sm text-muted-foreground">com {appointment.barber_name}</p>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
