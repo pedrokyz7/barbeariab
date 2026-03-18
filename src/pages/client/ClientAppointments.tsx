@@ -123,11 +123,16 @@ export default function ClientAppointments() {
     const serviceMap = new Map((servicesRes.data || []).map((service) => [service.id, { name: service.name, image_url: service.image_url, video_url: service.video_url }]));
 
     const enrichedAppointments: EnrichedAppointment[] = appointmentsData
-      .map((appointment) => ({
-        ...appointment,
-        barber_name: profileMap.get(appointment.barber_id) || 'Barbeiro',
-        service_name: serviceMap.get(appointment.service_id) || 'Serviço',
-      }))
+      .map((appointment) => {
+        const svc = serviceMap.get(appointment.service_id);
+        return {
+          ...appointment,
+          barber_name: profileMap.get(appointment.barber_id) || 'Barbeiro',
+          service_name: svc?.name || 'Serviço',
+          service_image_url: svc?.image_url || null,
+          service_video_url: svc?.video_url || null,
+        };
+      })
       .sort(compareAppointmentsAsc);
 
     const now = new Date();
