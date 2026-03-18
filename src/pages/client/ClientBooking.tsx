@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import logo from '@/assets/logo.jpg';
+import categoryMasculino from '@/assets/category-masculino.jpg';
+import categoryFeminino from '@/assets/category-feminino.jpg';
 import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
