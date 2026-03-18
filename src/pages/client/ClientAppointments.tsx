@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
 import { Calendar, Clock, XCircle, Pencil, MapPin, Banknote, CreditCard } from 'lucide-react';
+import { ServiceMediaCarousel } from '@/components/client/ServiceMediaCarousel';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
