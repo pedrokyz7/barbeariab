@@ -262,8 +262,8 @@ export default function ClientBooking() {
                 onClick={() => { setSelectedCategory('masculino'); setSelectedServices([]); setStep('service'); }}
                 className="glass-card p-8 flex flex-col items-center gap-4 transition-all animate-press hover:border-primary group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center animate-float group-hover:animate-icon-glow transition-all">
-                  <Scissors className="w-8 h-8 text-primary" />
+                <div className="w-20 h-20 rounded-2xl overflow-hidden animate-float group-hover:animate-icon-glow transition-all">
+                  <img src={categoryMasculino} alt="Masculino" className="w-full h-full object-cover" />
                 </div>
                 <p className="font-bold font-display text-lg">Masculino</p>
               </button>
