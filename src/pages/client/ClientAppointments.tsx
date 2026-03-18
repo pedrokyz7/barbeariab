@@ -166,6 +166,7 @@ export default function ClientAppointments() {
         price: Number(appointment.price),
         barber_name: appointment.barber_name,
         service_names: [appointment.service_name],
+        service_media: [{ image_url: appointment.service_image_url, video_url: appointment.service_video_url, name: appointment.service_name }],
         payment_method: (appointment as any).payment_method || 'local',
       });
 
