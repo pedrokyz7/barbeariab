@@ -150,6 +150,7 @@ export default function ClientAppointments() {
       if (lastGroup && isSameBookingGroup(lastGroup, appointment)) {
         lastGroup.ids.push(appointment.id);
         lastGroup.service_names.push(appointment.service_name);
+        lastGroup.service_media.push({ image_url: appointment.service_image_url, video_url: appointment.service_video_url, name: appointment.service_name });
         lastGroup.end_time = appointment.end_time;
         lastGroup.price += Number(appointment.price);
         return groups;
