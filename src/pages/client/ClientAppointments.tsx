@@ -120,7 +120,7 @@ export default function ClientAppointments() {
     ]);
 
     const profileMap = new Map((profilesRes.data || []).map((profile) => [profile.user_id, profile.full_name]));
-    const serviceMap = new Map((servicesRes.data || []).map((service) => [service.id, service.name]));
+    const serviceMap = new Map((servicesRes.data || []).map((service) => [service.id, { name: service.name, image_url: service.image_url, video_url: service.video_url }]));
 
     const enrichedAppointments: EnrichedAppointment[] = appointmentsData
       .map((appointment) => ({
