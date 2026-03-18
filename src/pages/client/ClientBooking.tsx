@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import logo from '@/assets/logo.jpg';
+import categoryMasculino from '@/assets/category-masculino.jpg';
+import categoryFeminino from '@/assets/category-feminino.jpg';
 import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
@@ -260,8 +262,8 @@ export default function ClientBooking() {
                 onClick={() => { setSelectedCategory('masculino'); setSelectedServices([]); setStep('service'); }}
                 className="glass-card p-8 flex flex-col items-center gap-4 transition-all animate-press hover:border-primary group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center animate-float group-hover:animate-icon-glow transition-all">
-                  <Scissors className="w-8 h-8 text-primary" />
+                <div className="w-20 h-20 rounded-2xl overflow-hidden animate-float group-hover:animate-icon-glow transition-all">
+                  <img src={categoryMasculino} alt="Masculino" className="w-full h-full object-cover" />
                 </div>
                 <p className="font-bold font-display text-lg">Masculino</p>
               </button>
@@ -269,8 +271,8 @@ export default function ClientBooking() {
                 onClick={() => { setSelectedCategory('feminino'); setSelectedServices([]); setStep('service'); }}
                 className="glass-card p-8 flex flex-col items-center gap-4 transition-all animate-press hover:border-primary group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center animate-float group-hover:animate-icon-glow transition-all" style={{ animationDelay: '0.4s' }}>
-                  <Sparkles className="w-8 h-8 text-accent" />
+                <div className="w-20 h-20 rounded-2xl overflow-hidden animate-float group-hover:animate-icon-glow transition-all" style={{ animationDelay: '0.4s' }}>
+                  <img src={categoryFeminino} alt="Feminino" className="w-full h-full object-cover" />
                 </div>
                 <p className="font-bold font-display text-lg">Feminino</p>
               </button>
@@ -285,7 +287,7 @@ export default function ClientBooking() {
               <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
             </button>
             <h2 className="text-2xl font-bold font-display text-center flex items-center justify-center gap-2">
-              {selectedCategory === 'masculino' ? <Scissors className="w-5 h-5 text-primary" /> : <Sparkles className="w-5 h-5 text-accent" />}
+              <img src={selectedCategory === 'masculino' ? categoryMasculino : categoryFeminino} alt="" className="w-6 h-6 rounded-full object-cover" />
               Serviços {selectedCategory === 'masculino' ? 'Masculinos' : 'Femininos'}
             </h2>
             <p className="text-center text-sm text-muted-foreground">Selecione um ou mais serviços</p>
