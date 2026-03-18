@@ -24,6 +24,8 @@ interface AppointmentRecord {
 interface EnrichedAppointment extends AppointmentRecord {
   barber_name: string;
   service_name: string;
+  service_image_url: string | null;
+  service_video_url: string | null;
 }
 
 interface AppointmentGroup {
