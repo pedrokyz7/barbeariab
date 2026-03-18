@@ -38,6 +38,7 @@ interface AppointmentGroup {
   price: number;
   barber_name: string;
   service_names: string[];
+  service_media: { image_url: string | null; video_url: string | null; name: string }[];
   payment_method: string;
 }
 
