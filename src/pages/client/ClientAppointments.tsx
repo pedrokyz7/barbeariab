@@ -116,7 +116,7 @@ export default function ClientAppointments() {
 
     const [profilesRes, servicesRes] = await Promise.all([
       supabase.from('profiles').select('user_id, full_name').in('user_id', barberIds),
-      supabase.from('services').select('id, name').in('id', serviceIds),
+      supabase.from('services').select('id, name, image_url, video_url').in('id', serviceIds),
     ]);
 
     const profileMap = new Map((profilesRes.data || []).map((profile) => [profile.user_id, profile.full_name]));
