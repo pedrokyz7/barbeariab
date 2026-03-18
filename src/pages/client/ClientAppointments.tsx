@@ -264,24 +264,24 @@ export default function ClientAppointments() {
         ) : (
           <div className="space-y-3">
             {appointments.map((appointment) => (
-              <div key={appointment.ids.join('-')} className="glass-card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between animate-slide-up gap-3">
-                <div className="space-y-2 min-w-0">
-                  {appointment.service_media.some(m => m.image_url || m.video_url) && (
-                    <div className="flex gap-2 overflow-x-auto pb-1">
-                      {appointment.service_media.map((media, idx) => (
-                        (media.image_url || media.video_url) && (
-                          <div key={idx} className="shrink-0 w-24">
-                            <ServiceMediaCarousel
-                              imageUrl={media.image_url}
-                              videoUrl={media.video_url}
-                              serviceName={media.name}
-                            />
-                          </div>
-                        )
-                      ))}
-                    </div>
-                  )}
-                  <p className="font-medium break-words">{appointment.service_names.join(' • ')}</p>
+              <div key={appointment.ids.join('-')} className="glass-card p-4 animate-slide-up space-y-3">
+                {appointment.service_media.some(m => m.image_url || m.video_url) && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {appointment.service_media.map((media, idx) => (
+                      (media.image_url || media.video_url) && (
+                        <div key={idx} className="rounded-xl overflow-hidden">
+                          <ServiceMediaCarousel
+                            imageUrl={media.image_url}
+                            videoUrl={media.video_url}
+                            serviceName={media.name}
+                          />
+                        </div>
+                      )
+                    ))}
+                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="space-y-1 min-w-0">
                   <p className="text-sm text-muted-foreground">com {appointment.barber_name}</p>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
