@@ -271,8 +271,8 @@ export default function ClientBooking() {
                 onClick={() => { setSelectedCategory('feminino'); setSelectedServices([]); setStep('service'); }}
                 className="glass-card p-8 flex flex-col items-center gap-4 transition-all animate-press hover:border-primary group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center animate-float group-hover:animate-icon-glow transition-all" style={{ animationDelay: '0.4s' }}>
-                  <Sparkles className="w-8 h-8 text-accent" />
+                <div className="w-20 h-20 rounded-2xl overflow-hidden animate-float group-hover:animate-icon-glow transition-all" style={{ animationDelay: '0.4s' }}>
+                  <img src={categoryFeminino} alt="Feminino" className="w-full h-full object-cover" />
                 </div>
                 <p className="font-bold font-display text-lg">Feminino</p>
               </button>
