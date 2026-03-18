@@ -282,6 +282,7 @@ export default function ClientAppointments() {
                 )}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="space-y-1 min-w-0">
+                  <p className="font-medium break-words">{appointment.service_names.join(' • ')}</p>
                   <p className="text-sm text-muted-foreground">com {appointment.barber_name}</p>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
