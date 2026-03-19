@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Phone, Mail, Save, Camera } from 'lucide-react';
+import { User, Phone, Mail, Save, Camera, Lock } from 'lucide-react';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { toast } from 'sonner';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
@@ -198,11 +198,12 @@ export default function BarberProfile() {
           </div>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="email"
               value={user?.email || ''}
               disabled
-              className="pl-10 h-12 bg-card border-border rounded-xl opacity-60"
+              className="pl-10 pr-10 h-12 bg-card border-border rounded-xl opacity-60"
             />
           </div>
           <div className="relative">
