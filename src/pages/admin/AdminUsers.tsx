@@ -353,7 +353,13 @@ export default function AdminUsers() {
                 ) : (
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 space-y-1">
-                      <p className="font-medium text-sm sm:text-base truncate">{u.full_name || 'Sem nome'}</p>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`h-2.5 w-2.5 rounded-full ${u.is_available ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}
+                          title={u.is_available ? 'Ativo' : 'Inativo'}
+                        />
+                        <p className="font-medium text-sm sm:text-base truncate">{u.full_name || 'Sem nome'}</p>
+                      </div>
                       <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
                         <Mail className="w-3 h-3 shrink-0" /> <span className="truncate">{u.email}</span>
                       </p>
