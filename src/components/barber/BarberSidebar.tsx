@@ -27,16 +27,22 @@ const adminOnlyItems = [
 ];
 
 const subscriptionItem = { title: 'Assinaturas', url: '/barber/subscriptions', icon: CreditCard };
-const profileItem = { title: 'Perfil', url: '/barber/profile', icon: User };
 
 export function BarberSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const { signOut, role, user } = useAuth();
   const isAdmin = role === 'admin';
-  const items = useMemo(() => isAdmin ? [...baseItems, ...adminOnlyItems, subscriptionItem, profileItem] : [...baseItems, profileItem], [isAdmin]);
   const fullName = user?.user_metadata?.full_name || '';
   const shortName = fullName.trim().split(/\s+/).slice(0, 2).join(' ');
+  const profileTitle = shortName ? `Meu Perfil ${shortName}` : 'Meu Perfil';
+
+  const items = useMemo(
+    () => isAdmin
+      ? [...baseItems, ...adminOnlyItems, subscriptionItem, { title: profileTitle, url: '/barber/profile', icon: User }]
+      : [...baseItems, { title: profileTitle, url: '/barber/profile', icon: User }],
+    [isAdmin, profileTitle]
+  );
 
   return (
     <Sidebar collapsible="icon">

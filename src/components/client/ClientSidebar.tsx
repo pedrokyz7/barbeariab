@@ -15,10 +15,9 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
-const items = [
+const baseItems = [
   { title: 'Agendar', url: '/client', icon: CalendarPlus },
   { title: 'Meus Agendamentos', url: '/client/appointments', icon: Calendar },
-  { title: 'Meu Perfil', url: '/client/profile', icon: User },
 ];
 
 export function ClientSidebar() {
@@ -40,6 +39,9 @@ export function ClientSidebar() {
         }
       });
   }, [user]);
+
+  const profileTitle = firstName ? `Meu Perfil ${firstName}` : 'Meu Perfil';
+  const items = [...baseItems, { title: profileTitle, url: '/client/profile', icon: User }];
 
   return (
     <Sidebar collapsible="icon">
