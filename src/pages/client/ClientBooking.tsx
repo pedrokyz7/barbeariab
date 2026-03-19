@@ -229,7 +229,7 @@ export default function ClientBooking() {
                     }`}
                   >
                     <div className="absolute top-2 right-2">
-                      <Circle className={`w-3 h-3 ${b.is_available ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'}`} />
+                      <Circle className={`w-3 h-3 animate-pulse ${b.is_available ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'}`} />
                     </div>
                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3 overflow-hidden">
                       {b.avatar_url ? (
