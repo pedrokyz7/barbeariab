@@ -539,17 +539,10 @@ export default function ClientBooking() {
             </p>
 
             <Button
-              onClick={() => {
-                setStep('barber');
-                setSelectedBarber(null);
-                setSelectedCategory(null);
-                setSelectedServices([]);
-                setSelectedTime(null);
-                setPaymentMethod(null);
-              }}
+              onClick={() => navigate('/client/appointments')}
               className="w-full max-w-xs h-12 rounded-xl text-base font-semibold animate-press"
             >
-              Novo Agendamento
+              Meus Agendamentos
             </Button>
           </div>
         )}
