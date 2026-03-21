@@ -472,117 +472,111 @@ export default function AdminBilling() {
               const isFreezing = freezingUser === admin.user_id;
 
               return (
-                <div key={admin.user_id} className="glass-card p-4 animate-slide-up">
-                  <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <div className="min-w-0 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-primary shrink-0" />
-                        <p className="font-medium text-sm sm:text-base truncate">{admin.full_name || 'Sem nome'}</p>
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">{admin.email}</p>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="secondary" className="text-[10px]">Admin Barbeiro</Badge>
-                        <Badge variant="outline" className="text-[10px]">
-                          R$ {formattedPlanAmount}/{periodLabel}
+                <div key={admin.user_id} className="glass-card p-4 animate-slide-up space-y-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-primary shrink-0" />
+                      <p className="font-medium text-sm truncate">{admin.full_name || 'Sem nome'}</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">{admin.email}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Badge variant="secondary" className="text-[10px]">Admin Barbeiro</Badge>
+                      <Badge variant="outline" className="text-[10px]">
+                        R$ {formattedPlanAmount}/{periodLabel}
+                      </Badge>
+                      {isChecking ? (
+                        <Badge variant="outline" className="text-[10px]">Verificando...</Badge>
+                      ) : isActive ? (
+                        <Badge variant="default" className="text-[10px] bg-green-500/20 text-green-500 border-green-500/30">
+                          <CheckCircle className="w-3 h-3 mr-1" /> Ativo
                         </Badge>
-                        {isChecking ? (
-                          <Badge variant="outline" className="text-[10px]">Verificando...</Badge>
-                        ) : isActive ? (
-                          <Badge variant="default" className="text-[10px] bg-green-500/20 text-green-500 border-green-500/30">
-                            <CheckCircle className="w-3 h-3 mr-1" /> Ativo
-                          </Badge>
-                        ) : sub ? (
-                          <Badge variant="destructive" className="text-[10px]">
-                            <XCircle className="w-3 h-3 mr-1" /> Inativo
-                          </Badge>
-                        ) : null}
-                        {admin.is_frozen && (
-                          <Badge variant="destructive" className="text-[10px]">
-                            <Lock className="w-3 h-3 mr-1" /> Congelada
-                          </Badge>
-                        )}
-                      </div>
+                      ) : sub ? (
+                        <Badge variant="destructive" className="text-[10px]">
+                          <XCircle className="w-3 h-3 mr-1" /> Inativo
+                        </Badge>
+                      ) : null}
+                      {admin.is_frozen && (
+                        <Badge variant="destructive" className="text-[10px]">
+                          <Lock className="w-3 h-3 mr-1" /> Congelada
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Total pago: <span className="font-semibold text-foreground">{formatCurrency(adminPaid)}</span>
+                    </p>
+                    {isActive && sub?.subscription_end && (
                       <p className="text-[11px] text-muted-foreground">
-                        Total pago: <span className="font-semibold text-foreground">{formatCurrency(adminPaid)}</span>
+                        Próxima cobrança: {formatDate(sub.subscription_end)}
                       </p>
-                      {isActive && sub?.subscription_end && (
-                        <p className="text-[11px] text-muted-foreground">
-                          Próxima cobrança: {formatDate(sub.subscription_end)}
-                        </p>
-                      )}
-                    </div>
+                    )}
+                  </div>
 
-                    <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="w-full text-xs"
+                      onClick={() => openPaymentDialog(admin)}
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" />
+                      Registrar Pgto
+                    </Button>
+                    {isActive ? (
                       <Button
                         size="sm"
-                        variant="secondary"
-                        onClick={() => openPaymentDialog(admin)}
+                        variant="outline"
+                        className="w-full text-xs"
+                        onClick={() => handleManageSubscription(admin.email)}
                       >
-                        <Plus className="w-3.5 h-3.5 mr-1.5" />
-                        Registrar Pgto
+                        <ExternalLink className="w-3.5 h-3.5 mr-1" />
+                        Gerenciar
                       </Button>
-                      {isActive ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleManageSubscription(admin.email)}
-                        >
-                          <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                          Gerenciar
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => handleCharge(admin.email, admin.user_id, admin.full_name)}
-                          disabled={isCreating}
-                        >
-                          <CreditCard className="w-3.5 h-3.5 mr-1.5" />
-                          {isCreating ? 'Enviando...' : 'Cobrar'}
-                        </Button>
-                      )}
-                      {admin.is_frozen ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleFreezeToggle(admin)}
-                          disabled={isFreezing}
-                          className="border-primary/30 text-primary hover:bg-primary/10"
-                        >
-                          <Unlock className="w-3.5 h-3.5 mr-1.5" />
-                          {isFreezing ? 'Processando...' : 'Descongelar'}
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleFreezeToggle(admin)}
-                          disabled={isFreezing}
-                        >
-                          <Lock className="w-3.5 h-3.5 mr-1.5" />
-                          {isFreezing ? 'Processando...' : 'Congelar'}
-                        </Button>
-                      )}
-                      {!isActive && !admin.is_frozen && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleActivateSubscription(admin)}
-                          disabled={activatingUser === admin.user_id}
-                          className="border-green-500/30 text-green-500 hover:bg-green-500/10"
-                        >
-                          <Zap className="w-3.5 h-3.5 mr-1.5" />
-                          {activatingUser === admin.user_id ? 'Ativando...' : 'Ativar Assinatura'}
-                        </Button>
-                      )}
+                    ) : (
                       <Button
                         size="sm"
-                        variant="ghost"
-                        onClick={() => checkSubscription(admin.email, admin.user_id)}
-                        disabled={isChecking}
+                        className="w-full text-xs"
+                        onClick={() => handleCharge(admin.email, admin.user_id, admin.full_name)}
+                        disabled={isCreating}
                       >
-                        <RefreshCw className={`w-3.5 h-3.5 ${isChecking ? 'animate-spin' : ''}`} />
+                        <CreditCard className="w-3.5 h-3.5 mr-1" />
+                        {isCreating ? 'Enviando...' : 'Cobrar'}
                       </Button>
-                    </div>
+                    )}
+                    {admin.is_frozen ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full text-xs border-primary/30 text-primary hover:bg-primary/10"
+                        onClick={() => handleFreezeToggle(admin)}
+                        disabled={isFreezing}
+                      >
+                        <Unlock className="w-3.5 h-3.5 mr-1" />
+                        {isFreezing ? '...' : 'Descongelar'}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="w-full text-xs"
+                        onClick={() => handleFreezeToggle(admin)}
+                        disabled={isFreezing}
+                      >
+                        <Lock className="w-3.5 h-3.5 mr-1" />
+                        {isFreezing ? '...' : 'Congelar'}
+                      </Button>
+                    )}
+                    {!isActive && !admin.is_frozen && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full text-xs border-green-500/30 text-green-500 hover:bg-green-500/10 col-span-2"
+                        onClick={() => handleActivateSubscription(admin)}
+                        disabled={activatingUser === admin.user_id}
+                      >
+                        <Zap className="w-3.5 h-3.5 mr-1" />
+                        {activatingUser === admin.user_id ? 'Ativando...' : 'Ativar Assinatura'}
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
