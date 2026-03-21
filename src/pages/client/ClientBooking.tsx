@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import logo from '@/assets/logo.jpg';
 import categoryMasculino from '@/assets/category-masculino.jpg';
@@ -36,6 +37,7 @@ const STEPS: Step[] = ['barber', 'category', 'service', 'datetime', 'confirm'];
 
 export default function ClientBooking() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState<Step>('barber');
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -538,17 +540,10 @@ export default function ClientBooking() {
             </p>
 
             <Button
-              onClick={() => {
-                setStep('barber');
-                setSelectedBarber(null);
-                setSelectedCategory(null);
-                setSelectedServices([]);
-                setSelectedTime(null);
-                setPaymentMethod(null);
-              }}
+              onClick={() => navigate('/client/appointments')}
               className="w-full max-w-xs h-12 rounded-xl text-base font-semibold animate-press"
             >
-              Novo Agendamento
+              Meus Agendamentos
             </Button>
           </div>
         )}
