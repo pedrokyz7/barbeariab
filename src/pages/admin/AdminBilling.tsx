@@ -496,18 +496,7 @@ export default function AdminBilling() {
                       <Plus className="w-3.5 h-3.5 mr-1" />
                       Registrar Pgto
                     </Button>
-                    {isActive ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full text-xs"
-                        onClick={() => handleManageSubscription(admin.email)}
-                      >
-                        <ExternalLink className="w-3.5 h-3.5 mr-1" />
-                        Gerenciar
-                      </Button>
-                    ) : (
-                      <Button
+                    <Button
                         size="sm"
                         className="w-full text-xs"
                         onClick={() => handleCharge(admin.email, admin.user_id, admin.full_name)}
@@ -516,7 +505,6 @@ export default function AdminBilling() {
                         <CreditCard className="w-3.5 h-3.5 mr-1" />
                         {isCreating ? 'Enviando...' : 'Cobrar'}
                       </Button>
-                    )}
                     {admin.is_frozen ? (
                       <Button
                         size="sm"
