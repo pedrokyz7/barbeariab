@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import {
-  CreditCard, CheckCircle, XCircle, ExternalLink, RefreshCw,
+  CreditCard, CheckCircle, XCircle, RefreshCw,
   Shield, Settings, Save, DollarSign, Plus, Lock, Unlock, Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -214,31 +214,6 @@ export default function AdminBilling() {
     setCreatingCheckout(null);
   };
 
-  const handleManageSubscription = async (email: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('customer-portal', {
-        body: { email, return_url: window.location.origin },
-      });
-      if (error) {
-        // When function returns non-2xx, error.message or error.context may contain details
-        const errorBody = typeof error === 'object' && error !== null && 'context' in error
-          ? await (error as any).context?.json?.().catch(() => null)
-          : null;
-        const msg = errorBody?.error || data?.error || 'Este admin não possui conta Stripe. Use o sistema de pagamento interno.';
-        toast.error(msg);
-        return;
-      }
-      if (data?.error) {
-        toast.error(data.error);
-        return;
-      }
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch {
-      toast.error('Este admin não possui conta Stripe. Use o sistema de pagamento interno.');
-    }
-  };
 
   const openPaymentDialog = (admin: BarberAdmin) => {
     setPaymentAdmin(admin);
@@ -521,18 +496,7 @@ export default function AdminBilling() {
                       <Plus className="w-3.5 h-3.5 mr-1" />
                       Registrar Pgto
                     </Button>
-                    {isActive ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full text-xs"
-                        onClick={() => handleManageSubscription(admin.email)}
-                      >
-                        <ExternalLink className="w-3.5 h-3.5 mr-1" />
-                        Gerenciar
-                      </Button>
-                    ) : (
-                      <Button
+                    <Button
                         size="sm"
                         className="w-full text-xs"
                         onClick={() => handleCharge(admin.email, admin.user_id, admin.full_name)}
@@ -541,7 +505,6 @@ export default function AdminBilling() {
                         <CreditCard className="w-3.5 h-3.5 mr-1" />
                         {isCreating ? 'Enviando...' : 'Cobrar'}
                       </Button>
-                    )}
                     {admin.is_frozen ? (
                       <Button
                         size="sm"
@@ -586,7 +549,7 @@ export default function AdminBilling() {
 
         <div className="glass-card p-4 text-center">
           <p className="text-xs text-muted-foreground">
-            Plano: <span className="font-medium text-foreground">R$ {formattedPlanAmount}/{periodLabel} por barbearia</span> • Pagamentos processados via Stripe
+            Plano: <span className="font-medium text-foreground">R$ {formattedPlanAmount}/{periodLabel} por barbearia</span>
           </p>
         </div>
       </div>
