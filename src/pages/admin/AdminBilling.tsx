@@ -549,7 +549,7 @@ export default function AdminBilling() {
 
         <div className="glass-card p-4 text-center">
           <p className="text-xs text-muted-foreground">
-            Plano: <span className="font-medium text-foreground">R$ {formattedPlanAmount}/{periodLabel} por barbearia</span> • Pagamentos processados via Stripe
+            Plano: <span className="font-medium text-foreground">R$ {formattedPlanAmount}/{periodLabel} por barbearia</span>
           </p>
         </div>
       </div>
