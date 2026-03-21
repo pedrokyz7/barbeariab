@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import {
-  CreditCard, CheckCircle, XCircle, ExternalLink, RefreshCw,
+  CreditCard, CheckCircle, XCircle, RefreshCw,
   Shield, Settings, Save, DollarSign, Plus, Lock, Unlock, Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
