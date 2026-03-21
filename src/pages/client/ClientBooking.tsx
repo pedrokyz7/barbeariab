@@ -37,6 +37,7 @@ const STEPS: Step[] = ['barber', 'category', 'service', 'datetime', 'confirm'];
 
 export default function ClientBooking() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState<Step>('barber');
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [services, setServices] = useState<Service[]>([]);
