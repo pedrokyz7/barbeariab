@@ -214,31 +214,6 @@ export default function AdminBilling() {
     setCreatingCheckout(null);
   };
 
-  const handleManageSubscription = async (email: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('customer-portal', {
-        body: { email, return_url: window.location.origin },
-      });
-      if (error) {
-        // When function returns non-2xx, error.message or error.context may contain details
-        const errorBody = typeof error === 'object' && error !== null && 'context' in error
-          ? await (error as any).context?.json?.().catch(() => null)
-          : null;
-        const msg = errorBody?.error || data?.error || 'Este admin não possui conta Stripe. Use o sistema de pagamento interno.';
-        toast.error(msg);
-        return;
-      }
-      if (data?.error) {
-        toast.error(data.error);
-        return;
-      }
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch {
-      toast.error('Este admin não possui conta Stripe. Use o sistema de pagamento interno.');
-    }
-  };
 
   const openPaymentDialog = (admin: BarberAdmin) => {
     setPaymentAdmin(admin);
