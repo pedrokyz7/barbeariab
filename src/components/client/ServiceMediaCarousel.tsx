@@ -42,10 +42,9 @@ export function ServiceMediaCarousel({ imageUrl, videoUrl, serviceName }: Servic
         src={item.url}
         className={isFull ? 'w-full max-h-[80vh] object-contain' : 'w-full h-full object-cover'}
         controls
-        preload="metadata"
+        preload="auto"
         playsInline
-        muted
-        autoPlay={isFull}
+        autoPlay
       />
     ) : (
       <img
