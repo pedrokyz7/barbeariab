@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { BarberLayout } from '@/components/barber/BarberLayout';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { UserPlus, Trash2, Phone, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Scissors, DollarSign, Users, CalendarClock, Pencil, Check, X, ArrowUpRight, ArrowDownRight, TrendingUp, Calendar } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
@@ -357,20 +358,28 @@ export default function BarberManageBarbers() {
                             </div>
                           </div>
                         ) : (
-                          <>
-                            <p className="font-medium flex items-center gap-2 text-sm sm:text-base">
-                              <span className="truncate">{b.full_name || 'Barbeiro'}</span>
-                              {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
-                            </p>
-                            <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
-                              <Mail className="w-3 h-3 shrink-0" /> <span className="truncate">{b.email}</span>
-                            </p>
-                            {b.phone && (
-                              <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
-                                <Phone className="w-3 h-3 shrink-0" /> {formatPhone(b.phone)}
+                          <div className="flex items-start gap-3">
+                            <Avatar className="h-10 w-10 border-2 border-border/50 shrink-0">
+                              <AvatarImage src={b.avatar_url} alt={b.full_name} />
+                              <AvatarFallback className="bg-primary/20 text-primary font-semibold text-sm">
+                                {(b.full_name || 'B').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <p className="font-medium flex items-center gap-2 text-sm sm:text-base">
+                                <span className="truncate">{b.full_name || 'Barbeiro'}</span>
+                                {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
                               </p>
-                            )}
-                          </>
+                              <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+                                <Mail className="w-3 h-3 shrink-0" /> <span className="truncate">{b.email}</span>
+                              </p>
+                              {b.phone && (
+                                <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+                                  <Phone className="w-3 h-3 shrink-0" /> {formatPhone(b.phone)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
                         )}
                       </div>
                       {editingBarber !== b.user_id && (
