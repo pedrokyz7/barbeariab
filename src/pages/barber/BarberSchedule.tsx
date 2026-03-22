@@ -136,61 +136,63 @@ export default function BarberSchedule() {
                 <span className="text-xs text-muted-foreground">({grouped[date].length})</span>
               </div>
               {grouped[date].map((apt) => (
-                <div key={apt.id} className="glass-card p-3 sm:p-4 animate-slide-up space-y-3">
-                  {/* Top row: time + avatar + client info */}
-                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <div className="text-center min-w-[44px] shrink-0">
-                      <p className="font-bold font-display text-sm">{apt.start_time.slice(0, 5)}</p>
-                      <p className="text-[10px] text-muted-foreground">{apt.end_time.slice(0, 5)}</p>
-                    </div>
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-card border border-border shrink-0">
-                      {apt.client_avatar ? (
-                        <img src={apt.client_avatar} alt={apt.client_name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-sm truncate">{apt.client_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
-                      {apt.client_phone && (
-                        <a
-                          href={`https://wa.me/55${apt.client_phone}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-[10px] sm:text-xs text-green-500 hover:text-green-400 transition-colors mt-0.5"
-                        >
-                          <MessageCircle className="w-3 h-3 shrink-0" />
-                          <span className="truncate">(+55) {apt.client_phone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')}</span>
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                  {/* Bottom row: status + actions + price + payment */}
-                  <div className="flex items-center gap-2 flex-wrap pl-[44px] sm:pl-0 sm:justify-end">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium whitespace-nowrap ${statusColors[apt.status]}`}>
-                      {apt.status === 'scheduled' ? 'Agendado' : apt.status === 'arrived' ? 'Chegou' : apt.status === 'completed' ? 'Concluído' : 'Cancelado'}
-                    </span>
-                    {(apt.status === 'scheduled' || apt.status === 'arrived') && (
-                      <div className="flex gap-1">
-                        <button onClick={() => updateStatus(apt.id, 'completed')} className="p-1 hover:bg-success/10 rounded-lg">
-                          <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-                        </button>
-                        <button onClick={() => updateStatus(apt.id, 'cancelled')} className="p-1 hover:bg-destructive/10 rounded-lg">
-                          <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
-                        </button>
+                <div key={apt.id} className="glass-card p-3 sm:p-4 animate-slide-up flex items-center gap-2">
+                  {/* Left: info */}
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <div className="text-center min-w-[44px] shrink-0">
+                        <p className="font-bold font-display text-sm">{apt.start_time.slice(0, 5)}</p>
+                        <p className="text-[10px] text-muted-foreground">{apt.end_time.slice(0, 5)}</p>
                       </div>
-                    )}
-                    <span className="font-semibold font-display text-sm whitespace-nowrap">R$ {Number(apt.price).toFixed(2)}</span>
-                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${
-                      apt.payment_method === 'local' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-primary/20 text-primary'
-                    }`}>
-                      {apt.payment_method === 'local' ? <Banknote className="w-3 h-3" /> : <CreditCard className="w-3 h-3" />}
-                      {apt.payment_method === 'local' ? 'No local' : 'Online'}
-                    </span>
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-card border border-border shrink-0">
+                        {apt.client_avatar ? (
+                          <img src={apt.client_avatar} alt={apt.client_name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <User className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm truncate">{apt.client_name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
+                        {apt.client_phone && (
+                          <a
+                            href={`https://wa.me/55${apt.client_phone}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-[10px] sm:text-xs text-green-500 hover:text-green-400 transition-colors mt-0.5"
+                          >
+                            <MessageCircle className="w-3 h-3 shrink-0" />
+                            <span className="truncate">(+55) {apt.client_phone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')}</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap pl-[44px]">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium whitespace-nowrap ${statusColors[apt.status]}`}>
+                        {apt.status === 'scheduled' ? 'Agendado' : apt.status === 'arrived' ? 'Chegou' : apt.status === 'completed' ? 'Concluído' : 'Cancelado'}
+                      </span>
+                      <span className="font-semibold font-display text-sm whitespace-nowrap">R$ {Number(apt.price).toFixed(2)}</span>
+                      <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${
+                        apt.payment_method === 'local' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-primary/20 text-primary'
+                      }`}>
+                        {apt.payment_method === 'local' ? <Banknote className="w-3 h-3" /> : <CreditCard className="w-3 h-3" />}
+                        {apt.payment_method === 'local' ? 'No local' : 'Online'}
+                      </span>
+                    </div>
                   </div>
+                  {/* Right side: action buttons */}
+                  {(apt.status === 'scheduled' || apt.status === 'arrived') && (
+                    <div className="flex flex-col gap-2 shrink-0 ml-1">
+                      <button onClick={() => updateStatus(apt.id, 'completed')} className="p-2 bg-success/10 hover:bg-success/20 rounded-xl transition-colors active:scale-95">
+                        <CheckCircle2 className="w-6 h-6 text-success" />
+                      </button>
+                      <button onClick={() => updateStatus(apt.id, 'cancelled')} className="p-2 bg-destructive/10 hover:bg-destructive/20 rounded-xl transition-colors active:scale-95">
+                        <XCircle className="w-6 h-6 text-destructive" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
