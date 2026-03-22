@@ -203,25 +203,7 @@ export default function BarberSubscriptions() {
     }
   };
 
-  const handlePayOnline = async () => {
-    setLoadingCheckout(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { email: user!.email, return_url: window.location.origin },
-      });
-      if (error || data?.error) {
-        toast.error(data?.error || 'Erro ao criar sessão de pagamento');
-        return;
-      }
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch {
-      toast.error('Erro ao iniciar pagamento online');
-    } finally {
-      setLoadingCheckout(false);
-    }
-  };
+  // Removed Stripe online payment
 
   const handleCopyPix = () => {
     navigator.clipboard.writeText(PIX_KEY);
