@@ -203,25 +203,7 @@ export default function BarberSubscriptions() {
     }
   };
 
-  const handlePayOnline = async () => {
-    setLoadingCheckout(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { email: user!.email, return_url: window.location.origin },
-      });
-      if (error || data?.error) {
-        toast.error(data?.error || 'Erro ao criar sessão de pagamento');
-        return;
-      }
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch {
-      toast.error('Erro ao iniciar pagamento online');
-    } finally {
-      setLoadingCheckout(false);
-    }
-  };
+  // Removed Stripe online payment
 
   const handleCopyPix = () => {
     navigator.clipboard.writeText(PIX_KEY);
@@ -313,24 +295,14 @@ export default function BarberSubscriptions() {
                 <CreditCard className="w-5 h-5 text-primary" />
                 Pagar Assinatura
               </h2>
-              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="outline"
-                  className="flex-1 gap-2"
+                  className="w-full gap-2"
                   onClick={() => setShowPix(!showPix)}
                 >
                   <QrCode className="w-4 h-4" />
                   Pagar com PIX
                 </Button>
-                <Button
-                  className="flex-1 gap-2"
-                  onClick={handlePayOnline}
-                  disabled={loadingCheckout}
-                >
-                  {loadingCheckout ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
-                  Pagar Online
-                </Button>
-              </div>
 
               {showPix && (
                 <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3 animate-fade-in">
