@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import BarberDashboard from "./pages/barber/BarberDashboard";
@@ -46,22 +47,25 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/barber" element={<BarberDashboard />} />
-            <Route path="/barber/schedule" element={<BarberSchedule />} />
-            <Route path="/barber/services" element={<BarberServices />} />
-            <Route path="/barber/work-hours" element={<BarberWorkHours />} />
-            <Route path="/barber/finances" element={<BarberFinances />} />
-            <Route path="/barber/clients" element={<BarberClients />} />
-            <Route path="/barber/barbers" element={<BarberManageBarbers />} />
-            <Route path="/barber/profile" element={<BarberProfile />} />
-            <Route path="/barber/subscriptions" element={<BarberSubscriptions />} />
-            <Route path="/client" element={<ClientBooking />} />
-            <Route path="/client/appointments" element={<ClientAppointments />} />
-            <Route path="/client/spending" element={<ClientSpending />} />
-            <Route path="/client/profile" element={<ClientProfile />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/billing" element={<AdminBilling />} />
+            {/* Barber / Admin routes */}
+            <Route path="/barber" element={<ProtectedRoute allowedRoles={['barber', 'admin']}><BarberDashboard /></ProtectedRoute>} />
+            <Route path="/barber/schedule" element={<ProtectedRoute allowedRoles={['barber', 'admin']}><BarberSchedule /></ProtectedRoute>} />
+            <Route path="/barber/services" element={<ProtectedRoute allowedRoles={['barber', 'admin']}><BarberServices /></ProtectedRoute>} />
+            <Route path="/barber/work-hours" element={<ProtectedRoute allowedRoles={['barber', 'admin']}><BarberWorkHours /></ProtectedRoute>} />
+            <Route path="/barber/finances" element={<ProtectedRoute allowedRoles={['barber', 'admin']}><BarberFinances /></ProtectedRoute>} />
+            <Route path="/barber/clients" element={<ProtectedRoute allowedRoles={['barber', 'admin']}><BarberClients /></ProtectedRoute>} />
+            <Route path="/barber/barbers" element={<ProtectedRoute allowedRoles={['barber', 'admin']}><BarberManageBarbers /></ProtectedRoute>} />
+            <Route path="/barber/profile" element={<ProtectedRoute allowedRoles={['barber', 'admin']}><BarberProfile /></ProtectedRoute>} />
+            <Route path="/barber/subscriptions" element={<ProtectedRoute allowedRoles={['barber', 'admin']}><BarberSubscriptions /></ProtectedRoute>} />
+            {/* Client routes */}
+            <Route path="/client" element={<ProtectedRoute allowedRoles={['client']}><ClientBooking /></ProtectedRoute>} />
+            <Route path="/client/appointments" element={<ProtectedRoute allowedRoles={['client']}><ClientAppointments /></ProtectedRoute>} />
+            <Route path="/client/spending" element={<ProtectedRoute allowedRoles={['client']}><ClientSpending /></ProtectedRoute>} />
+            <Route path="/client/profile" element={<ProtectedRoute allowedRoles={['client']}><ClientProfile /></ProtectedRoute>} />
+            {/* Super Admin routes */}
+            <Route path="/admin" element={<ProtectedRoute allowedRoles={['super_admin']}><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['super_admin']}><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/billing" element={<ProtectedRoute allowedRoles={['super_admin']}><AdminBilling /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
