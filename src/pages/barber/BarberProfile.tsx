@@ -54,6 +54,9 @@ export default function BarberProfile() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [isSavingEmail, setIsSavingEmail] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
