@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Phone, Mail, Save, Camera } from 'lucide-react';
+import { User, Phone, Mail, Save, Camera, Pencil, Check, X } from 'lucide-react';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { toast } from 'sonner';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
@@ -54,6 +54,9 @@ export default function ClientProfile() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [isSavingEmail, setIsSavingEmail] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Crop state
@@ -149,6 +152,23 @@ export default function ClientProfile() {
     setIsSaving(false);
   };
 
+  const handleEmailChange = async () => {
+    if (!newEmail.trim() || !user) return;
+    if (newEmail === user.email) {
+      setEditingEmail(false);
+      return;
+    }
+    setIsSavingEmail(true);
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
+    if (error) {
+      toast.error('Erro ao alterar e-mail: ' + error.message);
+    } else {
+      toast.success('Um link de confirmação foi enviado para o novo e-mail. Confirme para concluir a alteração.');
+      setEditingEmail(false);
+    }
+    setIsSavingEmail(false);
+  };
+
   return (
     <ClientLayout>
       <div className="max-w-md mx-auto space-y-6 animate-fade-in">
@@ -201,12 +221,38 @@ export default function ClientProfile() {
           </div>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              type="email"
-              value={user?.email || ''}
-              disabled
-              className="pl-10 h-12 bg-card border-border rounded-xl opacity-60"
-            />
+            {editingEmail ? (
+              <>
+                <Input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="Novo e-mail"
+                  className="pl-10 pr-20 h-12 bg-card border-primary rounded-xl"
+                  autoFocus
+                />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                  <button type="button" onClick={handleEmailChange} disabled={isSavingEmail} className="p-1.5 rounded-lg bg-success/20 hover:bg-success/30 transition-colors">
+                    <Check className="w-4 h-4 text-success" />
+                  </button>
+                  <button type="button" onClick={() => setEditingEmail(false)} className="p-1.5 rounded-lg bg-destructive/20 hover:bg-destructive/30 transition-colors">
+                    <X className="w-4 h-4 text-destructive" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Input
+                  type="email"
+                  value={user?.email || ''}
+                  disabled
+                  className="pl-10 pr-10 h-12 bg-card border-border rounded-xl opacity-60"
+                />
+                <button type="button" onClick={() => { setNewEmail(user?.email || ''); setEditingEmail(true); }} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-accent transition-colors">
+                  <Pencil className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </>
+            )}
           </div>
           <div className="relative">
             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
