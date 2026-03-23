@@ -152,8 +152,24 @@ export default function ClientProfile() {
     setIsSaving(false);
   };
 
+  const handleEmailChange = async () => {
+    if (!newEmail.trim() || !user) return;
+    if (newEmail === user.email) {
+      setEditingEmail(false);
+      return;
+    }
+    setIsSavingEmail(true);
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
+    if (error) {
+      toast.error('Erro ao alterar e-mail: ' + error.message);
+    } else {
+      toast.success('Um link de confirmação foi enviado para o novo e-mail. Confirme para concluir a alteração.');
+      setEditingEmail(false);
+    }
+    setIsSavingEmail(false);
+  };
+
   return (
-    <ClientLayout>
       <div className="max-w-md mx-auto space-y-6 animate-fade-in">
         <h1 className="text-3xl font-bold font-display">Meu Perfil</h1>
 
