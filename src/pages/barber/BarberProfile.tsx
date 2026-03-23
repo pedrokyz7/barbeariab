@@ -222,13 +222,38 @@ export default function BarberProfile() {
           </div>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              type="email"
-              value={user?.email || ''}
-              disabled
-              className="pl-10 pr-10 h-12 bg-card border-border rounded-xl opacity-60"
-            />
+            {editingEmail ? (
+              <>
+                <Input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="Novo e-mail"
+                  className="pl-10 pr-20 h-12 bg-card border-primary rounded-xl"
+                  autoFocus
+                />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                  <button type="button" onClick={handleEmailChange} disabled={isSavingEmail} className="p-1.5 rounded-lg bg-success/20 hover:bg-success/30 transition-colors">
+                    <Check className="w-4 h-4 text-success" />
+                  </button>
+                  <button type="button" onClick={() => setEditingEmail(false)} className="p-1.5 rounded-lg bg-destructive/20 hover:bg-destructive/30 transition-colors">
+                    <X className="w-4 h-4 text-destructive" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Input
+                  type="email"
+                  value={user?.email || ''}
+                  disabled
+                  className="pl-10 pr-10 h-12 bg-card border-border rounded-xl opacity-60"
+                />
+                <button type="button" onClick={() => { setNewEmail(user?.email || ''); setEditingEmail(true); }} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-accent transition-colors">
+                  <Pencil className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </>
+            )}
           </div>
           <div className="relative">
             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
