@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ClientLayout } from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Phone, Mail, Save, Camera } from 'lucide-react';
+import { User, Phone, Mail, Save, Camera, Pencil, Check, X } from 'lucide-react';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { toast } from 'sonner';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
