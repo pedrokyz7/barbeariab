@@ -169,7 +169,7 @@ export default function ClientProfile() {
     setIsSavingEmail(false);
   };
 
-  return (
+  <ClientLayout>
       <div className="max-w-md mx-auto space-y-6 animate-fade-in">
         <h1 className="text-3xl font-bold font-display">Meu Perfil</h1>
 
